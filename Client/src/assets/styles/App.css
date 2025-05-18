@@ -2,23 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom animations */
+/* Keyframes */
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
   to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideInUp {
-  from {
-    transform: translateY(50px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
     opacity: 1;
   }
 }
@@ -45,23 +34,56 @@
   }
 }
 
+@keyframes slideInUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 @keyframes pulse {
-  0%,
-  100% {
+  0% {
     transform: scale(1);
+    opacity: 1;
   }
   50% {
     transform: scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
 @keyframes float {
-  0%,
-  100% {
+  0%, 100% {
     transform: translateY(0);
   }
   50% {
     transform: translateY(-10px);
+  }
+}
+
+@keyframes floatUpDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes floatLeftRight {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(20px);
   }
 }
 
@@ -74,20 +96,50 @@
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.5s ease-in-out;
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.animate-slideInUp {
-  animation: slideInUp 0.5s ease-in-out;
+@keyframes pulseCircle {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+@keyframes drawEkg {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Animations */
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-in-out forwards;
 }
 
 .animate-slideInLeft {
-  animation: slideInLeft 0.5s ease-in-out;
+  animation: slideInLeft 0.5s ease-in-out forwards;
 }
 
 .animate-slideInRight {
-  animation: slideInRight 0.5s ease-in-out;
+  animation: slideInRight 0.5s ease-in-out forwards;
+}
+
+.animate-slideInUp {
+  animation: slideInUp 0.5s ease-in-out forwards;
 }
 
 .animate-pulse {
@@ -102,7 +154,67 @@
   animation: spin 2s linear infinite;
 }
 
-/* Custom styles */
+/* Animation delays */
+.delay-100 {
+  animation-delay: 0.1s;
+}
+.delay-200 {
+  animation-delay: 0.2s;
+}
+.delay-300 {
+  animation-delay: 0.3s;
+}
+.delay-400 {
+  animation-delay: 0.4s;
+}
+.delay-500 {
+  animation-delay: 0.5s;
+}
+.delay-600 {
+  animation-delay: 0.6s;
+}
+.delay-800 {
+  animation-delay: 0.8s;
+}
+.delay-1 {
+  animation-delay: 1s;
+}
+.delay-2 {
+  animation-delay: 2s;
+}
+.delay-3 {
+  animation-delay: 3s;
+}
+
+/* Form transitions */
+input,
+select,
+textarea {
+  transition: all 0.3s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Button transitions */
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Typography and base styles */
 html {
   scroll-behavior: smooth;
 }
@@ -113,19 +225,11 @@ body {
   line-height: 1.5;
 }
 
-/* Transitions */
+/* Transition utility */
 .transition-all {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
-}
-
-/* Parallax effect */
-.parallax {
-  background-attachment: fixed;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
 }
 
 /* Hover effects */
@@ -141,23 +245,125 @@ body {
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
 }
 
-/* Stagger animation delay utility classes */
-.delay-100 {
-  animation-delay: 0.1s;
+/* Parallax */
+.parallax {
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
-.delay-200 {
-  animation-delay: 0.2s;
+/* Medical animation elements */
+.medical-animation {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
-.delay-300 {
-  animation-delay: 0.3s;
+.pulse-circle {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulseCircle 4s infinite;
 }
 
-.delay-400 {
-  animation-delay: 0.4s;
+.floating-pill {
+  position: absolute;
+  width: 30px;
+  height: 15px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.3);
 }
 
-.delay-500 {
-  animation-delay: 0.5s;
+.pill-1 {
+  top: 20%;
+  left: 20%;
+  animation: floatUpDown 5s infinite ease-in-out, rotate 15s infinite linear;
+}
+
+.pill-2 {
+  bottom: 30%;
+  right: 20%;
+  animation: floatLeftRight 7s infinite ease-in-out, rotate 20s infinite linear;
+}
+
+.floating-cross {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 70%;
+  left: 30%;
+  animation: floatUpDown 6s infinite ease-in-out, rotate 10s infinite linear;
+}
+
+.floating-cross:before,
+.floating-cross:after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.floating-cross:before {
+  width: 20px;
+  height: 6px;
+  top: 7px;
+  left: 0;
+}
+
+.floating-cross:after {
+  width: 6px;
+  height: 20px;
+  top: 0;
+  left: 7px;
+}
+
+.floating-heart {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(45deg);
+  top: 30%;
+  right: 30%;
+  animation: floatLeftRight 8s infinite ease-in-out;
+}
+
+.floating-heart:before,
+.floating-heart:after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.floating-heart:before {
+  top: 0;
+  left: -10px;
+}
+
+.floating-heart:after {
+  top: -10px;
+  left: 0;
+}
+
+.ekg-line {
+  position: absolute;
+  bottom: 20%;
+  left: 0;
+  width: 100%;
+  height: 50px;
+}
+
+.ekg-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawEkg 10s infinite linear;
 }
