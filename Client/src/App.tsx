@@ -1,10 +1,15 @@
-import './assets/App.css'
+import './assets/styles/App.css'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from './pages/Home/Home';
 
 function App() {
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-r from-indigo-500 to-pink-500">
-      <h1 className="text-red text-4xl font-bold">Tailwind v4 is working! 🎉</h1>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        {/* Add more routes here */}
+      </Routes>
+    </Router>
   );
 }
 
