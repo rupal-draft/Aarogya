@@ -14,9 +14,9 @@ public interface AuthService {
 
     LoginPatientResponse loginPatient(LoginRequestDto loginRequestDto);
 
-    DoctorResponseDTO getDoctorProfile();
+    void forgotPassword(ForgotPasswordRequest forgotPasswordRequest);
 
-    PatientResponseDTO getPatientProfile();
+    void resetPassword(OtpVerificationRequest otpVerificationRequest);
 
     DoctorResponseDTO getDoctorProfileById(String id);
 

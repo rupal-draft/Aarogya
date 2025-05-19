@@ -154,7 +154,7 @@ const Header = () => {
             <motion.a
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              href="/login"
+              href="/auth"
               className="ml-4 px-4 py-2 text-blue-600 hover:text-blue-800 transition-colors"
             >
               Login
@@ -257,7 +257,7 @@ const Header = () => {
                 <li>
                   <motion.a
                     whileTap={{ backgroundColor: "rgba(59, 130, 246, 0.1)" }}
-                    href="/login"
+                    href="/auth"
                     className="block px-4 py-2 text-blue-600 hover:text-blue-800"
                   >
                     Login

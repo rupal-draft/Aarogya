@@ -1,14 +1,19 @@
 package com.aarogya.auth_service.service.implementation;
 
 import com.aarogya.auth_service.documents.Doctor;
+import com.aarogya.auth_service.documents.PasswordResetOtp;
 import com.aarogya.auth_service.documents.Patient;
+import com.aarogya.auth_service.documents.enums.Role;
 import com.aarogya.auth_service.documents.enums.Specialization;
 import com.aarogya.auth_service.dto.*;
+import com.aarogya.auth_service.events.SendOtpEvent;
 import com.aarogya.auth_service.exceptions.*;
 import com.aarogya.auth_service.repository.DoctorRepository;
+import com.aarogya.auth_service.repository.OtpRepository;
 import com.aarogya.auth_service.repository.PatientRepository;
 import com.aarogya.auth_service.security.JwtService;
 import com.aarogya.auth_service.service.AuthService;
+import com.aarogya.auth_service.util.GenerateOtp;
 import com.aarogya.auth_service.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +22,13 @@ import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
+import org.springframework.kafka.KafkaException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +40,9 @@ public class AuthServiceImpl implements AuthService {
     private final PatientRepository patientRepository;
     private final ModelMapper modelMapper;
     private final JwtService jwtService;
+    private final OtpRepository otpRepository;
+    private final KafkaTemplate<String, SendOtpEvent> otpKafkaTemplate;
+    private static final String topicName = "send-otp";
 
     @Override
     @Transactional
@@ -198,13 +207,125 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public DoctorResponseDTO getDoctorProfile() {
-        return null;
+    @Transactional
+    public void resetPassword(OtpVerificationRequest request) {
+        try {
+            if (request.getEmail() == null || request.getEmail().isBlank()) {
+                throw new BadRequestException("Email is required");
+            }
+            if (request.getOtp() == null || request.getOtp().isBlank()) {
+                throw new BadRequestException("OTP is required");
+            }
+            if (request.getNewPassword() == null || request.getNewPassword().isBlank()) {
+                throw new BadRequestException("New password is required");
+            }
+
+            log.info("Processing password reset for email: {}", request.getEmail());
+
+            PasswordResetOtp otpEntry = otpRepository.findByEmailAndOtp(request.getEmail(), request.getOtp())
+                    .orElseThrow(() -> new BadRequestException("Invalid OTP"));
+
+            if (otpEntry.isExpired()) {
+                throw new BadRequestException("OTP has expired");
+            }
+
+            switch (otpEntry.getRole()) {
+                case DOCTOR:
+                    Doctor doctor = doctorRepository.findByEmail(request.getEmail())
+                            .orElseThrow(() -> new ResourceNotFound("Doctor not found with email: " + request.getEmail()));
+
+                    doctor.setPassword(PasswordUtil.hashPassword(request.getNewPassword()));
+                    doctorRepository.save(doctor);
+                    break;
+
+                case PATIENT:
+                    Patient patient = patientRepository.findByEmail(request.getEmail())
+                            .orElseThrow(() -> new ResourceNotFound("Patient not found with email: " + request.getEmail()));
+
+                    patient.setPassword(PasswordUtil.hashPassword(request.getNewPassword()));
+                    patientRepository.save(patient);
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Unsupported role: " + otpEntry.getRole());
+            }
+
+            otpRepository.delete(otpEntry);
+            log.info("Password reset successful for {}", request.getEmail());
+        } catch (DataAccessException ex) {
+            log.error("Database error during password reset for email: {}", request.getEmail(), ex);
+            throw new DataIntegrityViolation("Failed to reset password due to database error");
+        } catch (Exception ex) {
+            log.error("Error during password reset", ex);
+            throw new ServiceUnavailable("Failed to reset password");
+        }
     }
 
+
     @Override
-    public PatientResponseDTO getPatientProfile() {
-        return null;
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        String email = request.getEmail();
+        String role = request.getRole();
+        try {
+            if (email == null || email.isBlank()) {
+                throw new BadRequestException("Email is required");
+            }
+            if (role == null || role.isBlank()) {
+                throw new BadRequestException("Role is required");
+            }
+            log.info("Processing forgot password request for email: {}", email);
+            String name;
+            Role userRole = Role.valueOf(role.toUpperCase());
+
+            switch (userRole) {
+                case DOCTOR:
+                    Doctor doctor = doctorRepository.findByEmail(email)
+                            .orElseThrow(() -> new ResourceNotFound("Doctor not found with email: " + email));
+                    name = doctor.getFirstName() + " " + doctor.getLastName();
+                    break;
+
+                case PATIENT:
+                    Patient patient = patientRepository.findByEmail(email)
+                            .orElseThrow(() -> new ResourceNotFound("Patient not found with email: " + email));
+                    name = patient.getFirstName() + " " + patient.getLastName();
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Unsupported user role: " + userRole);
+            }
+
+            String otp = GenerateOtp.generateOtp();
+            PasswordResetOtp passwordResetOtp = PasswordResetOtp
+                    .builder()
+                    .role(userRole)
+                    .email(email)
+                    .otp(otp)
+                    .build();
+            otpRepository.save(passwordResetOtp);
+            log.info("OTP generated for forgot password request for email: {}", email);
+            SendOtpEvent sendOtpEvent = SendOtpEvent
+                    .builder()
+                    .email(email)
+                    .otp(otp)
+                    .subject("Your OTP for Password Reset")
+                    .role(userRole.toString())
+                    .recipientName(name)
+                    .purpose("Password Reset")
+                    .generatedAt(LocalDateTime.now())
+                    .build();
+            otpKafkaTemplate.send(topicName, sendOtpEvent.getOtp(), sendOtpEvent);
+            log.info("Kafka message sent for forgot password request for email: {}", email);
+        } catch (DataAccessException ex) {
+            log.error("Database error during forgot password request for email: {}", email, ex);
+            throw new DataIntegrityViolation("Unable to process forgot password request at this time");
+        } catch (KafkaException ex) {
+            log.error("Kafka error during forgot password request for email: {}", email, ex);
+            throw new ServiceUnavailable("Unable to process forgot password request at this time");
+        } catch (Exception ex) {
+            log.error("Error during forgot password request", ex);
+            throw new ServiceUnavailable("Unable to process forgot password request at this time");
+        }
     }
 
     @Override

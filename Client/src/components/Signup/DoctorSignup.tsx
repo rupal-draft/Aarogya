@@ -5,6 +5,8 @@ import { useState } from "react"
 import InputField from "../../common/Fields/InputField"
 import SelectField from "../../common/Fields/SelectField"
 import { Specialization } from "../../Data/enums/Specialization"
+import { toast } from "react-toastify"
+import axios from "axios"
 
 interface DoctorFormData {
   email: string
@@ -115,20 +117,54 @@ const DoctorSignup: React.FC = () => {
     setStep((prev) => prev - 1)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (validateStep(step)) {
-      setIsLoading(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateStep(step)) return;
 
-      // Simulate API call
-      setTimeout(() => {
-        console.log("Doctor Form Data:", formData)
-        setIsLoading(false)
-        // Here you would typically redirect or show success message
-        alert("Registration successful!")
-      }, 1500)
+    try {
+      setIsLoading(true);
+      // console.log(payload);
+      // return;
+      const response = await axios.post("http://localhost:8080/api/v1/auth/core/doctor/register", {...formData});
+
+      if (response.status === 201) {
+        console.log("Doctor Registered:", response.data);
+        toast.success("Registration successful!");
+        window.location.reload();
+        setFormData({
+          email: "",
+          password: "",
+          firstName: "",
+          lastName: "",
+          specialization: "",
+          licenseNumber: "",
+          experienceYears: "",
+          phone: "",
+          address: "",
+          imageUrl: "",
+        });
+      }
+    } catch (error: any) {
+      console.error("Registration failed:", error);
+
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status === 400) {
+          toast.error("Validation failed: " + data.message);
+        } else if (status === 429) {
+          toast.error("Too many requests, please try again later.");
+        } else if (status === 500) {
+          toast.error("Server error. Please try again.");
+        } else {
+          toast.error("Registration failed: " + (data.message || "Unknown error"));
+        }
+      } else {
+        toast.error("Network error. Please check your connection.");
+      }
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   // Convert enum to options for select field
   const specializationOptions = Object.keys(Specialization).map((key) => ({
@@ -163,7 +199,7 @@ const DoctorSignup: React.FC = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form>
         {step === 1 && (
           <div className="space-y-4 animate-fadeIn">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -494,7 +530,8 @@ const DoctorSignup: React.FC = () => {
             </button>
           ) : (
             <button
-              type="submit"
+            type="button"
+            onClick={handleSubmit}
               disabled={isLoading}
               className={`inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ml-auto transition-all duration-300 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
             >

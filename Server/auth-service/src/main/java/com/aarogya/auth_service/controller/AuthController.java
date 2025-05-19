@@ -66,6 +66,20 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/forgot-password")
+    @RateLimiter(name = "forgotPassword", fallbackMethod = "rateLimitFallbackForgotPassword")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+        authService.forgotPassword(forgotPasswordRequest);
+        return new ResponseEntity<>(ApiResponse.success("Password reset link sent to " + forgotPasswordRequest.getEmail()), HttpStatus.OK);
+    }
+
+    @PutMapping("/reset-password")
+    @RateLimiter(name = "resetPassword", fallbackMethod = "rateLimitFallbackResetPassword")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody OtpVerificationRequest otpVerificationRequest) {
+        authService.resetPassword(otpVerificationRequest);
+        return new ResponseEntity<>(ApiResponse.success("Password reset successfully"), HttpStatus.OK);
+    }
+
     @GetMapping("/doctor/{id}")
     @RateLimiter(name = "getDoctor", fallbackMethod = "rateLimitFallbackFetchDoctor")
     public ResponseEntity<DoctorResponseDTO> getDoctorById(@PathVariable String id) {
@@ -129,5 +143,13 @@ public class AuthController {
 
     public ResponseEntity<ApiResponse<String>> rateLimitFallbackFetchPatients(String gender, Throwable throwable) {
         return rateLimitFallback("getPatientsByGender", throwable);
+    }
+
+    public ResponseEntity<ApiResponse<String>> rateLimitFallbackForgotPassword(String email, String role, Throwable throwable) {
+        return rateLimitFallback("forgotPassword", throwable);
+    }
+
+    public ResponseEntity<ApiResponse<String>> rateLimitFallbackResetPassword(OtpVerificationRequest otpVerificationRequest, Throwable throwable) {
+        return rateLimitFallback("resetPassword", throwable);
     }
 }
