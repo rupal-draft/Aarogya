@@ -28,3 +28,10 @@ spring:
             - Path=/api/v1/auth/**
           filters:
             - StripPrefix=2
+
+        - id: article-service
+          uri: lb://ARTICLE-SERVICE
+          predicates:
+            - Path=/api/v1/article/**
+          filters:
+            - StripPrefix=2
