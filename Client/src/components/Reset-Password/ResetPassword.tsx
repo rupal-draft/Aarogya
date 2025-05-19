@@ -2,8 +2,10 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import InputField from "../../common/Fields/InputField"
+import { toast } from "react-toastify"
+import axios from "axios"
 
 interface ResetPasswordProps {
   onSuccess: () => void
@@ -11,6 +13,7 @@ interface ResetPasswordProps {
 
 const ResetPassword: React.FC<ResetPasswordProps> = ({ onSuccess }) => {
   const location = useLocation()
+  const navigate = useNavigate()
   const [email, setEmail] = useState<string>("")
   const [otp, setOtp] = useState<string>("")
   const [password, setPassword] = useState<string>("")
@@ -72,25 +75,35 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onSuccess }) => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
 
-    if (!validateForm()) return
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    setIsLoading(true)
+  if (!validateForm()) return;
 
-    // Simulate API call to reset password
+  setIsLoading(true);
+
+  try {
+    await axios.patch("http://localhost:8080/api/v1/auth/core/reset-password", {
+      email,
+      otp,
+      newPassword: password,
+    });
+
+    setIsSuccess(true);
+
+    navigate("/auth")
     setTimeout(() => {
-      console.log("Password reset successful", { email, otp, password })
-      setIsLoading(false)
-      setIsSuccess(true)
-
-      // Redirect to sign in page after success
-      setTimeout(() => {
-        onSuccess()
-      }, 2000)
-    }, 2000)
+      onSuccess();
+    }, 2000);
+  } catch (error) {
+    console.error("Password reset failed", error);
+    toast.error("Failed to reset password. Please try again.");
+  } finally {
+    setIsLoading(false);
   }
+};
+
 
   const handleResendOTP = () => {
     setIsLoading(true)

@@ -1,8 +1,13 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { use, useState } from "react"
 import InputField from "../../common/Fields/InputField"
+import { toast } from "react-toastify"
+import axios from "axios"
+import { useNavigate } from "react-router-dom"
+import { loginUser } from "../../redux/slices/authSlice"
+import { useAppDispatch } from "../../redux/store"
 
 interface SignInProps {
   userType: "patient" | "doctor"
@@ -22,7 +27,8 @@ const SignIn: React.FC<SignInProps> = ({ userType, setUserType, onForgotPassword
   const [errors, setErrors] = useState<Partial<{ email: string; password: string }>>({})
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [rememberMe, setRememberMe] = useState<boolean>(false)
-
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -53,18 +59,28 @@ const SignIn: React.FC<SignInProps> = ({ userType, setUserType, onForgotPassword
     return isValid
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (validate()) {
       setIsLoading(true)
 
-      // Simulate API call
-      setTimeout(() => {
-        console.log("Sign In Form Data:", { ...formData, userType, rememberMe })
+      try {
+        const resultAction = await dispatch(loginUser({ formData, userType }))
+
+        if (loginUser.fulfilled.match(resultAction)) {
+          toast.success(`${userType.charAt(0).toUpperCase() + userType.slice(1)} signed in successfully!`)
+          navigate("/")
+        } else if (loginUser.rejected.match(resultAction)) {
+          console.error("Login error:", resultAction.error.message)
+          toast.error(resultAction.error.message || "Login failed")
+        }
+      } catch (error: any) {
+        console.error("Login error:", error)
+        setErrors(error.message || "Login failed")
+      } finally {
         setIsLoading(false)
-        // Here you would typically redirect to dashboard or show success message
-        alert(`${userType.charAt(0).toUpperCase() + userType.slice(1)} signed in successfully!`)
-      }, 1500)
+      }
     }
   }
 

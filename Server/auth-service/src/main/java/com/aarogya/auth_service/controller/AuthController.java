@@ -73,7 +73,7 @@ public class AuthController {
         return new ResponseEntity<>(ApiResponse.success("Password reset link sent to " + forgotPasswordRequest.getEmail()), HttpStatus.OK);
     }
 
-    @PutMapping("/reset-password")
+    @PatchMapping("/reset-password")
     @RateLimiter(name = "resetPassword", fallbackMethod = "rateLimitFallbackResetPassword")
     public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody OtpVerificationRequest otpVerificationRequest) {
         authService.resetPassword(otpVerificationRequest);

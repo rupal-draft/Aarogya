@@ -288,14 +288,7 @@ const Auth: React.FC<AuthPagesProps> = ({ initialPage = "signin" }) => {
 
 export default function AuthPage() {
   return (
-    <div className="page-wrapper overflow-hidden">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <TopBar />
-        <Header />
+
 
           <Routes>
             <Route path="/" element={<Auth />} />
@@ -303,8 +296,5 @@ export default function AuthPage() {
             <Route path="/reset-password" element={<Auth initialPage="reset" />} />
           </Routes>
 
-        <Footer />
-      </motion.div>
-    </div>
   );
 }
