@@ -18,10 +18,10 @@ public class ArticleResponseDTO {
     private UserResponseDto doctor;
     private String title;
     private String content;
+    private String posterUrl;
     private String imageUrl;
     private String category;
     private List<String> tags;
-    private String status;
     private int views;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
