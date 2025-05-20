@@ -46,7 +46,7 @@ public class AuthController {
         cookie.setHttpOnly(true);
         cookie.setSecure(deployment.equals("prod"));
         cookie.setMaxAge(60 * 60);
-        cookie.setPath("/doctor");
+        cookie.setPath("/");
         httpServletResponse.addCookie(cookie);
 
         return ResponseEntity.ok(response);
@@ -60,7 +60,7 @@ public class AuthController {
         cookie.setHttpOnly(true);
         cookie.setSecure(deployment.equals("prod"));
         cookie.setMaxAge(60 * 60);
-        cookie.setPath("/patient");
+        cookie.setPath("/");
         httpServletResponse.addCookie(cookie);
 
         return ResponseEntity.ok(response);
@@ -78,6 +78,17 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody OtpVerificationRequest otpVerificationRequest) {
         authService.resetPassword(otpVerificationRequest);
         return new ResponseEntity<>(ApiResponse.success("Password reset successfully"), HttpStatus.OK);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(HttpServletResponse response) {
+        Cookie accessTokenCookie = new Cookie("access_token", null);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(deployment.equals("prod"));
+        accessTokenCookie.setMaxAge(0);
+        accessTokenCookie.setPath("/");
+        response.addCookie(accessTokenCookie);
+        return ResponseEntity.ok(ApiResponse.success("Logged out successfully"));
     }
 
     @GetMapping("/doctor/{id}")

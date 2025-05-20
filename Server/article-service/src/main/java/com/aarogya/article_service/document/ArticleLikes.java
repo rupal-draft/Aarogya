@@ -30,9 +30,6 @@ public class ArticleLikes {
     @NotBlank
     private String userId;
 
-    @NotBlank
-    private UserType userType;
-
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }

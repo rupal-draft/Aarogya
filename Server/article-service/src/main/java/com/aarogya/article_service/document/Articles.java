@@ -1,6 +1,7 @@
 package com.aarogya.article_service.document;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -34,10 +35,15 @@ public class Articles {
     @NotBlank
     private String content;
 
+    private String posterUrl;
     private String imageUrl;
 
     @Size(max = 100)
     private String category;
+
+    @NotBlank
+    @Pattern(regexp = "doctor|patient", message = "userType must be either 'doctor' or 'patient'")
+    private String userType;
 
     private List<@Size(max = 50) String> tags;
 

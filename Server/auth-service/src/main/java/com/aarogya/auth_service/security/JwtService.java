@@ -2,6 +2,7 @@ package com.aarogya.auth_service.security;
 
 import com.aarogya.auth_service.documents.Doctor;
 import com.aarogya.auth_service.documents.Patient;
+import com.aarogya.auth_service.documents.enums.Role;
 import com.aarogya.auth_service.exceptions.IllegalState;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -30,6 +31,7 @@ public class JwtService {
                 .builder()
                 .subject(String.valueOf(patient.getId()))
                 .claim("email",patient.getEmail())
+                .claim("role", Role.PATIENT)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 1))
                 .signWith(getSecretKey())
@@ -42,6 +44,7 @@ public class JwtService {
                 .subject(String.valueOf(doctor.getId()))
                 .claim("email",doctor.getEmail())
                 .claim("licenseNumber",doctor.getLicenseNumber())
+                .claim("role", Role.DOCTOR)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 1))
                 .signWith(getSecretKey())

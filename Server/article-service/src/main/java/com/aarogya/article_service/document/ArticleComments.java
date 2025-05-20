@@ -2,6 +2,7 @@ package com.aarogya.article_service.document;
 
 import com.aarogya.article_service.document.enums.UserType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
@@ -30,10 +31,11 @@ public class ArticleComments {
     private String userId;
 
     @NotBlank
-    private UserType userType;
+    private String comment;
 
     @NotBlank
-    private String comment;
+    @Pattern(regexp = "doctor|patient", message = "userType must be either 'doctor' or 'patient'")
+    private String userType;
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
