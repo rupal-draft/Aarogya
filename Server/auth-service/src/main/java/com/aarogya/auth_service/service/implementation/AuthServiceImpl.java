@@ -64,6 +64,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             Doctor doctor = modelMapper.map(doctorRequestDTO, Doctor.class);
+            doctor.setSpecialization(Specialization.valueOf(doctorRequestDTO.getSpecialization().toUpperCase()));
             doctor.setPassword(PasswordUtil.hashPassword(doctorRequestDTO.getPassword()));
 
             Doctor savedDoctor = doctorRepository.save(doctor);

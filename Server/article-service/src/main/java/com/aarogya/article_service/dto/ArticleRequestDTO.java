@@ -16,9 +16,6 @@ import java.util.List;
 public class ArticleRequestDTO {
 
     @NotBlank
-    private String doctorId;
-
-    @NotBlank
     @Size(max = 255)
     private String title;
 
@@ -32,6 +29,4 @@ public class ArticleRequestDTO {
     private String category;
 
     private List<@Size(max = 50) String> tags;
-
-    private String status;
 }

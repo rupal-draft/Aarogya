@@ -314,10 +314,10 @@ public class ArticleServiceImpl implements ArticleService{
     }
 
     @Override
-    public boolean hasLikedArticle(String id, String userId) {
+    public boolean hasLikedArticle(String id) {
         log.info("Liked Article check request received with id: {}", id);
         try {
-            return likeRepository.existsByArticleIdAndUserId(id, userId);
+            return likeRepository.existsByArticleIdAndUserId(id, UserContextHolder.getUserDetails().getUserId());
         } catch (DataAccessException e) {
             log.error("error while checking if user has liked article {}", id, e);
         } catch (Exception e) {

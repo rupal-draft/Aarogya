@@ -62,7 +62,9 @@ export const loginUser = createAsyncThunk(
           ? "http://localhost:8080/api/v1/auth/core/patient/login"
           : "http://localhost:8080/api/v1/auth/core/doctor/login"
 
-      const response = await axios.post(endpoint, formData)
+          const response = await axios.post(endpoint, formData, {
+            withCredentials: true,
+          })
       return {
         data: response.data.data,
         userType,

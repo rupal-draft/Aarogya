@@ -46,7 +46,7 @@ public class Articles {
     private String userType;
 
     private List<@Size(max = 50) String> tags;
-
+    
     @Builder.Default
     private int views = 0;
 

@@ -110,9 +110,9 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponse.success("Article unliked successfully"));
     }
 
-    @PostMapping("/{id}/comment")
+    @PostMapping("/comment")
     @RateLimiter(name = "article", fallbackMethod = "fallbackMethodCommentArticle")
-    public ResponseEntity<ApiResponse<String>> commentArticle(@PathVariable String id, @RequestBody ArticleCommentRequestDTO comment) {
+    public ResponseEntity<ApiResponse<String>> commentArticle(@RequestBody ArticleCommentRequestDTO comment) {
         articleService.commentArticle(comment);
         return ResponseEntity.ok(ApiResponse.success("Article commented successfully"));
     }
@@ -131,8 +131,8 @@ public class ArticleController {
 
     @GetMapping("/{id}/isLiked")
     @RateLimiter(name = "article", fallbackMethod = "fallbackMethodIsLiked")
-    public ResponseEntity<ApiResponse<Boolean>> isLiked(@PathVariable String id, @RequestParam String userId) {
-        return ResponseEntity.ok(ApiResponse.success(articleService.hasLikedArticle(id, userId)));
+    public ResponseEntity<ApiResponse<Boolean>> isLiked(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.success(articleService.hasLikedArticle(id)));
     }
 
     public ResponseEntity<ApiResponse<String>> rateLimitFallback(String serviceName, Throwable throwable) {

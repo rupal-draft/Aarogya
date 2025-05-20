@@ -36,7 +36,7 @@ public interface ArticleService {
 
     int getLikesCount(String id);
 
-    boolean hasLikedArticle(String id, String userId);
+    boolean hasLikedArticle(String id);
 
     void commentArticle(ArticleCommentRequestDTO articleCommentRequestDTO);
 
