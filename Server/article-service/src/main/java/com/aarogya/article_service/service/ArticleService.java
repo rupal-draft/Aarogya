@@ -10,7 +10,7 @@ public interface ArticleService {
 
     List<ArticleResponseDTO> getAllArticles();
 
-    ArticleResponseDTO getArticleById(Long id);
+    ArticleResponseDTO getArticleById(String id);
 
     List<ArticleResponseDTO> getArticlesByCategory(String category);
 
@@ -24,9 +24,11 @@ public interface ArticleService {
 
     List<ArticleResponseDTO> getPopularArticles();
 
+    List<ArticleResponseDTO> searchArticles(String keyword);
+
     void deleteArticle(String id);
 
-    void updateArticle(String id, String title, String content);
+    void updateArticle(String id, ArticleUpdateRequestDto articleUpdateRequestDto);
 
     void likeArticle(String articleId);
 
