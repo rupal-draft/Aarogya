@@ -82,15 +82,15 @@ public class ArticleServiceImpl implements ArticleService{
     }
 
     @Override
-    public ArticleResponseDTO getArticleById(Long id) {
-        incrementArticleViews(id.toString());
+    public ArticleResponseDTO getArticleById(String id) {
+        incrementArticleViews(id);
         return getArticleByIdCached(id);
     }
 
     @Cacheable(value = "articles", key = "#id")
     @Transactional(readOnly = true)
-    public ArticleResponseDTO getArticleByIdCached(Long id) {
-        return articleRepository.findById(id.toString())
+    public ArticleResponseDTO getArticleByIdCached(String id) {
+        return articleRepository.findById(id)
                 .map(this::mapToArticleResponse)
                 .orElseThrow(() -> new ResourceNotFound("Article not found with id: " + id));
     }
@@ -166,6 +166,16 @@ public class ArticleServiceImpl implements ArticleService{
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "articles", key = "#keyword")
+    public List<ArticleResponseDTO> searchArticles(String keyword) {
+        List<Articles> articles = articleRepository.searchByTitleOrContent(keyword);
+        return articles.stream()
+                .map(this::mapToArticleResponse)
+                .collect(Collectors.toList());
+    }
+
 
     private ArticleResponseDTO mapToArticleResponse(Articles article) {
         try {
@@ -210,7 +220,11 @@ public class ArticleServiceImpl implements ArticleService{
     @Override
     @Transactional
     @CacheEvict(value = "articles", allEntries = true)
-    public void updateArticle(String id, String title, String content) {
+    public void updateArticle(String id, ArticleUpdateRequestDto articleUpdateRequestDto) {
+
+        String title = articleUpdateRequestDto.getTitle();
+        String content = articleUpdateRequestDto.getContent();
+
         log.info("article with id {} update request", id);
         if (!"DOCTOR".equalsIgnoreCase(UserContextHolder.getUserDetails().getRole())) {
             throw new AccessForbidden("Access Denied");
