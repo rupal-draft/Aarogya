@@ -63,7 +63,7 @@ public class MedicineServiceImpl implements MedicineService {
     @Transactional
     @CacheEvict(value = "medicines", allEntries = true)
     public MedicineResponseDTO createMedicine(MedicineCreationDTO medicineCreationDTO) {
-//        CheckRole.checkRole(UserContextHolder.getUserDetails().getRole(), "ADMIN");
+        CheckRole.checkRole(UserContextHolder.getUserDetails().getRole(), "ADMIN");
         log.info("Creating medicine with details: {}", medicineCreationDTO);
         try {
             Medicine medicine = medicineMapper.toEntity(medicineCreationDTO);
@@ -138,19 +138,11 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Transactional(readOnly = true)
     @Cacheable(value = "medicines", key = "#category + #prescriptionRequired")
-    public List<MedicineResponseDTO> getMedicinesByCategoryAndPrescription(String category, Boolean prescriptionRequired) {
-        log.info("Fetching medicines by category: {}, prescription required: {}", category, prescriptionRequired);
+    public List<MedicineResponseDTO> getMedicinesByCategory(String category) {
+        log.info("Fetching medicines by category: {}", category);
         try {
-            if (category != null && prescriptionRequired != null) {
-                return medicineRepository.findByCategoryAndPrescriptionRequired(category, prescriptionRequired).stream()
-                        .map(medicineMapper::toResponseDTO)
-                        .collect(Collectors.toList());
-            } else if (category != null) {
+            if (category != null) {
                 return medicineRepository.findByCategory(category).stream()
-                        .map(medicineMapper::toResponseDTO)
-                        .collect(Collectors.toList());
-            } else if (prescriptionRequired != null) {
-                return medicineRepository.findByPrescriptionRequired(prescriptionRequired).stream()
                         .map(medicineMapper::toResponseDTO)
                         .collect(Collectors.toList());
             }

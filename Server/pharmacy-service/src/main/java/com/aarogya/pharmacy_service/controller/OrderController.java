@@ -41,10 +41,16 @@ public class OrderController {
                 .body(ApiResponse.success(orderService.placeOrderFromCart(orderCreationDTO)));
     }
 
-    @GetMapping
+    @GetMapping("/patient")
     @RateLimiter(name = "order", fallbackMethod = "getPatientOrders")
     public ResponseEntity<ApiResponse<List<OrderDTO>>> getPatientOrders(@RequestParam String patientId) {
         return ResponseEntity.ok(ApiResponse.success(orderService.getOrdersByPatient(patientId)));
+    }
+
+    @GetMapping("/me")
+    @RateLimiter(name = "order", fallbackMethod = "getMyOrders")
+    public ResponseEntity<ApiResponse<List<OrderDTO>>> getMyOrders() {
+        return ResponseEntity.ok(ApiResponse.success(orderService.getMyOrders()));
     }
 
     @GetMapping("/{id}")
@@ -88,6 +94,10 @@ public class OrderController {
     }
 
     public ResponseEntity<ErrorResponse> getPatientOrders(Throwable t, HttpServletRequest request) {
+        return orderRateLimitFallback(t, request);
+    }
+
+    public ResponseEntity<ErrorResponse> getMyOrders(Throwable t, HttpServletRequest request) {
         return orderRateLimitFallback(t, request);
     }
 

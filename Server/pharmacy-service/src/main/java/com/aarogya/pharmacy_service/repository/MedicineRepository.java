@@ -15,9 +15,5 @@ public interface MedicineRepository extends MongoRepository<Medicine, String> {
 
     List<Medicine> findByCategory(String category);
 
-    List<Medicine> findByPrescriptionRequired(boolean prescriptionRequired);
-
-    List<Medicine> findByCategoryAndPrescriptionRequired(String category, boolean prescriptionRequired);
-
     List<Medicine> findByStockQuantityLessThan(int threshold);
 }
