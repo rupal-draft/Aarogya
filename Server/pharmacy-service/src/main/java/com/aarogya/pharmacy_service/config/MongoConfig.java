@@ -1,4 +1,4 @@
-package com.aarogya.auth_service.config;
+package com.aarogya.pharmacy_service.config;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @Configuration
 @EnableMongoAuditing
-@EnableMongoRepositories(basePackages = "com.aarogya.auth_service.repository")
+@EnableMongoRepositories(basePackages = "com.aarogya.pharmacy_service.repository")
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
     @Value("${spring.data.mongodb.uri}")
