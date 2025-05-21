@@ -69,10 +69,9 @@ public class MedicineController {
 
     @GetMapping("/filter")
     @RateLimiter(name = "medicine", fallbackMethod = "getMedicinesByCategoryAndPrescription")
-    public ResponseEntity<ApiResponse<List<MedicineResponseDTO>>> getMedicinesByCategoryAndPrescription(
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) Boolean prescriptionRequired) {
-        return ResponseEntity.ok(ApiResponse.success(medicineService.getMedicinesByCategoryAndPrescription(category, prescriptionRequired)));
+    public ResponseEntity<ApiResponse<List<MedicineResponseDTO>>> getMedicinesByCategory(
+            @RequestParam(required = false) String category) {
+        return ResponseEntity.ok(ApiResponse.success(medicineService.getMedicinesByCategory(category)));
     }
 
     @PatchMapping("/{id}/stock")

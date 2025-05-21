@@ -21,7 +21,7 @@ public interface MedicineService {
 
     List<MedicineResponseDTO> searchMedicines(String query);
 
-    List<MedicineResponseDTO> getMedicinesByCategoryAndPrescription(String category, Boolean prescriptionRequired);
+    List<MedicineResponseDTO> getMedicinesByCategory(String category);
 
     MedicineResponseDTO updateStock(String id, MedicineStockUpdateDTO stockUpdateDTO);
 
