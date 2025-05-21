@@ -1,7 +1,10 @@
 package com.aarogya.pharmacy_service.documents;
 
 import com.aarogya.pharmacy_service.documents.enums.OrderStatus;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
@@ -19,7 +22,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "orders")
-@CompoundIndex(def = "{'patientId': 1, 'status': 1}", unique = true)
+@CompoundIndex(def = "{'status': 1}", unique = true)
 public class Order {
 
 
@@ -54,22 +57,3 @@ public class Order {
     private Long version;
 }
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class OrderItem {
-    @NotBlank(message = "Medicine ID is required")
-    private String medicineId;
-
-    @NotBlank(message = "Medicine name is required")
-    private String medicineName;
-
-    @NotNull(message = "Quantity is required")
-    @Min(value = 1, message = "Quantity must be at least 1")
-    private Integer quantity;
-
-    @NotNull(message = "Price is required")
-    @DecimalMin(value = "0.01", message = "Price must be greater than 0")
-    private BigDecimal price;
-}

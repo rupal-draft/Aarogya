@@ -10,9 +10,11 @@ public interface OrderService {
 
     OrderDTO placeOrder(OrderCreationDTO orderCreationDTO);
 
-    OrderDTO placeOrderFromCart(String patientId, OrderCreationDTO orderCreationDTO);
+    OrderDTO placeOrderFromCart(OrderCreationDTO orderCreationDTO);
 
     List<OrderDTO> getOrdersByPatient(String patientId);
+
+    List<OrderDTO> getMyOrders();
 
     OrderDTO getOrderById(String id);
 

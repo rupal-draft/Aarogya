@@ -25,39 +25,36 @@ public class CartController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<CartDTO>> getCart(@RequestParam String patientId) {
-        return ResponseEntity.ok(ApiResponse.success(cartService.getCart(patientId)));
+    public ResponseEntity<ApiResponse<CartDTO>> getMyCart() {
+        return ResponseEntity.ok(ApiResponse.success(cartService.getMyCart()));
     }
 
     @PostMapping("/add")
     @RateLimiter(name = "cart", fallbackMethod = "addItemToCart")
     public ResponseEntity<ApiResponse<CartDTO>> addItemToCart(
-            @RequestParam String patientId,
             @Valid @RequestBody CartItemRequestDTO itemRequest) {
-        return ResponseEntity.ok(ApiResponse.success(cartService.addItemToCart(patientId, itemRequest)));
+        return ResponseEntity.ok(ApiResponse.success(cartService.addItemToCart(itemRequest)));
     }
 
     @PutMapping("/update")
     @RateLimiter(name = "cart", fallbackMethod = "updateCartItem")
     public ResponseEntity<ApiResponse<CartDTO>> updateCartItem(
-            @RequestParam String patientId,
             @Valid @RequestBody CartItemRequestDTO itemRequest) {
-        return ResponseEntity.ok(ApiResponse.success(cartService.updateCartItem(patientId, itemRequest)));
+        return ResponseEntity.ok(ApiResponse.success(cartService.updateCartItem(itemRequest)));
     }
 
     @DeleteMapping("/remove/{medicineId}")
     @RateLimiter(name = "cart", fallbackMethod = "removeItemFromCart")
     public ResponseEntity<ApiResponse<String>> removeItemFromCart(
-            @RequestParam String patientId,
             @PathVariable String medicineId) {
-        cartService.removeItemFromCart(patientId, medicineId);
+        cartService.removeItemFromCart(medicineId);
         return ResponseEntity.ok(ApiResponse.success("Item removed from cart"));
     }
 
     @DeleteMapping("/clear")
     @RateLimiter(name = "cart", fallbackMethod = "clearCart")
-    public ResponseEntity<ApiResponse<String>> clearCart(@RequestParam String patientId) {
-        cartService.clearCart(patientId);
+    public ResponseEntity<ApiResponse<String>> clearCart() {
+        cartService.clearMyCart();
         return ResponseEntity.ok(ApiResponse.success("Cart cleared"));
     }
 

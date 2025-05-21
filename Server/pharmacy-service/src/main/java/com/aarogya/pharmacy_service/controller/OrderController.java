@@ -36,10 +36,9 @@ public class OrderController {
     @PostMapping("/from-cart/{patientId}")
     @RateLimiter(name = "order", fallbackMethod = "placeOrderFromCart")
     public ResponseEntity<ApiResponse<OrderDTO>> placeOrderFromCart(
-            @PathVariable String patientId,
             @Valid @RequestBody OrderCreationDTO orderCreationDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(orderService.placeOrderFromCart(patientId, orderCreationDTO)));
+                .body(ApiResponse.success(orderService.placeOrderFromCart(orderCreationDTO)));
     }
 
     @GetMapping

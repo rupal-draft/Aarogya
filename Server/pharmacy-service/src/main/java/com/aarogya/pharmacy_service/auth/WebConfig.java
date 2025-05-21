@@ -1,6 +1,5 @@
 package com.aarogya.pharmacy_service.auth;
 
-import com.aarogya.article_service.auth.UserInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;

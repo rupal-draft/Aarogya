@@ -27,6 +27,7 @@ public class MedicineResponseDTO {
     private List<String> activeIngredients;
     private List<String> sideEffects;
     private String dosageInstructions;
+    private List<String> images;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

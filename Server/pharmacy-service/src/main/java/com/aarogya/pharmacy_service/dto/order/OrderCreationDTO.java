@@ -14,9 +14,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderCreationDTO {
-    @NotBlank
-    private String patientId;
-
     @NotEmpty
     private List<OrderItemCreationDTO> items;
 

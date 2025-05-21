@@ -1,5 +1,6 @@
 package com.aarogya.pharmacy_service.dto.cart;
 
+import com.aarogya.pharmacy_service.dto.patient.UserResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CartDTO {
     private String id;
-    private String patientId;
+    private UserResponseDto patient;
     private List<CartItemDTO> items;
     private BigDecimal totalAmount;
 }
