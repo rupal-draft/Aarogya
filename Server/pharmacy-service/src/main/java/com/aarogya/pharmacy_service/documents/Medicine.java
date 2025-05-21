@@ -6,7 +6,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -19,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "medicines")
-@CompoundIndex(def = "{'name': 'text', 'category': 'text', 'stockQuantity': 1, 'prescriptionRequired': 1}", unique = true)
+@CompoundIndex(def = "{'category': 'text', 'stockQuantity': 1, 'prescriptionRequired': 1}", unique = true)
 public class Medicine {
 
     @Id
@@ -27,7 +26,6 @@ public class Medicine {
 
     @NotBlank(message = "Name is required")
     @Size(max = 100, message = "Name cannot exceed 100 characters")
-    @TextIndexed
     private String name;
 
     @NotBlank(message = "Manufacturer is required")
@@ -62,6 +60,8 @@ public class Medicine {
     private List<String> sideEffects;
 
     private String dosageInstructions;
+
+    private List<String> images;
 
     @Indexed
     private LocalDateTime createdAt;

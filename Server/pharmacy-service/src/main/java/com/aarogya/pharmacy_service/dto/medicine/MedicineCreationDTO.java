@@ -49,4 +49,6 @@ public class MedicineCreationDTO {
     private List<String> activeIngredients;
     private List<String> sideEffects;
     private String dosageInstructions;
+
+    private List<String> images;
 }

@@ -11,24 +11,16 @@
         <module name="discovery-server" />
         <module name="email-service" />
       </profile>
-      <profile name="Annotation profile for article-service" enabled="true">
+      <profile name="Annotation profile for pharmacy-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
+        <module name="pharmacy-service" />
         <module name="article-service" />
         <module name="auth-service" />
-      </profile>
-      <profile name="Annotation profile for pharmacy-service" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
-        </processorPath>
-        <module name="pharmacy-service" />
       </profile>
     </annotationProcessing>
   </component>

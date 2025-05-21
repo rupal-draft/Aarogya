@@ -36,3 +36,11 @@ spring:
           filters:
             - StripPrefix=2
             - name: AuthenticationFilter
+
+        - id: pharmacy-service
+          uri: lb://PHARMACY-SERVICE
+          predicates:
+            - Path=/api/v1/pharmacy/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter
