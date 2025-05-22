@@ -57,4 +57,20 @@ export const fetchMedicinesByCategory = async (
   }
 }
 
+export const searchMedicinesFromPrescription = async (file: File): Promise<MedicineResponseDTO[]> => {
+  try {
+    const formData = new FormData()
+    formData.append("file", file)
 
+    const response = await api.post("/upload-prescription", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+
+    return response.data.data
+  } catch (error) {
+    console.error("Error uploading prescription:", error)
+    throw error
+  }
+}

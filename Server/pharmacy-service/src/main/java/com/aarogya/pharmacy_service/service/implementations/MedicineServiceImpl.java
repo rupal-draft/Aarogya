@@ -1,21 +1,19 @@
 package com.aarogya.pharmacy_service.service.implementations;
 
+import com.aarogya.pharmacy_service.Clients.MedicineExtractorClient;
 import com.aarogya.pharmacy_service.auth.UserContextHolder;
 import com.aarogya.pharmacy_service.documents.Medicine;
-import com.aarogya.pharmacy_service.dto.medicine.MedicineCreationDTO;
-import com.aarogya.pharmacy_service.dto.medicine.MedicineDTO;
-import com.aarogya.pharmacy_service.dto.medicine.MedicineResponseDTO;
-import com.aarogya.pharmacy_service.dto.medicine.MedicineStockUpdateDTO;
+import com.aarogya.pharmacy_service.dto.medicine.*;
 import com.aarogya.pharmacy_service.exceptions.MedicineNotFoundException;
 import com.aarogya.pharmacy_service.exceptions.ServiceUnavailable;
 import com.aarogya.pharmacy_service.mapper.MedicineMapper;
 import com.aarogya.pharmacy_service.repository.MedicineRepository;
+import com.aarogya.pharmacy_service.repository.projections.MedicineNameProjection;
 import com.aarogya.pharmacy_service.service.MedicineService;
 import com.aarogya.pharmacy_service.utils.CheckRole;
 import com.aarogya.pharmacy_service.utils.TextExtractionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
@@ -25,9 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,9 +34,8 @@ public class MedicineServiceImpl implements MedicineService {
 
     private final MedicineRepository medicineRepository;
     private final MedicineMapper medicineMapper;
-
-    @Autowired
     private final TextExtractionUtil textExtractionUtil;
+    private final MedicineExtractorClient medicineExtractorClient;
 
     @Transactional(readOnly = true)
     @Cacheable(value = "medicines")
@@ -202,12 +198,21 @@ public class MedicineServiceImpl implements MedicineService {
         try {
             String extractedText = textExtractionUtil.extractTextFromFile(file);
             log.info("Extracted text from file: {}", extractedText);
-            List<String> medicines = new ArrayList<>();
-            log.info("Extracted medicines from prescription: {}", medicines);
-            return medicines.stream()
-                    .map(medicineRepository::findByName)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
+            List<String> dbMedicines = medicineRepository.findAllMedicineNames()
+                    .stream()
+                    .map(MedicineNameProjection::getName)
+                    .collect(Collectors.toList());
+            MedicineListRequest medicineListRequest = MedicineListRequest
+                    .builder()
+                    .text(extractedText)
+                    .medicine_list(dbMedicines)
+                    .build();
+            FoundMedicineListResponse foundMedicineListResponse = medicineExtractorClient.extractMedicines(medicineListRequest);
+            log.info("Extracted medicines from prescription: {}", foundMedicineListResponse.getMedicines_found());
+            return foundMedicineListResponse.getMedicines_found().stream()
+                    .map(name -> ".*" + Pattern.quote(name) + ".*")
+                    .map(medicineRepository::findByNameRegex)
+                    .flatMap(List::stream)
                     .map(medicineMapper::toResponseDTO)
                     .collect(Collectors.toList());
         } catch (IOException e) {

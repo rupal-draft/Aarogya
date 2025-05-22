@@ -1,12 +1,12 @@
 package com.aarogya.pharmacy_service.repository;
 
 import com.aarogya.pharmacy_service.documents.Medicine;
+import com.aarogya.pharmacy_service.repository.projections.MedicineNameProjection;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface MedicineRepository extends MongoRepository<Medicine, String> {
@@ -18,5 +18,9 @@ public interface MedicineRepository extends MongoRepository<Medicine, String> {
 
     List<Medicine> findByStockQuantityLessThan(int threshold);
 
-    Optional<Medicine> findByName(String string);
+    @Query(value = "{}", fields = "{ 'name' : 1, '_id' : 0 }")
+    List<MedicineNameProjection> findAllMedicineNames();
+
+    @Query("{ 'name': { $regex: ?0, $options: 'i' } }")
+    List<Medicine> findByNameRegex(String regex);
 }
