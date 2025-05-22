@@ -3,19 +3,24 @@
 import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import type { MedicineResponseDTO } from "../../../types/pharmacy"
-import { getMedicineById } from "../../../Services/medicineService"
-import ErrorDisplay from "../../../components/Error/ErrorDisplay"
+import type { MedicineResponseDTO } from "../../../types/medicine"
+import { useCart } from "../../../context/Cart/CartContext"
+import { fetchMedicinesByCategory, getMedicineById } from "../../../Services/medicineService"
 import LoadingSpinner from "../../../components/Spinners/LoadingSpinner"
+import ErrorDisplay from "../../../components/Error/ErrorDisplay"
 
 
 const MedicineDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const [medicine, setMedicine] = useState<MedicineResponseDTO | null>(null)
+  const [relatedMedicines, setRelatedMedicines] = useState<MedicineResponseDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [addedToCart, setAddedToCart] = useState(false)
+  const { addItem } = useCart()
 
   useEffect(() => {
     const fetchMedicine = async () => {
@@ -30,6 +35,10 @@ const MedicineDetailPage = () => {
         if (data.images && data.images.length > 0) {
           setSelectedImage(data.images[0])
         }
+
+        const related = await fetchMedicinesByCategory(data.category)
+        const filteredRelated = related.filter(med => med.id !== id).slice(0, 4)
+setRelatedMedicines(filteredRelated)
       } catch (err) {
         setError("Failed to load medicine details. Please try again.")
         console.error("Error fetching medicine:", err)
@@ -39,6 +48,9 @@ const MedicineDetailPage = () => {
     }
 
     fetchMedicine()
+    // Reset state when ID changes
+    setQuantity(1)
+    setAddedToCart(false)
   }, [id])
 
   const handleQuantityChange = (value: number) => {
@@ -47,6 +59,23 @@ const MedicineDetailPage = () => {
     // Ensure quantity is between 1 and available stock
     const newQuantity = Math.max(1, Math.min(value, medicine.stockQuantity))
     setQuantity(newQuantity)
+  }
+
+  const handleAddToCart = async () => {
+    if (!medicine || !isInStock || isAddingToCart) return
+
+    try {
+      setIsAddingToCart(true)
+      await addItem(medicine.id, quantity)
+      setAddedToCart(true)
+      setTimeout(() => {
+        setAddedToCart(false)
+      }, 3000)
+    } catch (error) {
+      console.error("Failed to add item to cart:", error)
+    } finally {
+      setIsAddingToCart(false)
+    }
   }
 
   // Format dates
@@ -74,7 +103,7 @@ const MedicineDetailPage = () => {
             </li>
             <li className="mx-2 text-gray-500">/</li>
             <li>
-              <Link to="/pharmacy/medicines" className="text-teal-600 hover:text-teal-800">
+              <Link to="/medicines" className="text-teal-600 hover:text-teal-800">
                 Medicines
               </Link>
             </li>
@@ -250,11 +279,75 @@ const MedicineDetailPage = () => {
 
                           <div className="flex space-x-4">
                             <motion.button
-                              className="flex-1 bg-teal-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
+                              onClick={handleAddToCart}
+                              disabled={isAddingToCart}
+                              className={`flex-1 flex items-center justify-center bg-teal-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 ${
+                                isAddingToCart ? "opacity-70 cursor-not-allowed" : ""
+                              }`}
+                              whileHover={{ scale: isAddingToCart ? 1 : 1.02 }}
+                              whileTap={{ scale: isAddingToCart ? 1 : 0.98 }}
                             >
-                              Add to Cart
+                              {isAddingToCart ? (
+                                <>
+                                  <svg
+                                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <circle
+                                      className="opacity-25"
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      stroke="currentColor"
+                                      strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                      className="opacity-75"
+                                      fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    ></path>
+                                  </svg>
+                                  Adding...
+                                </>
+                              ) : addedToCart ? (
+                                <>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 mr-2"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                  Added to Cart
+                                </>
+                              ) : (
+                                <>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 mr-2"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                                    />
+                                  </svg>
+                                  Add to Cart
+                                </>
+                              )}
                             </motion.button>
 
                             <motion.button
@@ -381,6 +474,45 @@ const MedicineDetailPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Related medicines */}
+              {relatedMedicines.length > 0 && (
+                <div className="mt-12">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Related Products</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {relatedMedicines.map((relatedMedicine) => (
+                      <motion.div
+                        key={relatedMedicine.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="bg-white rounded-xl shadow-md overflow-hidden"
+                      >
+                        <Link to={`/medicines/${relatedMedicine.id}`} className="block">
+                          <div className="h-40 overflow-hidden">
+                            <img
+                              src={
+                                relatedMedicine.images && relatedMedicine.images.length > 0
+                                  ? relatedMedicine.images[0]
+                                  : "/placeholder.svg?height=160&width=240"
+                              }
+                              alt={relatedMedicine.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="p-4">
+                            <h3 className="text-sm font-medium text-gray-900 line-clamp-2">{relatedMedicine.name}</h3>
+                            <p className="mt-1 text-sm text-gray-500">{relatedMedicine.manufacturer}</p>
+                            <p className="mt-2 text-sm font-medium text-gray-900">
+                              ${Number(relatedMedicine.price).toFixed(2)}
+                            </p>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           ) : null}
         </AnimatePresence>

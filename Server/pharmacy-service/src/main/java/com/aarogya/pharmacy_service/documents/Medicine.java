@@ -4,8 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -18,7 +18,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "medicines")
-@CompoundIndex(def = "{'category': 'text', 'stockQuantity': 1, 'prescriptionRequired': 1}", unique = true)
 public class Medicine {
 
     @Id
@@ -26,6 +25,7 @@ public class Medicine {
 
     @NotBlank(message = "Name is required")
     @Size(max = 100, message = "Name cannot exceed 100 characters")
+    @TextIndexed(weight = 2)
     private String name;
 
     @NotBlank(message = "Manufacturer is required")
@@ -41,6 +41,7 @@ public class Medicine {
     private Integer stockQuantity;
 
     @NotBlank(message = "Category is required")
+    @Indexed
     private String category;
 
     @NotNull(message = "Prescription requirement status is required")

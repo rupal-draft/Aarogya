@@ -12,16 +12,22 @@ import com.aarogya.pharmacy_service.mapper.MedicineMapper;
 import com.aarogya.pharmacy_service.repository.MedicineRepository;
 import com.aarogya.pharmacy_service.service.MedicineService;
 import com.aarogya.pharmacy_service.utils.CheckRole;
+import com.aarogya.pharmacy_service.utils.TextExtractionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +37,9 @@ public class MedicineServiceImpl implements MedicineService {
 
     private final MedicineRepository medicineRepository;
     private final MedicineMapper medicineMapper;
+
+    @Autowired
+    private final TextExtractionUtil textExtractionUtil;
 
     @Transactional(readOnly = true)
     @Cacheable(value = "medicines")
@@ -183,6 +192,29 @@ public class MedicineServiceImpl implements MedicineService {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching medicines with low stock: {}", e.getMessage());
+            throw new ServiceUnavailable(e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MedicineResponseDTO> searchMedicinesFromPrescription(MultipartFile file) {
+        try {
+            String extractedText = textExtractionUtil.extractTextFromFile(file);
+            log.info("Extracted text from file: {}", extractedText);
+            List<String> medicines = new ArrayList<>();
+            log.info("Extracted medicines from prescription: {}", medicines);
+            return medicines.stream()
+                    .map(medicineRepository::findByName)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(medicineMapper::toResponseDTO)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            log.error("Error extracting text from file: {}", e.getMessage());
+            throw new ServiceUnavailable(e.getMessage());
+        } catch (Exception e) {
+            log.error("Error searching medicines from prescription: {}", e.getMessage());
             throw new ServiceUnavailable(e.getMessage());
         }
     }

@@ -1,5 +1,5 @@
 import axios from "axios"
-import type { MedicineResponseDTO, ApiResponse } from "../types/pharmacy"
+import type { MedicineResponseDTO, ApiResponse } from "../types/medicine"
 
 // Base URL for API
 const API_URL = "http://localhost:8080/api/v1/pharmacy/medicine"

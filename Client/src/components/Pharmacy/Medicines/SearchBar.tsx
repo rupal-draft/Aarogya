@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import type { MedicineResponseDTO } from "../../../types/pharmacy"
+import type { MedicineResponseDTO } from "../../../types/medicine"
 import { searchMedicines } from "../../../Services/medicineService"
 
 
