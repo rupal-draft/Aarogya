@@ -7,6 +7,9 @@ import BlogPage from './pages/Blog/BlogsPage';
 import BlogDetailPage from './pages/Blog/BlogDetailPage';
 import MedicineListPage from './pages/Pharmacy/Medicines/MedicineList';
 import MedicineDetailPage from './pages/Pharmacy/Medicines/MedicineDetailPage';
+import CartPage from './pages/Pharmacy/Cart/CartPage';
+import CheckoutPage from './pages/Pharmacy/Order/CheckoutPage';
+import OrderConfirmationPage from './pages/Pharmacy/Order/OrderConfirmationPage';
 
 function App() {
   return (
@@ -19,6 +22,9 @@ function App() {
         <Route path='/blogs/:id' element={<BlogDetailPage />} />
         <Route path='/pharmacy/medicines' element={<MedicineListPage/>} />
         <Route path='/pharmacy/medicines/:id' element={<MedicineDetailPage/>} />
+        <Route path="/pharmacy/cart" element={<CartPage />} />
+          <Route path="/pharmacy/checkout" element={<CheckoutPage />} />
+          <Route path="/pharmacy/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
       </Routes>
     </Router>
   );

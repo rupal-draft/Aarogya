@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -59,6 +60,13 @@ public class MedicineController {
     public ResponseEntity<ApiResponse<String>> deleteMedicine(@PathVariable String id) {
         medicineService.deleteMedicine(id);
         return ResponseEntity.ok(ApiResponse.success("Medicine deleted successfully!!👍👍"));
+    }
+
+    @PostMapping("/upload-prescription")
+    @RateLimiter(name = "medicine", fallbackMethod = "searchMedicinesFromPrescription")
+    public ResponseEntity<ApiResponse<List<MedicineResponseDTO>>> searchMedicinesFromPrescription(
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(ApiResponse.success(medicineService.searchMedicinesFromPrescription(file)));
     }
 
     @GetMapping("/search")
@@ -118,6 +126,10 @@ public class MedicineController {
     }
 
     public ResponseEntity<ErrorResponse> deleteMedicine(Throwable t, HttpServletRequest request) {
+        return medicineRateLimitFallback(t, request);
+    }
+
+    public ResponseEntity<ErrorResponse> searchMedicinesFromPrescription(Throwable t, HttpServletRequest request) {
         return medicineRateLimitFallback(t, request);
     }
 

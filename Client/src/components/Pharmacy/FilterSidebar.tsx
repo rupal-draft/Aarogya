@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import type { FilterOptions } from "../../types/pharmacy"
+import type { FilterOptions } from "../../types/medicine"
 
 interface FilterSidebarProps {
   manufacturers: string[]

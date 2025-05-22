@@ -6,6 +6,7 @@ import { Link } from "react-router-dom"
 import Logo from "../../assets/images/Logo.png"
 import { doctorNavItems, patientNavItems, publicNavItems } from "../../Data/navigation"
 import { useAuth } from "../../hooks/Redux/useAuth"
+import CartIcon from "../Pharmacy/Cart/CartIcon"
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -433,6 +434,19 @@ const Header = () => {
                           Settings
                         </motion.div>
                       </Link>
+                      {/* <motion.li
+    initial={{ opacity: 0, x: -20 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ duration: 0.3, delay: (navItems.length + 1) * 0.05 }}
+  >
+    <motion.div
+      className="flex items-center px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600"
+      whileTap={{ backgroundColor: "rgba(34, 197, 94, 0.1)" }}
+    >
+      <CartIcon />
+      Cart
+    </motion.div>
+  </motion.li> */}
                       <motion.div
                         className="border-t border-gray-100 my-1"
                         initial={{ scaleX: 0 }}
@@ -577,6 +591,19 @@ const Header = () => {
                         </motion.div>
                       </Link>
                     </motion.li>
+                    <motion.li
+    initial={{ opacity: 0, x: -20 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ duration: 0.3, delay: (navItems.length + 1) * 0.05 }}
+  >
+    <motion.div
+      className="flex items-center px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600"
+      whileTap={{ backgroundColor: "rgba(34, 197, 94, 0.1)" }}
+    >
+      <CartIcon />
+      <span className="ml-3">Cart</span>
+    </motion.div>
+  </motion.li>
                     <motion.li
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}

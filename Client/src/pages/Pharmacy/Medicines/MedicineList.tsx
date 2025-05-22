@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import type { FilterOptions, MedicineResponseDTO } from "../../../types/pharmacy"
+import type { FilterOptions, MedicineResponseDTO } from "../../../types/medicine"
 import { getAllMedicines } from "../../../Services/medicineService"
 import SearchBar from "../../../components/Pharmacy/Medicines/SearchBar"
 import CategoryTabs from "../../../components/Pharmacy/Medicines/CategoryTabs"
