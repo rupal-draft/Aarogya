@@ -1,10 +1,8 @@
 import axios from "axios"
 import type { MedicineResponseDTO, ApiResponse } from "../types/medicine"
 
-// Base URL for API
 const API_URL = "http://localhost:8080/api/v1/pharmacy/medicine"
 
-// Create axios instance with default config
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
@@ -23,7 +21,6 @@ export const getAllMedicines = async (): Promise<MedicineResponseDTO[]> => {
   }
 }
 
-// Fetch medicine by ID
 export const getMedicineById = async (id: string): Promise<MedicineResponseDTO> => {
   try {
     const response = await api.get<ApiResponse<MedicineResponseDTO>>(`/${id}`)
