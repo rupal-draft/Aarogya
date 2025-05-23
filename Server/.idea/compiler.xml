@@ -11,7 +11,7 @@
         <module name="discovery-server" />
         <module name="email-service" />
       </profile>
-      <profile name="Annotation profile for pharmacy-service" enabled="true">
+      <profile name="Annotation profile for doctor-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -21,6 +21,7 @@
         <module name="pharmacy-service" />
         <module name="auth-service" />
         <module name="article-service" />
+        <module name="doctor-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -37,6 +38,7 @@
       <module name="article-service" options="-parameters" />
       <module name="auth-service" options="-parameters" />
       <module name="discovery-server" options="-parameters" />
+      <module name="doctor-service" options="-parameters" />
       <module name="email-service" options="-parameters" />
       <module name="pharmacy-service" options="-parameters" />
       <module name="prescription-service" options="-parameters" />

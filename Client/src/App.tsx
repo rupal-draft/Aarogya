@@ -17,14 +17,14 @@ function App() {
       <Routes>
         <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/auth/*" element={<AuthPage />} /></Route>
+        <Route path="/auth/*" element={<AuthPage />} />
         <Route path='/blogs' element={<BlogPage />} />
         <Route path='/blogs/:id' element={<BlogDetailPage />} />
         <Route path='/pharmacy/medicines' element={<MedicineListPage/>} />
         <Route path='/pharmacy/medicines/:id' element={<MedicineDetailPage/>} />
         <Route path="/pharmacy/cart" element={<CartPage />} />
-          <Route path="/pharmacy/checkout" element={<CheckoutPage />} />
-          <Route path="/pharmacy/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+        <Route path="/pharmacy/checkout" element={<CheckoutPage />} />
+        <Route path="/pharmacy/order-confirmation/:orderId" element={<OrderConfirmationPage />} /></Route>
       </Routes>
     </Router>
   );
