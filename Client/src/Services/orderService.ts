@@ -72,12 +72,14 @@ export const createOrder = async (
 // Create order from cart
 export const createOrderFromCart = async (
   shippingAddress: string,
-  paymentMethod: string
+  paymentMethod: string,
+  cartItems: { medicineId: string, quantity: number }[]
 ): Promise<Order> => {
   try {
     const orderData = {
       shippingAddress,
-      paymentMethod
+      paymentMethod,
+      items: cartItems
     }
 
     const response = await api.post('/from-cart', orderData)

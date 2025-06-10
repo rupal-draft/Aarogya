@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 public class OrderItemDTO {
     private String medicineId;
     private String medicineName;
+    private String medicineImage;
     private Integer quantity;
     private BigDecimal price;
 }

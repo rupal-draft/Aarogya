@@ -11,7 +11,7 @@
         <module name="discovery-server" />
         <module name="email-service" />
       </profile>
-      <profile name="Annotation profile for doctor-service" enabled="true">
+      <profile name="Annotation profile for prescription-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -20,6 +20,8 @@
         </processorPath>
         <module name="pharmacy-service" />
         <module name="auth-service" />
+        <module name="appointment-service" />
+        <module name="prescription-service" />
         <module name="article-service" />
         <module name="doctor-service" />
       </profile>
@@ -27,7 +29,6 @@
     <bytecodeTargetLevel>
       <module name="ai-ml-service" target="21" />
       <module name="ai-service" target="21" />
-      <module name="prescription-service" target="21" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -35,6 +36,7 @@
       <module name="ai-ml-service" options="-parameters" />
       <module name="ai-service" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
+      <module name="appointment-service" options="-parameters" />
       <module name="article-service" options="-parameters" />
       <module name="auth-service" options="-parameters" />
       <module name="discovery-server" options="-parameters" />

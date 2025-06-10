@@ -31,7 +31,6 @@ export const getMedicineById = async (id: string): Promise<MedicineResponseDTO> 
   }
 }
 
-// Search medicines
 export const searchMedicines = async (query: string): Promise<MedicineResponseDTO[]> => {
   try {
     const response = await api.get<ApiResponse<MedicineResponseDTO[]>>(`/search?query=${query}`)

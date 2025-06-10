@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: appointment-service
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+      database: ${MONGO_DATABASE}
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKER_URL}
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=30m
+
+server:
+  port: ${APPOINTMENT_SERVICE_PORT}
+  servlet:
+    context-path: /appointment
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_URL}
+
+grpc:
+  server:
+    port: ${GRPC_PORT}
+
+deploy:
+  env: ${DEPLOY_ENV}
+
+logging:
+  level:
+    com.aarogya.appointment_service: INFO
+    org.springframework.data.mongodb: INFO
+

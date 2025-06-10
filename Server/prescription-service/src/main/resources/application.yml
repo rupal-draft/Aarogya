@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: prescription-service
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+      database: ${MONGO_DATABASE}
+
+server:
+  port: ${PRESCRIPTION_SERVICE_PORT}
+  servlet:
+    context-path: /prescription
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_URL}
+
+grpc:
+  server:
+    port: ${GRPC_PORT}
+
+deploy:
+  env: ${DEPLOY_ENV}
+
+logging:
+  level:
+    com.aarogya.appointment_service: INFO
+    org.springframework.data.mongodb: INFO

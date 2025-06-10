@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package auth;
+
+option java_package = "com.aarogya.auth.proto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+message DoctorResponse {
+    string id = 1;
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string specialization = 5;
+    string license_number = 6;
+    int32 experience_years = 7;
+    string phone = 8;
+    string address = 9;
+    string image_url = 10;
+    google.protobuf.Timestamp created_at = 11;
+}
+
+message PatientResponse {
+    string id = 1;
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string date_of_birth = 5; // You can use string or google.protobuf.Timestamp
+    string gender = 6;
+    string blood_group = 7;
+    string phone = 8;
+    string address = 9;
+    string image_url = 10;
+    string emergency_contact = 11;
+    string emergency_phone = 12;
+    google.protobuf.Timestamp created_at = 13;
+}
+
+message IdRequest {
+    string id = 1;
+}
+
+message SpecializationRequest {
+    string specialization = 1;
+}
+
+message GenderRequest {
+    string gender = 1;
+}
+
+message DoctorListResponse {
+    repeated DoctorResponse doctors = 1;
+}
+
+message PatientListResponse {
+    repeated PatientResponse patients = 1;
+}
+
+service AuthService {
+    rpc GetDoctorById(IdRequest) returns (DoctorResponse);
+    rpc GetPatientById(IdRequest) returns (PatientResponse);
+
+    rpc GetDoctorsBySpecialization(SpecializationRequest) returns (DoctorListResponse);
+    rpc GetPatientsByGender(GenderRequest) returns (PatientListResponse);
+}
