@@ -7,6 +7,7 @@ import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import type { MedicineResponseDTO } from "../../../types/medicine"
 import { useCart } from "../../../context/Cart/CartContext"
+import { toast } from "react-toastify"
 
 
 interface MedicineCardProps {
@@ -53,7 +54,7 @@ const MedicineCard = ({ medicine }: MedicineCardProps) => {
     try {
       setIsAdding(true)
       await addItem(medicine.id, 1)
-      // Show success animation
+      toast.success("Item added to cart!")
       setTimeout(() => {
         setIsAdding(false)
       }, 1000)

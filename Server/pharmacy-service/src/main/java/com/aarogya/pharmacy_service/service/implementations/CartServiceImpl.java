@@ -80,6 +80,7 @@ public class CartServiceImpl implements CartService {
                 CartItem newItem = CartItem.builder()
                         .medicineId(medicine.getId())
                         .medicineName(medicine.getName())
+                        .medicineImage(medicine.getImages().getFirst())
                         .quantity(itemRequest.getQuantity())
                         .price(medicine.getPrice())
                         .build();
@@ -192,6 +193,7 @@ public class CartServiceImpl implements CartService {
         for (CartItemDTO item : cartDTO.getItems()) {
             BigDecimal subTotal = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
             item.setSubTotal(subTotal);
+
             totalAmount = totalAmount.add(subTotal);
         }
 

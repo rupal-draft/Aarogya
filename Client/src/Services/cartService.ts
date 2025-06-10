@@ -26,7 +26,6 @@ const extractData = <T>(response: any): T => {
   if (response.data && response.data.data !== undefined) {
     return response.data.data;
   }
-  // Fallback to direct response data if structure is different
   return response.data
 }
 
@@ -77,8 +76,6 @@ export const removeFromCart = async (medicineId: string): Promise<ApiResponse<st
 // Clear cart
 export const clearCart = async (): Promise<ApiResponse<null>> => {
   try {
-    // Since there's no specific clear cart endpoint in the API, we'll simulate it
-    // In a real app, you'd have a dedicated endpoint
     const cart = await getCart()
     const promises = cart.items.map(item => removeFromCart(item.medicineId))
     await Promise.all(promises)

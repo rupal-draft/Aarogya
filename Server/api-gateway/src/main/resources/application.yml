@@ -44,3 +44,11 @@ spring:
           filters:
             - StripPrefix=2
             - name: AuthenticationFilter
+
+        - id: appointment-service
+          uri: lb://APPINTMENT-SERVICE
+          predicates:
+            - Path=/api/v1/appointment/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter

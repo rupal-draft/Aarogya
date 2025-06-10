@@ -18,7 +18,7 @@ export interface OrderItem {
     shippingAddress: string
     paymentMethod: string
     status: OrderStatus
-    createdAt: string
+    orderDate: string
     updatedAt: string
   }
 

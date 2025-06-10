@@ -434,7 +434,7 @@ const Header = () => {
                           Settings
                         </motion.div>
                       </Link>
-                      {/* <motion.li
+                      <motion.li
     initial={{ opacity: 0, x: -20 }}
     animate={{ opacity: 1, x: 0 }}
     transition={{ duration: 0.3, delay: (navItems.length + 1) * 0.05 }}
@@ -446,7 +446,7 @@ const Header = () => {
       <CartIcon />
       Cart
     </motion.div>
-  </motion.li> */}
+  </motion.li>
                       <motion.div
                         className="border-t border-gray-100 my-1"
                         initial={{ scaleX: 0 }}

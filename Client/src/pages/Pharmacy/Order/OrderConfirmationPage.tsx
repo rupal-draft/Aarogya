@@ -119,7 +119,7 @@ const OrderConfirmationPage = () => {
               </div>
               <div>
                 <h2 className="text-sm font-medium text-gray-500">ORDER DATE</h2>
-                <p className="text-lg font-bold text-gray-900">{formatDate(order.createdAt)}</p>
+                <p className="text-lg font-bold text-gray-900">{formatDate(order.orderDate)}</p>
               </div>
             </div>
 
@@ -209,7 +209,7 @@ const OrderConfirmationPage = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">Estimated Delivery Date</p>
-                    <p className="text-sm text-gray-600">{getEstimatedDeliveryDate(order.createdAt)}</p>
+                    <p className="text-sm text-gray-600">{getEstimatedDeliveryDate(order.orderDate)}</p>
                   </div>
                 </div>
                 <div className="flex items-center">

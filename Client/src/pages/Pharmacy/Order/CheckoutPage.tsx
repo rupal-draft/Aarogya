@@ -152,7 +152,7 @@ const CheckoutPage = () => {
       const shippingAddress = `${formData.fullName}, ${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.phone}`
 
       // Create order from cart
-      const order = await createOrderFromCart(shippingAddress, formData.paymentMethod)
+      const order = await createOrderFromCart(shippingAddress, formData.paymentMethod, cart?.items || [])
 
       // Clear cart after successful order
       await clearItems()

@@ -22,6 +22,9 @@ public class OrderItem {
     @NotBlank(message = "Medicine name is required")
     private String medicineName;
 
+    @NotNull(message = "Medicine image is required")
+    private String medicineImage;
+
     @NotNull(message = "Quantity is required")
     @Min(value = 1, message = "Quantity must be at least 1")
     private Integer quantity;

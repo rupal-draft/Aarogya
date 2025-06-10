@@ -60,6 +60,7 @@ public class OrderServiceImpl implements OrderService {
                         return OrderItem.builder()
                                 .medicineId(medicine.getId())
                                 .medicineName(medicine.getName())
+                                .medicineImage(medicine.getImages().getFirst())
                                 .quantity(item.getQuantity())
                                 .price(medicine.getPrice())
                                 .build();
