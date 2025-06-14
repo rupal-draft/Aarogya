@@ -70,6 +70,7 @@ public class AppointmentGrpcClient {
     @Cacheable(value = "appointment", key = "#appointmentId")
     public AppointmentDTO getAppointment(String appointmentId) {
         checkServiceHealth();
+        log.info("Fetching appointment with id: {}", appointmentId);
         try {
             Appointment.AppointmentIdRequest request = Appointment
                     .AppointmentIdRequest
@@ -99,6 +100,7 @@ public class AppointmentGrpcClient {
             String status, LocalDate date, int page, int size, String methodName) {
 
         checkServiceHealth();
+        log.info("Fetching appointments for status: {}, date: {}, page: {}, size: {}", status, date, page, size);
         try {
             Appointment.AppointmentPageRequest.Builder requestBuilder = Appointment
                     .AppointmentPageRequest
