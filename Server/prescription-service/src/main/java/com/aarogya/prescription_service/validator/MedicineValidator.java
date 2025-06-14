@@ -1,6 +1,5 @@
 package com.aarogya.prescription_service.validator;
 
-import com.aarogya.prescription_service.dto.MedicineInventoryDTO;
 import com.aarogya.prescription_service.dto.PrescriptionMedicineDTO;
 import com.aarogya.prescription_service.exceptions.BadRequestException;
 import com.aarogya.prescription_service.util.ValidationUtil;
@@ -68,58 +67,6 @@ public class MedicineValidator {
 
         if (medicineDTO.getTotalPrice() != null && !validationUtil.isNonNegative(medicineDTO.getTotalPrice())) {
             throw new BadRequestException("Total price cannot be negative");
-        }
-    }
-
-    public void validateMedicineInventory(MedicineInventoryDTO inventoryDTO) {
-        if (inventoryDTO == null) {
-            throw new BadRequestException("Medicine inventory data cannot be null");
-        }
-
-        if (!validationUtil.isNotEmpty(inventoryDTO.getMedicineCode())) {
-            throw new BadRequestException("Medicine code is required");
-        }
-
-        if (!validationUtil.isValidMedicineCode(inventoryDTO.getMedicineCode())) {
-            throw new BadRequestException("Invalid medicine code format");
-        }
-
-        if (!validationUtil.isNotEmpty(inventoryDTO.getMedicineName())) {
-            throw new BadRequestException("Medicine name is required");
-        }
-
-        if (inventoryDTO.getCurrentStock() == null || !validationUtil.isNonNegative(inventoryDTO.getCurrentStock())) {
-            throw new BadRequestException("Current stock must be a non-negative number");
-        }
-
-        if (inventoryDTO.getMinimumStock() != null && !validationUtil.isNonNegative(inventoryDTO.getMinimumStock())) {
-            throw new BadRequestException("Minimum stock must be a non-negative number");
-        }
-
-        if (inventoryDTO.getMaximumStock() != null && !validationUtil.isNonNegative(inventoryDTO.getMaximumStock())) {
-            throw new BadRequestException("Maximum stock must be a non-negative number");
-        }
-
-        if (inventoryDTO.getReorderLevel() != null && !validationUtil.isNonNegative(inventoryDTO.getReorderLevel())) {
-            throw new BadRequestException("Reorder level must be a non-negative number");
-        }
-
-        if (inventoryDTO.getReorderQuantity() != null && !validationUtil.isPositive(inventoryDTO.getReorderQuantity())) {
-            throw new BadRequestException("Reorder quantity must be a positive number");
-        }
-
-        if (inventoryDTO.getUnitCost() != null && !validationUtil.isNonNegative(inventoryDTO.getUnitCost())) {
-            throw new BadRequestException("Unit cost cannot be negative");
-        }
-
-        if (inventoryDTO.getSellingPrice() != null && !validationUtil.isNonNegative(inventoryDTO.getSellingPrice())) {
-            throw new BadRequestException("Selling price cannot be negative");
-        }
-
-        if (inventoryDTO.getExpiryDate() != null && inventoryDTO.getManufacturingDate() != null) {
-            if (inventoryDTO.getExpiryDate().isBefore(inventoryDTO.getManufacturingDate())) {
-                throw new BadRequestException("Expiry date cannot be before manufacturing date");
-            }
         }
     }
 
