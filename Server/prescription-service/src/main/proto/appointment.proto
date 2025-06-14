@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package appointment;
+
+import "google/protobuf/timestamp.proto";
+
+enum AppointmentStatus {
+    PENDING = 0;
+    APPROVED = 1;
+    REJECTED = 2;
+    CANCELLED = 3;
+    COMPLETED = 4;
+    IN_PROGRESS = 5;
+    NO_SHOW = 6;
+}
+
+enum AppointmentType {
+    REGULAR = 0;
+    FOLLOW_UP = 1;
+    EMERGENCY = 2;
+    CONSULTATION = 3;
+    VIRTUAL = 4;
+}
+
+message DoctorResponseDTO {
+    string id = 1;
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string specialization = 5;
+    string license_number = 6;
+    int32 experience_years = 7;
+    string phone = 8;
+    string address = 9;
+    string image_url = 10;
+    google.protobuf.Timestamp created_at = 11;
+}
+
+message PatientResponseDTO {
+    string id = 1;
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    google.protobuf.Timestamp date_of_birth = 5;
+    string gender = 6;
+    string blood_group = 7;
+    string phone = 8;
+    string address = 9;
+    string image_url = 10;
+    string emergency_contact = 11;
+    string emergency_phone = 12;
+    google.protobuf.Timestamp created_at = 13;
+}
+
+message AppointmentResponseDto {
+    string id = 1;
+    google.protobuf.Timestamp appointment_date = 2;
+    string start_time = 3;
+    string end_time = 4;
+    AppointmentStatus status = 5;
+    AppointmentType type = 6;
+    string reason = 7;
+    repeated string symptoms = 8;
+    string notes = 9;
+    string doctor_notes = 10;
+    int32 priority = 11;
+    string meeting_link = 12;
+    bool is_virtual = 13;
+    string cancellation_reason = 14;
+    google.protobuf.Timestamp created_at = 15;
+    google.protobuf.Timestamp updated_at = 16;
+
+    DoctorResponseDTO doctor = 17;
+    PatientResponseDTO patient_details = 18;
+}
+
+message AppointmentIdRequest {
+    string appointment_id = 1;
+}
+
+message AppointmentPageRequest {
+    string status = 1;
+    google.protobuf.Timestamp date = 2;
+    int32 page = 3;
+    int32 size = 4;
+}
+
+message AppointmentPageResponse {
+    repeated AppointmentResponseDto appointments = 1;
+    int32 total_pages = 2;
+    int32 total_elements = 3;
+    int32 current_page = 4;
+}
+
+service AppointmentService {
+    rpc GetAppointmentDetails(AppointmentIdRequest) returns (AppointmentResponseDto);
+    rpc GetPatientAppointments(AppointmentPageRequest) returns (AppointmentPageResponse);
+    rpc GetDoctorAppointments(AppointmentPageRequest) returns (AppointmentPageResponse);
+}

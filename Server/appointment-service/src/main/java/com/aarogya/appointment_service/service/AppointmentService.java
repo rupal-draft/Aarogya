@@ -4,7 +4,6 @@ import com.aarogya.appointment_service.dto.request.AppointmentRequestDto;
 import com.aarogya.appointment_service.dto.request.EmergencyAppointmentDto;
 import com.aarogya.appointment_service.dto.request.UpdateAppointmentStatusDto;
 import com.aarogya.appointment_service.dto.response.AppointmentResponseDto;
-import com.aarogya.appointment_service.models.enums.AppointmentStatus;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDate;
@@ -20,10 +19,10 @@ public interface AppointmentService {
 
     AppointmentResponseDto getAppointmentDetails(String appointmentId);
 
-    Page<AppointmentResponseDto> getPatientAppointments(AppointmentStatus status, LocalDate date,
+    Page<AppointmentResponseDto> getPatientAppointments(String status, LocalDate date,
                                                         int page, int size);
 
-    Page<AppointmentResponseDto> getDoctorAppointments(AppointmentStatus status, LocalDate date,
+    Page<AppointmentResponseDto> getDoctorAppointments(String status, LocalDate date,
                                                        int page, int size);
 
     List<AppointmentResponseDto> getUpcomingAppointments(LocalDate fromDate);
