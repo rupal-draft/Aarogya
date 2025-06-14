@@ -180,14 +180,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Cacheable(value = APPOINTMENT_CACHE, key = "{#status, #date, #page, #size, 'patient'}")
     @Transactional(readOnly = true)
     @Override
-    public Page<AppointmentResponseDto> getPatientAppointments(AppointmentStatus status, LocalDate date, int page, int size) {
+    public Page<AppointmentResponseDto> getPatientAppointments(String status, LocalDate date, int page, int size) {
         log.debug("Fetching patient appointments with status: {}, date: {}, page: {}, size: {}", status, date, page, size);
 
         try {
             String patientId = UserContextHolder.getUserDetails().getUserId();
             Pageable pageable = PageRequest.of(page, size, Sort.by("appointmentDate").descending().and(Sort.by("startTime").descending()));
 
-            Page<Appointment> appointments = fetchPatientAppointments(patientId, status, date, pageable);
+            Page<Appointment> appointments = fetchPatientAppointments(patientId, AppointmentStatus.valueOf(status.toUpperCase()), date, pageable);
             return appointments.map(this::mapToResponseDto);
         } catch (Exception e) {
             log.error("Error fetching patient appointments", e);
@@ -198,14 +198,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Cacheable(value = APPOINTMENT_CACHE, key = "{#status, #date, #page, #size, 'doctor'}")
     @Transactional(readOnly = true)
     @Override
-    public Page<AppointmentResponseDto> getDoctorAppointments(AppointmentStatus status, LocalDate date, int page, int size) {
+    public Page<AppointmentResponseDto> getDoctorAppointments(String status, LocalDate date, int page, int size) {
         log.debug("Fetching doctor appointments with status: {}, date: {}, page: {}, size: {}", status, date, page, size);
 
         try {
             String doctorId = UserContextHolder.getUserDetails().getUserId();
             Pageable pageable = PageRequest.of(page, size, Sort.by("appointmentDate").descending().and(Sort.by("startTime").descending()));
 
-            Page<Appointment> appointments = fetchDoctorAppointments(doctorId, status, date, pageable);
+            Page<Appointment> appointments = fetchDoctorAppointments(doctorId, AppointmentStatus.valueOf(status.toUpperCase()), date, pageable);
             return appointments.map(this::mapToResponseDto);
         } catch (Exception e) {
             log.error("Error fetching doctor appointments", e);
