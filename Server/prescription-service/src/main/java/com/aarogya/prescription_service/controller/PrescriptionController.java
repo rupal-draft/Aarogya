@@ -35,7 +35,7 @@ public class PrescriptionController {
     @PostMapping("/appointments/{appointmentId}")
     public ResponseEntity<PrescriptionDTO> createPrescription(
             @PathVariable String appointmentId,
-            @Valid @RequestBody CreatePrescriptionDTO createPrescriptionDTO) {
+            @Valid @RequestBody CreatePrescriptionDTO createPrescriptionDTO) throws Exception {
 
         createPrescriptionDTO.setAppointmentId(appointmentId);
         createPrescriptionDTO.setDoctorId(doctorId);
@@ -47,7 +47,7 @@ public class PrescriptionController {
     @PutMapping("/{prescriptionId}")
     public ResponseEntity<PrescriptionDTO> updatePrescription(
             @PathVariable String prescriptionId,
-            @Valid @RequestBody UpdatePrescriptionDTO updatePrescriptionDTO) {
+            @Valid @RequestBody UpdatePrescriptionDTO updatePrescriptionDTO) throws Exception {
 
         updatePrescriptionDTO.setDoctorId(doctorId);
 
@@ -110,46 +110,10 @@ public class PrescriptionController {
 
     @DeleteMapping("/{prescriptionId}")
     public ResponseEntity<Void> deletePrescription(
-            @PathVariable String prescriptionId) {
+            @PathVariable String prescriptionId) throws Exception {
 
         prescriptionService.deletePrescription(prescriptionId, doctorId);
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/{prescriptionId}/duplicate")
-    public ResponseEntity<PrescriptionDTO> duplicatePrescription(
-            @PathVariable String prescriptionId,
-            @RequestParam String appointmentId) {
-
-        PrescriptionDTO prescription = prescriptionService.duplicatePrescription(prescriptionId, appointmentId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(prescription);
-    }
-
-    @PostMapping("/{prescriptionId}/refill")
-    public ResponseEntity<PrescriptionDTO> refillPrescription(
-            @PathVariable String prescriptionId,
-            @RequestParam String pharmacyId) {
-
-        PrescriptionDTO prescription = prescriptionService.refillPrescription(prescriptionId, pharmacyId);
-        return ResponseEntity.ok(prescription);
-    }
-
-    @PostMapping("/{prescriptionId}/send-to-pharmacy")
-    public ResponseEntity<Void> sendToPharmacy(
-            @PathVariable String prescriptionId,
-            @RequestParam String pharmacyId) {
-
-        prescriptionService.sendPrescriptionToPharmacy(prescriptionId, pharmacyId);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/{prescriptionId}/mark-dispensed")
-    public ResponseEntity<Void> markAsDispensed(
-            @PathVariable String prescriptionId,
-            @RequestParam String pharmacyId) {
-
-        prescriptionService.markPrescriptionAsDispensed(prescriptionId, pharmacyId);
-        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/search")
@@ -160,26 +124,12 @@ public class PrescriptionController {
         return ResponseEntity.ok(prescriptions);
     }
 
-    @GetMapping("/expired")
-    public ResponseEntity<List<PrescriptionDTO>> getExpiredPrescriptions() {
-        List<PrescriptionDTO> prescriptions = prescriptionService.getExpiredPrescriptions();
-        return ResponseEntity.ok(prescriptions);
-    }
-
     @GetMapping("/follow-up-due")
     public ResponseEntity<List<PrescriptionDTO>> getPrescriptionsWithFollowUpDue(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
 
         List<PrescriptionDTO> prescriptions = prescriptionService.getPrescriptionsWithFollowUpDue(startDate, endDate);
-        return ResponseEntity.ok(prescriptions);
-    }
-
-    @GetMapping("/patients/{patientId}/refills")
-    public ResponseEntity<List<PrescriptionDTO>> getPrescriptionsForRefill(
-            @PathVariable String patientId) {
-
-        List<PrescriptionDTO> prescriptions = prescriptionService.getPrescriptionsForRefill(patientId);
         return ResponseEntity.ok(prescriptions);
     }
 

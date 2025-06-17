@@ -47,14 +47,10 @@ public class Prescription {
 
     private String prescriptionNumber;
     private boolean isElectronic;
-    private String pharmacyId;
     private String insuranceInfo;
 
     private String digitalSignature;
     private boolean isVerified;
-
-    private Integer refillsAllowed;
-    private Integer refillsUsed;
 
     @CreatedDate
     private LocalDateTime createdAt;

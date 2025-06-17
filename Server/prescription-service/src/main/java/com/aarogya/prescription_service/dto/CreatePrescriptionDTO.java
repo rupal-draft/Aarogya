@@ -35,10 +35,7 @@ public class CreatePrescriptionDTO {
     private String emergencyContact;
     private String emergencyInstructions;
 
-    private String pharmacyId;
     private String insuranceInfo;
-
-    private Integer refillsAllowed;
 
     @NotEmpty(message = "At least one medicine is required")
     @Valid

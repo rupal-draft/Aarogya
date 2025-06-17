@@ -12,9 +12,9 @@ import java.util.List;
 
 public interface PrescriptionService {
 
-    PrescriptionDTO createPrescription(CreatePrescriptionDTO createPrescriptionDTO);
+    PrescriptionDTO createPrescription(CreatePrescriptionDTO createPrescriptionDTO) throws Exception;
 
-    PrescriptionDTO updatePrescription(String prescriptionId, UpdatePrescriptionDTO updatePrescriptionDTO);
+    PrescriptionDTO updatePrescription(String prescriptionId, UpdatePrescriptionDTO updatePrescriptionDTO) throws Exception;
 
     PrescriptionDTO getPrescriptionById(String prescriptionId);
 
@@ -26,23 +26,11 @@ public interface PrescriptionService {
 
     List<PrescriptionDTO> getDoctorPatientPrescriptions(String doctorId, String patientId);
 
-    void deletePrescription(String prescriptionId, String deletedBy);
-
-    PrescriptionDTO duplicatePrescription(String prescriptionId, String appointmentId);
-
-    List<PrescriptionDTO> getExpiredPrescriptions();
+    void deletePrescription(String prescriptionId, String deletedBy) throws Exception;
 
     List<PrescriptionDTO> getPrescriptionsWithFollowUpDue(LocalDateTime startDate, LocalDateTime endDate);
-
-    PrescriptionDTO refillPrescription(String prescriptionId, String pharmacyId);
-
-    void sendPrescriptionToPharmacy(String prescriptionId, String pharmacyId);
 
     PrescriptionSummaryDTO getPrescriptionSummary(String doctorId, LocalDateTime startDate, LocalDateTime endDate);
 
     List<PrescriptionDTO> searchPrescriptions(String query, String doctorId);
-
-    void markPrescriptionAsDispensed(String prescriptionId, String pharmacyId);
-
-    List<PrescriptionDTO> getPrescriptionsForRefill(String patientId);
 }
