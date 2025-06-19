@@ -1,5 +1,6 @@
 package com.aarogya.prescription_service.service.implementation;
 
+import com.aarogya.prescription_service.auth.UserContextHolder;
 import com.aarogya.prescription_service.client.AppointmentGrpcClient;
 import com.aarogya.prescription_service.client.UserGrpcClient;
 import com.aarogya.prescription_service.dto.*;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -36,6 +38,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class PrescriptionServiceImpl implements PrescriptionService {
 
     private final PrescriptionRepository prescriptionRepository;
@@ -54,6 +57,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     @CacheEvict(value = {"prescriptions", "doctorPrescriptions", "patientPrescriptions"}, allEntries = true)
     public PrescriptionDTO createPrescription(CreatePrescriptionDTO createPrescriptionDTO) throws Exception {
         log.info("Creating prescription for appointment: {}", createPrescriptionDTO.getAppointmentId());
+        createPrescriptionDTO.setDoctorId(UserContextHolder.getUserDetails().getUserId());
         prescriptionValidator.validateCreatePrescription(createPrescriptionDTO);
 
         AppointmentDTO appointment = appointmentServiceClient.getAppointment(createPrescriptionDTO.getAppointmentId());
@@ -140,6 +144,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     @CacheEvict(value = {"prescriptions", "doctorPrescriptions", "patientPrescriptions"}, allEntries = true)
     public PrescriptionDTO updatePrescription(String prescriptionId, UpdatePrescriptionDTO updatePrescriptionDTO) throws Exception {
         log.info("Updating prescription: {}", prescriptionId);
+        updatePrescriptionDTO.setDoctorId(UserContextHolder.getUserDetails().getUserId());
         prescriptionValidator.validateUpdatePrescription(updatePrescriptionDTO);
 
         Prescription prescription = prescriptionRepository.findById(prescriptionId)

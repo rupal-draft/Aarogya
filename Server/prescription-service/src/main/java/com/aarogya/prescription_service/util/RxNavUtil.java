@@ -1,6 +1,5 @@
 package com.aarogya.prescription_service.util;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -15,7 +14,7 @@ public class RxNavUtil {
     private final RestTemplate restTemplate;
     private final Environment env;
 
-    public RxNavUtil(@Qualifier("drugInteractionRestTemplate") RestTemplate restTemplate, Environment env) {
+    public RxNavUtil(RestTemplate restTemplate, Environment env) {
         this.restTemplate = restTemplate;
         this.env = env;
     }

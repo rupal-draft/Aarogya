@@ -60,4 +60,12 @@ public class PrescriptionUtil {
         return String.format("Prescription #%s\nDoctor: %s\nPatient: %s\nDate: %s",
                 prescriptionNumber, doctorName, patientName, LocalDate.now().format(DATE_FORMAT));
     }
+
+    public double calculateGrowthRate(Number oldValue, Number newValue) {
+        if (oldValue == null || newValue == null || oldValue.doubleValue() == 0) {
+            return 0.0;
+        }
+
+        return ((newValue.doubleValue() - oldValue.doubleValue()) / oldValue.doubleValue()) * 100;
+    }
 }

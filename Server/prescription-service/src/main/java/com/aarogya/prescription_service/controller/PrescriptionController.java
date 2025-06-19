@@ -1,12 +1,17 @@
 package com.aarogya.prescription_service.controller;
 
+import com.aarogya.prescription_service.advices.ApiError;
+import com.aarogya.prescription_service.advices.ApiResponse;
 import com.aarogya.prescription_service.auth.UserContextHolder;
 import com.aarogya.prescription_service.dto.*;
 import com.aarogya.prescription_service.service.DrugInteractionService;
 import com.aarogya.prescription_service.service.PrescriptionAnalyticsService;
 import com.aarogya.prescription_service.service.PrescriptionService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -25,54 +30,100 @@ import java.util.Map;
 @RequestMapping("/core")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class PrescriptionController {
 
     private final PrescriptionService prescriptionService;
     private final DrugInteractionService drugInteractionService;
     private final PrescriptionAnalyticsService analyticsService;
-    private final String doctorId = UserContextHolder.getUserDetails().getUserId();
+    private static final String PRESCRIPTION_SERVICE = "prescriptionService";
+
+    public ResponseEntity<ApiResponse<PrescriptionDTO>> prescriptionFallback(Throwable throwable) {
+        log.warn("Fallback method called for prescription service", throwable);
+        ApiError apiError = new ApiError.ApiErrorBuilder()
+                .setMessage("Prescription service is currently unavailable. Please try again later.")
+                .setStatus(HttpStatus.SERVICE_UNAVAILABLE)
+                .build();
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiResponse.error(apiError));
+    }
+
+    public ResponseEntity<ApiResponse<List<PrescriptionDTO>>> prescriptionListFallback(Throwable throwable) {
+        log.warn("Fallback method called for prescription service", throwable);
+        ApiError apiError = new ApiError.ApiErrorBuilder()
+                .setMessage("Prescription service is currently unavailable. Please try again later.")
+                .setStatus(HttpStatus.SERVICE_UNAVAILABLE)
+                .build();
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiResponse.error(apiError));
+    }
+
+    public ResponseEntity<ApiResponse<Page<PrescriptionDTO>>> prescriptionPageFallback(Throwable throwable) {
+        log.warn("Fallback method called for prescription service", throwable);
+        ApiError apiError = new ApiError.ApiErrorBuilder()
+                .setMessage("Prescription service is currently unavailable. Please try again later.")
+                .setStatus(HttpStatus.SERVICE_UNAVAILABLE)
+                .build();
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiResponse.error(apiError));
+    }
+
+    public ResponseEntity<ApiResponse<String>> operationSuccessFallback(Throwable throwable) {
+        return ResponseEntity.ok(ApiResponse.success("Operation may not have completed due to high load. Please verify status."));
+    }
 
     @PostMapping("/appointments/{appointmentId}")
-    public ResponseEntity<PrescriptionDTO> createPrescription(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "prescriptionFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<PrescriptionDTO>> createPrescription(
             @PathVariable String appointmentId,
             @Valid @RequestBody CreatePrescriptionDTO createPrescriptionDTO) throws Exception {
 
         createPrescriptionDTO.setAppointmentId(appointmentId);
-        createPrescriptionDTO.setDoctorId(doctorId);
+        createPrescriptionDTO.setDoctorId(UserContextHolder.getUserDetails().getUserId());
 
         PrescriptionDTO prescription = prescriptionService.createPrescription(createPrescriptionDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(prescription);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(prescription));
     }
 
     @PutMapping("/{prescriptionId}")
-    public ResponseEntity<PrescriptionDTO> updatePrescription(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "prescriptionFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<PrescriptionDTO>> updatePrescription(
             @PathVariable String prescriptionId,
             @Valid @RequestBody UpdatePrescriptionDTO updatePrescriptionDTO) throws Exception {
 
-        updatePrescriptionDTO.setDoctorId(doctorId);
+        updatePrescriptionDTO.setDoctorId(UserContextHolder.getUserDetails().getUserId());
 
         PrescriptionDTO prescription = prescriptionService.updatePrescription(prescriptionId, updatePrescriptionDTO);
-        return ResponseEntity.ok(prescription);
+        return ResponseEntity.ok(ApiResponse.success(prescription));
     }
 
     @GetMapping("/{prescriptionId}")
-    public ResponseEntity<PrescriptionDTO> getPrescription(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "prescriptionFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<PrescriptionDTO>> getPrescription(
             @PathVariable String prescriptionId) {
 
         PrescriptionDTO prescription = prescriptionService.getPrescriptionById(prescriptionId);
-        return ResponseEntity.ok(prescription);
+        return ResponseEntity.ok(ApiResponse.success(prescription));
     }
 
     @GetMapping("/appointments/{appointmentId}")
-    public ResponseEntity<List<PrescriptionDTO>> getPrescriptionsByAppointment(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "prescriptionListFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<List<PrescriptionDTO>>> getPrescriptionsByAppointment(
             @PathVariable String appointmentId) {
 
         List<PrescriptionDTO> prescriptions = prescriptionService.getPrescriptionsByAppointment(appointmentId);
-        return ResponseEntity.ok(prescriptions);
+        return ResponseEntity.ok(ApiResponse.success(prescriptions));
     }
 
     @GetMapping("/doctors/{doctorId}")
-    public ResponseEntity<Page<PrescriptionDTO>> getDoctorPrescriptions(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "prescriptionPageFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<Page<PrescriptionDTO>>> getDoctorPrescriptions(
             @PathVariable String doctorId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -84,11 +135,13 @@ public class PrescriptionController {
         PageRequest pageRequest = PageRequest.of(page, size, sort);
 
         Page<PrescriptionDTO> prescriptions = prescriptionService.getDoctorPrescriptions(doctorId, pageRequest);
-        return ResponseEntity.ok(prescriptions);
+        return ResponseEntity.ok(ApiResponse.success(prescriptions));
     }
 
     @GetMapping("/patients/{patientId}")
-    public ResponseEntity<Page<PrescriptionDTO>> getPatientPrescriptions(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "prescriptionPageFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<Page<PrescriptionDTO>>> getPatientPrescriptions(
             @PathVariable String patientId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -96,97 +149,126 @@ public class PrescriptionController {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<PrescriptionDTO> prescriptions = prescriptionService.getPatientPrescriptions(patientId, pageRequest);
-        return ResponseEntity.ok(prescriptions);
+        return ResponseEntity.ok(ApiResponse.success(prescriptions));
     }
 
     @GetMapping("/doctors/{doctorId}/patients/{patientId}")
-    public ResponseEntity<List<PrescriptionDTO>> getDoctorPatientPrescriptions(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "prescriptionListFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<List<PrescriptionDTO>>> getDoctorPatientPrescriptions(
             @PathVariable String doctorId,
             @PathVariable String patientId) {
 
         List<PrescriptionDTO> prescriptions = prescriptionService.getDoctorPatientPrescriptions(doctorId, patientId);
-        return ResponseEntity.ok(prescriptions);
+        return ResponseEntity.ok(ApiResponse.success(prescriptions));
     }
 
     @DeleteMapping("/{prescriptionId}")
-    public ResponseEntity<Void> deletePrescription(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "operationSuccessFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<String>> deletePrescription(
             @PathVariable String prescriptionId) throws Exception {
 
-        prescriptionService.deletePrescription(prescriptionId, doctorId);
-        return ResponseEntity.noContent().build();
+        prescriptionService.deletePrescription(prescriptionId, UserContextHolder.getUserDetails().getUserId());
+        return ResponseEntity.ok(ApiResponse.success("Prescription deleted successfully"));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<PrescriptionDTO>> searchPrescriptions(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "prescriptionListFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<List<PrescriptionDTO>>> searchPrescriptions(
             @RequestParam String query) {
 
-        List<PrescriptionDTO> prescriptions = prescriptionService.searchPrescriptions(query, doctorId);
-        return ResponseEntity.ok(prescriptions);
+        List<PrescriptionDTO> prescriptions = prescriptionService.searchPrescriptions(query, UserContextHolder.getUserDetails().getUserId());
+        return ResponseEntity.ok(ApiResponse.success(prescriptions));
     }
 
     @GetMapping("/follow-up-due")
-    public ResponseEntity<List<PrescriptionDTO>> getPrescriptionsWithFollowUpDue(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "prescriptionListFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<List<PrescriptionDTO>>> getPrescriptionsWithFollowUpDue(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
 
         List<PrescriptionDTO> prescriptions = prescriptionService.getPrescriptionsWithFollowUpDue(startDate, endDate);
-        return ResponseEntity.ok(prescriptions);
+        return ResponseEntity.ok(ApiResponse.success(prescriptions));
     }
 
     @GetMapping("/doctors/{doctorId}/summary")
-    public ResponseEntity<PrescriptionSummaryDTO> getPrescriptionSummary(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "prescriptionFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<PrescriptionSummaryDTO>> getPrescriptionSummary(
             @PathVariable String doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
 
         PrescriptionSummaryDTO summary = prescriptionService.getPrescriptionSummary(doctorId, startDate, endDate);
-        return ResponseEntity.ok(summary);
+        return ResponseEntity.ok(ApiResponse.success(summary));
     }
 
     @GetMapping("/doctors/{doctorId}/analytics")
-    public ResponseEntity<PrescriptionAnalyticsDTO> getPrescriptionAnalytics(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "prescriptionFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<PrescriptionAnalyticsDTO>> getPrescriptionAnalytics(
             @PathVariable String doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
         PrescriptionAnalyticsDTO analytics = analyticsService.getDoctorPrescriptionAnalytics(doctorId, startDate, endDate);
-        return ResponseEntity.ok(analytics);
+        return ResponseEntity.ok(ApiResponse.success(analytics));
     }
 
     @GetMapping("/doctors/{doctorId}/top-medicines")
-    public ResponseEntity<Map<String, Integer>> getTopPrescribedMedicines(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "mapResponseFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<Map<String, Integer>>> getTopPrescribedMedicines(
             @PathVariable String doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "10") int limit) {
 
         Map<String, Integer> topMedicines = analyticsService.getTopPrescribedMedicines(doctorId, startDate, endDate, limit);
-        return ResponseEntity.ok(topMedicines);
+        return ResponseEntity.ok(ApiResponse.success(topMedicines));
     }
 
     @PostMapping("/check-interactions")
-    public ResponseEntity<List<DrugInteractionDTO>> checkDrugInteractions(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "drugInteractionListFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<List<DrugInteractionDTO>>> checkDrugInteractions(
             @RequestParam String patientId,
             @RequestBody List<PrescriptionMedicineDTO> medicines) {
 
         List<DrugInteractionDTO> interactions = drugInteractionService.checkDrugInteractions(patientId, medicines);
-        return ResponseEntity.ok(interactions);
+        return ResponseEntity.ok(ApiResponse.success(interactions));
     }
 
     @GetMapping("/patients/{patientId}/interactions")
-    public ResponseEntity<List<DrugInteractionDTO>> getPatientDrugInteractions(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "drugInteractionListFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<List<DrugInteractionDTO>>> getPatientDrugInteractions(
             @PathVariable String patientId) {
 
         List<DrugInteractionDTO> interactions = drugInteractionService.getPatientDrugInteractions(patientId);
-        return ResponseEntity.ok(interactions);
+        return ResponseEntity.ok(ApiResponse.success(interactions));
     }
 
     @PostMapping("/interactions/{interactionId}/resolve")
-    public ResponseEntity<DrugInteractionDTO> resolveInteraction(
+    @CircuitBreaker(name = PRESCRIPTION_SERVICE, fallbackMethod = "drugInteractionFallback")
+    @RateLimiter(name = PRESCRIPTION_SERVICE, fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<DrugInteractionDTO>> resolveInteraction(
             @PathVariable String interactionId,
             @RequestParam String resolution) {
 
-        DrugInteractionDTO interaction = drugInteractionService.resolveInteraction(interactionId, resolution, doctorId);
-        return ResponseEntity.ok(interaction);
+        DrugInteractionDTO interaction = drugInteractionService.resolveInteraction(interactionId, resolution, UserContextHolder.getUserDetails().getUserId());
+        return ResponseEntity.ok(ApiResponse.success(interaction));
+    }
+
+    public ResponseEntity<ApiResponse<String>> rateLimitFallback(String serviceName, Throwable throwable) {
+        ApiError apiError = new ApiError.ApiErrorBuilder()
+                .setMessage("Too many requests to " + serviceName + ". Please try again later.")
+                .setStatus(HttpStatus.TOO_MANY_REQUESTS)
+                .build();
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ApiResponse.error(apiError));
     }
 }

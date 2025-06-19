@@ -40,8 +40,8 @@ public class PrescriptionTemplate {
     private Integer usageCount;
     private LocalDateTime lastUsed;
 
-    private boolean isPublic;
-    private boolean isApproved;
+    private boolean publicTemplate;
+    private boolean approvedTemplate;
     private String approvedBy;
     private LocalDateTime approvedAt;
 

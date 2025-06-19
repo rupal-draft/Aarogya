@@ -18,7 +18,7 @@ public interface PrescriptionTemplateRepository extends MongoRepository<Prescrip
 
     List<PrescriptionTemplate> findByDoctorIdAndCondition(String doctorId, String condition);
 
-    @Query("{ 'isPublic': true, 'isApproved': true }")
+    @Query("{ 'publicTemplate': true, 'approvedTemplate': true }")
     Page<PrescriptionTemplate> findPublicApprovedTemplates(Pageable pageable);
 
     @Query("{ 'templateName': { $regex: ?0, $options: 'i' }, 'doctorId': ?1 }")

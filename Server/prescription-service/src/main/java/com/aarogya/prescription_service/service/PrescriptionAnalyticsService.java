@@ -23,8 +23,4 @@ public interface PrescriptionAnalyticsService {
     Map<String, Integer> getPrescriptionsByStatus(String doctorId, LocalDate startDate, LocalDate endDate);
 
     Double getAveragePrescriptionValue(String doctorId, LocalDate startDate, LocalDate endDate);
-
-    Map<String, Integer> getRefillAnalytics(String doctorId, LocalDate startDate, LocalDate endDate);
-
-    void generatePrescriptionReport(String doctorId, LocalDate startDate, LocalDate endDate);
 }

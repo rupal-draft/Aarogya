@@ -20,6 +20,4 @@ public interface DrugInteractionService {
     void ignoreInteraction(String interactionId, String reason, String ignoredBy);
 
     List<DrugInteractionDTO> getCriticalInteractions(String patientId);
-
-    void updateInteractionDatabase();
 }

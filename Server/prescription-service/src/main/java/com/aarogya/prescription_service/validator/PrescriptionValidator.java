@@ -39,14 +39,6 @@ public class PrescriptionValidator {
             throw new BadRequestException("At least one medicine is required");
         }
 
-        if (prescriptionDTO.getRefillsAllowed() != null && prescriptionDTO.getRefillsAllowed() < 0) {
-            throw new BadRequestException("Refills allowed cannot be negative");
-        }
-
-        if (prescriptionDTO.getRefillsAllowed() != null && prescriptionDTO.getRefillsAllowed() > 12) {
-            throw new BadRequestException("Refills allowed cannot exceed 12");
-        }
-
         prescriptionDTO.getMedicines().forEach(medicineValidator::validatePrescriptionMedicine);
     }
 

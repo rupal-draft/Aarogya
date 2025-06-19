@@ -52,3 +52,11 @@ spring:
           filters:
             - StripPrefix=2
             - name: AuthenticationFilter
+
+        - id: prescription-service
+          uri: lb://PRESCRIPTION-SERVICE
+          predicates:
+            - Path=/api/v1/prescription/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter
