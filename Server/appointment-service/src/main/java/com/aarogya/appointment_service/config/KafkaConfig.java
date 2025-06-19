@@ -1,6 +1,7 @@
 package com.aarogya.appointment_service.config;
 
-import com.aarogya.appointment_service.events.NotificationEvent;
+import com.aarogya.appointment_service.events.NotificationEmailEvent;
+import com.aarogya.appointment_service.events.NotificationSaveEvent;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ser.std.StringSerializer;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -26,7 +27,7 @@ public class KafkaConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, NotificationEvent> notificationProducerFactory() {
+    public ProducerFactory<String, NotificationEmailEvent> emailNotificationProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -37,8 +38,24 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, NotificationEvent> notificationKafkaTemplate() {
-        return new KafkaTemplate<>(notificationProducerFactory());
+    public KafkaTemplate<String, NotificationEmailEvent> emailNotificationKafkaTemplate() {
+        return new KafkaTemplate<>(emailNotificationProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, NotificationSaveEvent> saveNotificationProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
+        configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, NotificationSaveEvent> saveNotificationKafkaTemplate() {
+        return new KafkaTemplate<>(saveNotificationProducerFactory());
     }
 
     @Bean
@@ -80,6 +97,15 @@ public class KafkaConfig {
     @Bean
     public NewTopic followUpUpdateStatusTopic() {
         return TopicBuilder.name("follow-up-update-status")
+                .partitions(3)
+                .replicas(1)
+                .config(TopicConfig.RETENTION_MS_CONFIG, "604800000")
+                .build();
+    }
+
+    @Bean
+    public NewTopic notificationSaveTopic() {
+        return TopicBuilder.name("notification-save")
                 .partitions(3)
                 .replicas(1)
                 .config(TopicConfig.RETENTION_MS_CONFIG, "604800000")

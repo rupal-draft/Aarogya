@@ -1,4 +1,4 @@
-package com.aarogya.appointment_service.events;
+package com.aarogya.appointment_service.events.messaging;
 
 import com.aarogya.appointment_service.models.enums.FollowUpStatus;
 import lombok.*;
@@ -15,6 +15,8 @@ public class FollowUpNotificationData {
     private String originalAppointmentId;
     private String doctorName;
     private String patientName;
+    private String patientImageUrl;
+    private String doctorImageUrl;
     private LocalDate recommendedDate;
     private FollowUpStatus status;
     private String reason;

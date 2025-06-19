@@ -25,6 +25,15 @@
         <module name="article-service" />
         <module name="doctor-service" />
       </profile>
+      <profile name="Annotation profile for notification-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="notification-service" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="ai-ml-service" target="21" />
@@ -42,6 +51,7 @@
       <module name="discovery-server" options="-parameters" />
       <module name="doctor-service" options="-parameters" />
       <module name="email-service" options="-parameters" />
+      <module name="notification-service" options="-parameters" />
       <module name="pharmacy-service" options="-parameters" />
       <module name="prescription-service" options="-parameters" />
     </option>

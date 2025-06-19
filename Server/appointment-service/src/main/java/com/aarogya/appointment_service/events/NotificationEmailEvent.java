@@ -11,7 +11,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NotificationEvent {
+public class NotificationEmailEvent {
     private NotificationType type;
     private String recipientEmail;
     private String recipientName;

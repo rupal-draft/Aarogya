@@ -3,9 +3,10 @@ package com.aarogya.appointment_service.service.implementations;
 import com.aarogya.appointment_service.Clients.UserGrpcClient;
 import com.aarogya.appointment_service.dto.response.DoctorResponseDTO;
 import com.aarogya.appointment_service.dto.response.PatientResponseDTO;
-import com.aarogya.appointment_service.events.AppointmentNotificationData;
-import com.aarogya.appointment_service.events.FollowUpNotificationData;
-import com.aarogya.appointment_service.events.NotificationEvent;
+import com.aarogya.appointment_service.events.NotificationSaveEvent;
+import com.aarogya.appointment_service.events.messaging.AppointmentNotificationData;
+import com.aarogya.appointment_service.events.messaging.FollowUpNotificationData;
+import com.aarogya.appointment_service.events.NotificationEmailEvent;
 import com.aarogya.appointment_service.events.enums.NotificationType;
 import com.aarogya.appointment_service.exceptions.RuntimeConflict;
 import com.aarogya.appointment_service.models.Appointment;
@@ -29,7 +30,9 @@ import java.util.Map;
 public class NotificationServiceImpl implements NotificationService {
 
 
-    private final KafkaTemplate<String, NotificationEvent> kafkaTemplate;
+    private final KafkaTemplate<String, NotificationEmailEvent> emailNotificationKafkaTemplate;
+    private final KafkaTemplate<String, NotificationSaveEvent> saveNotificationKafkaTemplate;
+    private final String saveTopic = "notification-save";
     private final ModelMapper modelMapper;
     private final UserGrpcClient userGrpcClient;
 
@@ -45,6 +48,8 @@ public class NotificationServiceImpl implements NotificationService {
                     .appointmentId(appointment.getId())
                     .doctorName(doctor.getFirstName() + " " + doctor.getLastName())
                     .patientName(patient.getFirstName() + " " + patient.getLastName())
+                    .patientImage(patient.getImageUrl())
+                    .doctorImage(doctor.getImageUrl())
                     .appointmentDate(appointment.getAppointmentDate())
                     .startTime(appointment.getStartTime())
                     .endTime(appointment.getEndTime())
@@ -54,7 +59,7 @@ public class NotificationServiceImpl implements NotificationService {
                     .notes(appointment.getNotes())
                     .build();
 
-            NotificationEvent event = buildNotificationEvent(
+            NotificationEmailEvent event = buildNotificationEmailEvent(
                     NotificationType.APPOINTMENT_REQUEST,
                     doctor.getEmail(),
                     doctor.getFirstName() + " " + doctor.getLastName(),
@@ -62,7 +67,15 @@ public class NotificationServiceImpl implements NotificationService {
                     data
             );
 
-            kafkaTemplate.send("appointment-request", appointment.getDoctorId(), event);
+            NotificationSaveEvent saveEvent = buildNotificationSaveEvent(
+                    NotificationSaveEvent.SaveNotificationType.APPOINTMENT,
+                    appointment.getPatientId(),
+                    "New Appointment Request",
+                    data
+            );
+
+            saveNotificationKafkaTemplate.send(saveTopic,appointment.getPatientId(), saveEvent);
+            emailNotificationKafkaTemplate.send("appointment-request", appointment.getDoctorId(), event);
 
             log.info("Appointment request notification sent successfully for appointment: {}", appointment.getId());
         } catch (KafkaException e) {
@@ -86,35 +99,50 @@ public class NotificationServiceImpl implements NotificationService {
                     .appointmentId(appointment.getId())
                     .doctorName(doctor.getFirstName() + " " + doctor.getLastName())
                     .patientName(patient.getFirstName() + " " + patient.getLastName())
+                    .patientImage(patient.getImageUrl())
+                    .doctorImage(doctor.getImageUrl())
                     .appointmentDate(appointment.getAppointmentDate())
                     .startTime(appointment.getStartTime())
                     .endTime(appointment.getEndTime())
                     .status(appointment.getStatus())
-                    .previousStatus(oldStatus)
                     .meetingLink(appointment.getMeetingLink())
                     .reason(appointment.getReason())
                     .notes(appointment.getNotes())
                     .build();
             if (notifyPatient) {
-                NotificationEvent patientEvent = buildNotificationEvent(
+                NotificationEmailEvent patientEvent = buildNotificationEmailEvent(
                         NotificationType.APPOINTMENT_STATUS_UPDATE,
                         patient.getEmail(),
                         patient.getFirstName() + " " + patient.getLastName(),
                         "Appointment Status Updated",
                         data
                 );
-                kafkaTemplate.send("appointment-update-status", appointment.getPatientId(), patientEvent);
+                NotificationSaveEvent saveEvent = buildNotificationSaveEvent(
+                    NotificationSaveEvent.SaveNotificationType.APPOINTMENT,
+                    appointment.getPatientId(),
+                    "Appointment Status Updated",
+                    data
+                );
+                saveNotificationKafkaTemplate.send(saveTopic,appointment.getPatientId(), saveEvent);
+                emailNotificationKafkaTemplate.send("appointment-update-status", appointment.getPatientId(), patientEvent);
             }
 
             if (notifyDoctor) {
-                NotificationEvent doctorEvent = buildNotificationEvent(
+                NotificationEmailEvent doctorEvent = buildNotificationEmailEvent(
                         NotificationType.APPOINTMENT_STATUS_UPDATE,
                         doctor.getEmail(),
                         doctor.getFirstName() + " " + doctor.getLastName(),
                         "Appointment Cancellation Notification",
                         data
                 );
-                kafkaTemplate.send("appointment-update-status", appointment.getDoctorId(), doctorEvent);
+                NotificationSaveEvent saveEvent = buildNotificationSaveEvent(
+                        NotificationSaveEvent.SaveNotificationType.APPOINTMENT,
+                        appointment.getDoctorId(),
+                        "Appointment Cancellation Notification",
+                        data
+                );
+                saveNotificationKafkaTemplate.send(saveTopic,appointment.getDoctorId(), saveEvent);
+                emailNotificationKafkaTemplate.send("appointment-update-status", appointment.getDoctorId(), doctorEvent);
             }
 
             log.info("Appointment status update notification sent successfully for appointment: {}", appointment.getId());
@@ -136,6 +164,8 @@ public class NotificationServiceImpl implements NotificationService {
                     .appointmentId(appointment.getId())
                     .doctorName(doctor.getFirstName() + " " + doctor.getLastName())
                     .patientName(patient.getFirstName() + " " + patient.getLastName())
+                    .patientImage(patient.getImageUrl())
+                    .doctorImage(doctor.getImageUrl())
                     .appointmentDate(appointment.getAppointmentDate())
                     .startTime(appointment.getStartTime())
                     .endTime(appointment.getEndTime())
@@ -144,23 +174,37 @@ public class NotificationServiceImpl implements NotificationService {
                     .reason(appointment.getReason())
                     .notes(appointment.getNotes())
                     .build();
-            NotificationEvent doctorEvent = buildNotificationEvent(
+            NotificationEmailEvent doctorEvent = buildNotificationEmailEvent(
                     NotificationType.EMERGENCY_APPOINTMENT,
                     doctor.getEmail(),
                     doctor.getFirstName() + " " + doctor.getLastName(),
                     "Emergency Appointment Scheduled",
                     data
             );
-            kafkaTemplate.send("emergency-appointment-request", appointment.getDoctorId(), doctorEvent);
+            NotificationSaveEvent saveEvent = buildNotificationSaveEvent(
+                    NotificationSaveEvent.SaveNotificationType.APPOINTMENT,
+                    appointment.getDoctorId(),
+                    "Emergency Appointment REQUEST FROM PATIENT TO DOCTOR",
+                    data
+            );
+            saveNotificationKafkaTemplate.send(saveTopic,appointment.getDoctorId(), saveEvent);
+            emailNotificationKafkaTemplate.send("emergency-appointment-request", appointment.getDoctorId(), doctorEvent);
 
-            NotificationEvent patientEvent = buildNotificationEvent(
+            NotificationEmailEvent patientEvent = buildNotificationEmailEvent(
                     NotificationType.EMERGENCY_APPOINTMENT,
                     patient.getEmail(),
                     patient.getFirstName() + " " + patient.getLastName(),
                     "Your Emergency Appointment",
                     data
             );
-            kafkaTemplate.send("emergency-appointment-request", appointment.getPatientId(), patientEvent);
+            NotificationSaveEvent patientSaveEvent = buildNotificationSaveEvent(
+                    NotificationSaveEvent.SaveNotificationType.APPOINTMENT,
+                    appointment.getPatientId(),
+                    "Emergency Appointment REQUEST FROM PATIENT TO DOCTOR",
+                    data
+            );
+            saveNotificationKafkaTemplate.send(saveTopic,appointment.getPatientId(), patientSaveEvent);
+            emailNotificationKafkaTemplate.send("emergency-appointment-request", appointment.getPatientId(), patientEvent);
 
             log.info("Emergency appointment notification sent successfully for appointment: {}", appointment.getId());
         } catch (KafkaException e) {
@@ -182,6 +226,8 @@ public class NotificationServiceImpl implements NotificationService {
                     .originalAppointmentId(followUp.getOriginalAppointmentId())
                     .doctorName(doctor.getFirstName() + " " + doctor.getLastName())
                     .patientName(patient.getFirstName() + " " + patient.getLastName())
+                    .doctorImageUrl(doctor.getImageUrl())
+                    .patientImageUrl(patient.getImageUrl())
                     .recommendedDate(followUp.getRecommendedDate())
                     .status(followUp.getStatus())
                     .reason(followUp.getReason())
@@ -189,15 +235,21 @@ public class NotificationServiceImpl implements NotificationService {
                     .urgencyLevel(followUp.getUrgencyLevel())
                     .build();
 
-            NotificationEvent patientEvent = buildNotificationEvent(
+            NotificationEmailEvent patientEvent = buildNotificationEmailEvent(
                     NotificationType.FOLLOW_UP_SCHEDULED,
                     patient.getEmail(),
                     patient.getFirstName() + " " + patient.getLastName(),
                     "Follow-Up Appointment Scheduled",
                     data
             );
-            kafkaTemplate.send("follow-up-schedule", followUp.getPatientId(), patientEvent);
-
+            NotificationSaveEvent patientSaveEvent = buildNotificationSaveEvent(
+                    NotificationSaveEvent.SaveNotificationType.FOLLOWUP,
+                    originalAppointment.getPatientId(),
+                    "Follow-Up Scheduled Notification",
+                    data
+            );
+            emailNotificationKafkaTemplate.send("follow-up-schedule", followUp.getPatientId(), patientEvent);
+            saveNotificationKafkaTemplate.send(saveTopic,followUp.getPatientId(), patientSaveEvent);
             log.info("Follow-up scheduled notification sent successfully for follow-up: {}", followUp.getId());
         } catch (Exception e) {
             log.error("Failed to send follow-up scheduled notification for follow-up: {}", followUp.getId(), e);
@@ -217,6 +269,8 @@ public class NotificationServiceImpl implements NotificationService {
                     .originalAppointmentId(followUp.getOriginalAppointmentId())
                     .doctorName(doctor.getFirstName() + " " + doctor.getLastName())
                     .patientName(patient.getFirstName() + " " + patient.getLastName())
+                    .doctorImageUrl(doctor.getImageUrl())
+                    .patientImageUrl(patient.getImageUrl())
                     .recommendedDate(followUp.getRecommendedDate())
                     .status(followUp.getStatus())
                     .reason(followUp.getReason())
@@ -226,32 +280,52 @@ public class NotificationServiceImpl implements NotificationService {
 
             if (followUp.getStatus() == FollowUpStatus.COMPLETED ||
                     followUp.getStatus() == FollowUpStatus.CANCELLED) {
-                NotificationEvent doctorEvent = buildNotificationEvent(
+                NotificationEmailEvent doctorEvent = buildNotificationEmailEvent(
                         NotificationType.FOLLOW_UP_STATUS_UPDATE,
                         doctor.getEmail(),
                         doctor.getFirstName() + " " + doctor.getLastName(),
                         "Follow-Up " + followUp.getStatus().toString(),
                         data
                 );
-                kafkaTemplate.send("follow-up-update-status", followUp.getDoctorId(), doctorEvent);
-
-                NotificationEvent patientEvent = buildNotificationEvent(
+                NotificationSaveEvent saveEvent = buildNotificationSaveEvent(
+                        NotificationSaveEvent.SaveNotificationType.FOLLOWUP,
+                        followUp.getPatientId(),
+                        "Follow-Up " + followUp.getStatus().toString(),
+                        data
+                );
+                emailNotificationKafkaTemplate.send("follow-up-update-status", followUp.getDoctorId(), doctorEvent);
+                saveNotificationKafkaTemplate.send(saveTopic,followUp.getPatientId(), saveEvent);
+                NotificationEmailEvent patientEvent = buildNotificationEmailEvent(
                         NotificationType.FOLLOW_UP_STATUS_UPDATE,
                         patient.getEmail(),
                         patient.getFirstName() + " " + patient.getLastName(),
                         "Follow-Up " + followUp.getStatus().toString(),
                         data
                 );
-                kafkaTemplate.send("follow-up-update-status", followUp.getPatientId(), patientEvent);
+                NotificationSaveEvent patientSaveEvent = buildNotificationSaveEvent(
+                        NotificationSaveEvent.SaveNotificationType.FOLLOWUP,
+                        followUp.getPatientId(),
+                        "Follow-Up " + followUp.getStatus().toString(),
+                        data
+                );
+                emailNotificationKafkaTemplate.send("follow-up-update-status", followUp.getPatientId(), patientEvent);
+                saveNotificationKafkaTemplate.send(saveTopic,followUp.getPatientId(), patientSaveEvent);
             } else if (followUp.getStatus() == FollowUpStatus.OVERDUE) {
-                NotificationEvent patientEvent = buildNotificationEvent(
+                NotificationEmailEvent patientEvent = buildNotificationEmailEvent(
                         NotificationType.FOLLOW_UP_STATUS_UPDATE,
                         patient.getEmail(),
                         patient.getFirstName() + " " + patient.getLastName(),
                         "Follow-Up Overdue",
                         data
                 );
-                kafkaTemplate.send("follow-up-update-status", followUp.getPatientId(), patientEvent);
+                NotificationSaveEvent patientSaveEvent = buildNotificationSaveEvent(
+                        NotificationSaveEvent.SaveNotificationType.FOLLOWUP,
+                        followUp.getPatientId(),
+                        "Follow-Up Overdue",
+                        data
+                );
+                emailNotificationKafkaTemplate.send("follow-up-update-status", followUp.getPatientId(), patientEvent);
+                saveNotificationKafkaTemplate.send(saveTopic,followUp.getPatientId(), patientSaveEvent);
             }
 
             log.info("Follow-up status notification sent successfully for follow-up: {}", followUp.getId());
@@ -261,17 +335,31 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
-    private NotificationEvent buildNotificationEvent(NotificationType type, String email,
+    private NotificationEmailEvent buildNotificationEmailEvent(NotificationType type, String email,
                                                      String name, String subject, Object data) {
         Map<String, Object> dataMap = modelMapper.map(data, Map.class);
 
-        return NotificationEvent.builder()
+        return NotificationEmailEvent.builder()
                 .type(type)
                 .recipientEmail(email)
                 .recipientName(name)
                 .subject(subject)
                 .data(dataMap)
                 .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    private NotificationSaveEvent buildNotificationSaveEvent(NotificationSaveEvent.SaveNotificationType type, String userId, String title, Object data) {
+        Map<String, Object> dataMap = modelMapper.map(data, Map.class);
+
+        return NotificationSaveEvent
+                .builder()
+                .userId(userId)
+                .type(type)
+                .title(title)
+                .data(dataMap)
+                .timestamp(LocalDateTime.now())
+                .read(false)
                 .build();
     }
 }
