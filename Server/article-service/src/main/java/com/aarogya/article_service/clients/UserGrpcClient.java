@@ -1,4 +1,4 @@
-package com.aarogya.article_service.grpc.Clients;
+package com.aarogya.article_service.clients;
 
 import com.aarogya.article_service.dto.DoctorResponseDTO;
 import com.aarogya.article_service.dto.PatientResponseDTO;

@@ -1,4 +1,4 @@
-package com.aarogya.article_service.service;
+package com.aarogya.article_service.service.implementation;
 
 import com.aarogya.article_service.auth.UserContext;
 import com.aarogya.article_service.auth.UserContextHolder;
@@ -7,13 +7,14 @@ import com.aarogya.article_service.document.ArticleLikes;
 import com.aarogya.article_service.document.Articles;
 import com.aarogya.article_service.dto.*;
 import com.aarogya.article_service.exceptions.*;
-import com.aarogya.article_service.grpc.Clients.UserGrpcClient;
+import com.aarogya.article_service.clients.UserGrpcClient;
 import com.aarogya.article_service.repository.ArticleRepository;
 import com.aarogya.article_service.repository.CommentRepository;
 import com.aarogya.article_service.repository.LikeRepository;
+import com.aarogya.article_service.service.ArticleService;
+import com.aarogya.article_service.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.modelmapper.MappingException;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
@@ -22,7 +23,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,13 +30,14 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ArticleServiceImpl implements ArticleService{
+public class ArticleServiceImpl implements ArticleService {
 
     private final ArticleRepository articleRepository;
     private final LikeRepository likeRepository;
     private final CommentRepository commentRepository;
     private final ModelMapper modelMapper;
     private final UserGrpcClient userGrpcClient;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -59,6 +60,7 @@ public class ArticleServiceImpl implements ArticleService{
             articles.setDoctorId(userId);
 
             articleRepository.save(articles);
+            notificationService.sendPostCreatedNotification(articles);
         } catch (DataAccessException e) {
             log.error("error while saving article {}", articleRequestDTO, e);
             throw new DataIntegrityViolation("Error while saving article");
@@ -270,6 +272,7 @@ public class ArticleServiceImpl implements ArticleService{
                     .build();
 
             likeRepository.save(articleLikes);
+            notificationService.sendPostLikedNotification(articleLikes);
         } catch (DataAccessException e) {
             log.error("error while liking article {}", articleId, e);
             throw new DataIntegrityViolation("Error while liking article");
@@ -348,6 +351,7 @@ public class ArticleServiceImpl implements ArticleService{
                     .build();
 
             commentRepository.save(articleComments);
+            notificationService.sendPostCommentedNotification(articleComments);
         } catch (DataAccessException e) {
             log.error("error while commenting article {}", articleCommentRequestDTO, e);
             throw new DataIntegrityViolation("Error while commenting article");
