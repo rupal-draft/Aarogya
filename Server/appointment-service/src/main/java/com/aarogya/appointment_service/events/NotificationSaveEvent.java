@@ -1,6 +1,5 @@
 package com.aarogya.appointment_service.events;
 
-import com.aarogya.appointment_service.events.enums.NotificationType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 

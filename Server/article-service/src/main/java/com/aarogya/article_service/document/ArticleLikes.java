@@ -1,6 +1,5 @@
 package com.aarogya.article_service.document;
 
-import com.aarogya.article_service.document.enums.UserType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;

@@ -15,6 +15,7 @@ import com.aarogya.pharmacy_service.mapper.OrderMapper;
 import com.aarogya.pharmacy_service.repository.MedicineRepository;
 import com.aarogya.pharmacy_service.repository.OrderRepository;
 import com.aarogya.pharmacy_service.service.CartService;
+import com.aarogya.pharmacy_service.service.NotificationService;
 import com.aarogya.pharmacy_service.service.OrderService;
 import com.aarogya.pharmacy_service.utils.CheckRole;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final MedicineRepository medicineRepository;
     private final OrderMapper orderMapper;
     private final CartService cartService;
+    private final NotificationService notificationService;
 
     @Transactional
     @CacheEvict(value = "orders", allEntries = true)
@@ -83,6 +85,7 @@ public class OrderServiceImpl implements OrderService {
                     .build();
 
             Order savedOrder = orderRepository.save(order);
+            notificationService.sendOrderCreatedNotification(savedOrder);
             return orderMapper.toDTO(savedOrder);
         } catch (Exception e) {
             log.error("Error while placing order: {}", e.getMessage());
@@ -174,6 +177,7 @@ public class OrderServiceImpl implements OrderService {
             order.setUpdatedAt(LocalDateTime.now());
 
             Order updatedOrder = orderRepository.save(order);
+            notificationService.sendOrderStatusUpdateNotification(updatedOrder, statusUpdateDTO);
             return orderMapper.toDTO(updatedOrder);
         } catch (IllegalArgumentException e) {
             throw new InvalidOrderStatusException(statusUpdateDTO.getStatus());

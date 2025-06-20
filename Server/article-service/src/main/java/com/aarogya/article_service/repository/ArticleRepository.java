@@ -1,7 +1,6 @@
 package com.aarogya.article_service.repository;
 
 import com.aarogya.article_service.document.Articles;
-import io.grpc.netty.shaded.io.netty.handler.codec.http2.Http2Connection;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
