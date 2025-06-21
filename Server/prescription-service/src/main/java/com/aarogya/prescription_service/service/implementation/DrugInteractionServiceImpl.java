@@ -12,7 +12,6 @@ import com.aarogya.prescription_service.repository.DrugInteractionRepository;
 import com.aarogya.prescription_service.repository.PrescriptionMedicineRepository;
 import com.aarogya.prescription_service.repository.PrescriptionRepository;
 import com.aarogya.prescription_service.service.DrugInteractionService;
-import com.aarogya.prescription_service.service.NotificationService;
 import com.aarogya.prescription_service.util.RxNavUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +37,6 @@ public class DrugInteractionServiceImpl implements DrugInteractionService {
     private final PrescriptionMedicineRepository medicineRepository;
     private final DrugInteractionApiClient drugInteractionApiClient;
     private final ModelMapper modelMapper;
-    private final NotificationService notificationService;
     private final RxNavUtil rxNavUtil;
 
     @Override
@@ -71,8 +69,6 @@ public class DrugInteractionServiceImpl implements DrugInteractionService {
                 DrugInteraction interaction = modelMapper.map(interactionDTO, DrugInteraction.class);
                 interaction.setStatus("ACTIVE");
                 interactionRepository.save(interaction);
-
-                notificationService.sendDrugInteractionAlert(patientId, interactionDTO);
             }
         }
 

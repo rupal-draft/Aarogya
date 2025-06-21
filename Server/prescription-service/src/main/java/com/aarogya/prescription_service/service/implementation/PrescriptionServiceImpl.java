@@ -13,7 +13,6 @@ import com.aarogya.prescription_service.model.enums.PrescriptionStatus;
 import com.aarogya.prescription_service.repository.PrescriptionMedicineRepository;
 import com.aarogya.prescription_service.repository.PrescriptionRepository;
 import com.aarogya.prescription_service.service.DrugInteractionService;
-import com.aarogya.prescription_service.service.NotificationService;
 import com.aarogya.prescription_service.service.PrescriptionService;
 import com.aarogya.prescription_service.util.PrescriptionUtil;
 import com.aarogya.prescription_service.util.SignatureUtil;
@@ -46,7 +45,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     private final DrugInteractionService drugInteractionService;
     private final UserGrpcClient authServiceClient;
     private final AppointmentGrpcClient appointmentServiceClient;
-    private final NotificationService notificationService;
     private final ModelMapper modelMapper;
     private final PrescriptionValidator prescriptionValidator;
     private final PrescriptionUtil prescriptionUtil;
@@ -133,8 +131,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
                 .map(medicine -> modelMapper.map(medicine, PrescriptionMedicineDTO.class))
                 .collect(Collectors.toList()));
 
-        notificationService.sendPrescriptionCreatedNotification(responseDTO);
-
         log.info("Prescription created successfully: {}", savedPrescription.getId());
         return responseDTO;
     }
@@ -204,8 +200,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         responseDTO.setMedicines(medicines.stream()
                 .map(medicine -> modelMapper.map(medicine, PrescriptionMedicineDTO.class))
                 .collect(Collectors.toList()));
-
-        notificationService.sendPrescriptionUpdatedNotification(responseDTO);
 
         log.info("Prescription updated successfully: {}", prescriptionId);
         return responseDTO;
