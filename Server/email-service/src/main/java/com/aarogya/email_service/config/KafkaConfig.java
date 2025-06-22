@@ -1,7 +1,7 @@
-package com.aarogya.notification_service.config;
+package com.aarogya.email_service.config;
 
-import appointment_service.events.NotificationSaveEvent;
-import article_service.event.NotificationEvent;
+import appointment_service.events.NotificationEmailEvent;
+import auth_service.events.SendOtpEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -14,10 +14,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.DefaultErrorHandler;
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.util.backoff.ExponentialBackOff;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,14 +34,14 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, NotificationSaveEvent> appointmentConsumerFactory() {
+    public ConsumerFactory<String, NotificationEmailEvent> appointmentEmailConsumerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "notification-service-group");
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "email-service-group");
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, NotificationSaveEvent.class.getName());
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, NotificationEmailEvent.class.getName());
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
@@ -53,14 +50,14 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, NotificationEvent> articleConsumerFactory() {
+    public ConsumerFactory<String, SendOtpEvent> otpEmailConsumerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "notification-service-group");
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "email-service-group");
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, NotificationEvent.class.getName());
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, SendOtpEvent.class.getName());
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
@@ -69,26 +66,10 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, pharmacy_service.events.NotificationEvent> pharmacyConsumerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "notification-service-group");
-        configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, pharmacy_service.events.NotificationEvent.class.getName());
-        configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
-
-        return new DefaultKafkaConsumerFactory<>(configProps);
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, NotificationSaveEvent> appointmentKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, NotificationSaveEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, NotificationEmailEvent> appointmentEmailKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, NotificationEmailEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(appointmentConsumerFactory());
+        factory.setConsumerFactory(appointmentEmailConsumerFactory());
         factory.setConcurrency(3);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.setCommonErrorHandler(new org.springframework.kafka.listener.DefaultErrorHandler());
@@ -96,25 +77,13 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> articleKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, SendOtpEvent> otpEmailKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, SendOtpEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(articleConsumerFactory());
-        factory.setConcurrency(3);
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
-        factory.setCommonErrorHandler(new org.springframework.kafka.listener.DefaultErrorHandler());
-        return factory;
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, pharmacy_service.events.NotificationEvent> pharmacyKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, pharmacy_service.events.NotificationEvent> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(pharmacyConsumerFactory());
+        factory.setConsumerFactory(otpEmailConsumerFactory());
         factory.setConcurrency(3);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.setCommonErrorHandler(new org.springframework.kafka.listener.DefaultErrorHandler());
         return factory;
     }
 }
-

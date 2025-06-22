@@ -1,0 +1,4 @@
+package com.aarogya.email_service.config;
+
+public class MapperConfig {
+}
