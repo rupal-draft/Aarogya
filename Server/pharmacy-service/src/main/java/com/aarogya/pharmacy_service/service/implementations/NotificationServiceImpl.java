@@ -4,6 +4,7 @@ import com.aarogya.pharmacy_service.documents.Order;
 import com.aarogya.pharmacy_service.documents.OrderItem;
 import com.aarogya.pharmacy_service.dto.order.OrderStatusUpdateDTO;
 import com.aarogya.pharmacy_service.events.NotificationEvent;
+import com.aarogya.pharmacy_service.events.enums.NotificationOrderStatus;
 import com.aarogya.pharmacy_service.events.messaging.OrderItemNotificationDto;
 import com.aarogya.pharmacy_service.events.messaging.OrderNotificationDto;
 import com.aarogya.pharmacy_service.service.NotificationService;
@@ -30,7 +31,7 @@ public class NotificationServiceImpl implements NotificationService {
         OrderNotificationDto orderNotificationDto = OrderNotificationDto.builder()
                 .orderId(order.getId())
                 .orderDate(order.getOrderDate())
-                .status(order.getStatus().toString())
+                .status(NotificationOrderStatus.valueOf(order.getStatus().toString()))
                 .totalAmount(order.getTotalAmount())
                 .orderItems(new java.util.ArrayList<>())
                 .build();
@@ -54,7 +55,7 @@ public class NotificationServiceImpl implements NotificationService {
         OrderNotificationDto orderNotificationDto = OrderNotificationDto.builder()
                 .orderId(order.getId())
                 .orderDate(order.getOrderDate())
-                .status(order.getStatus().toString())
+                .status(NotificationOrderStatus.valueOf(order.getStatus().toString()))
                 .totalAmount(order.getTotalAmount())
                 .orderItems(new java.util.ArrayList<>())
                 .build();
