@@ -23,7 +23,7 @@ public interface EmailLogRepository extends MongoRepository<EmailLog, String> {
 
     Page<EmailLog> findByEmailTypeOrderByCreatedAtDesc(EmailType emailType, Pageable pageable);
 
-    List<EmailLog> findByStatusAndRetryCountLessThanMaxRetries(EmailStatus status, Integer maxRetries);
+    List<EmailLog> findByStatusAndRetryCountLessThan(EmailStatus status, Integer retryLimit);
 
     long countByRecipientEmail(String recipientEmail);
 

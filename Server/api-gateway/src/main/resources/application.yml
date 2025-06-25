@@ -60,3 +60,19 @@ spring:
           filters:
             - StripPrefix=2
             - name: AuthenticationFilter
+
+        - id: notification-service
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/api/v1/notification/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter
+
+        - id: email-service
+          uri: lb://EMAIL-SERVICE
+          predicates:
+            - Path=/api/v1/email/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter

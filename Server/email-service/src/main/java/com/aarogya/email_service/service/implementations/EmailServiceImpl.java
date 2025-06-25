@@ -264,7 +264,7 @@ public class EmailServiceImpl implements EmailService {
     public void retryFailedEmails() {
         log.info("Starting retry process for failed emails");
 
-        List<EmailLog> failedEmails = emailLogRepository.findByStatusAndRetryCountLessThanMaxRetries(
+        List<EmailLog> failedEmails = emailLogRepository.findByStatusAndRetryCountLessThan(
                 EmailStatus.FAILED, 3);
 
         for (EmailLog emailLog : failedEmails) {

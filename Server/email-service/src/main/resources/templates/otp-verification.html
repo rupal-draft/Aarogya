@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification - Aarogya Healthcare</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .otp-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+            color: white;
+        }
+
+        .otp-label {
+            font-size: 16px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .otp-code {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+        }
+
+        .otp-validity {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        .instructions {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .instructions h3 {
+            color: #2980b9;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            color: #34495e;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .security-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .security-notice h3 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .security-notice p {
+            color: #856404;
+            font-size: 14px;
+        }
+
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .footer-content {
+            margin-bottom: 20px;
+        }
+
+        .footer h3 {
+            margin-bottom: 15px;
+            color: #ecf0f1;
+        }
+
+        .contact-info {
+            margin: 15px 0;
+        }
+
+        .contact-info a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .social-links {
+            margin: 20px 0;
+        }
+
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .copyright {
+            border-top: 1px solid #34495e;
+            padding-top: 20px;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+
+        .medical-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .header {
+                padding: 25px 20px;
+            }
+
+            .otp-code {
+                font-size: 28px;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="header">
+        <div class="medical-icon">🏥</div>
+        <h1>Aarogya Healthcare</h1>
+        <p>Your Trusted Healthcare Partner</p>
+    </div>
+
+    <div class="content">
+        <div class="greeting">
+            Hello <strong th:text="${recipientName}">User</strong>,
+        </div>
+
+        <p>We received a request for <strong th:text="${purpose}">verification</strong> on your Aarogya Healthcare account.</p>
+
+        <div class="otp-section">
+            <div class="otp-label">Your One-Time Password (OTP)</div>
+            <div class="otp-code" th:text="${otp}">123456</div>
+            <div class="otp-validity">Valid for <span th:text="${expiryMinutes}">10</span> minutes</div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 How to use your OTP:</h3>
+            <ul>
+                <li>Enter this OTP in the verification field on our website or app</li>
+                <li>This OTP is valid for <span th:text="${expiryMinutes}">10</span> minutes only</li>
+                <li>Do not share this OTP with anyone for security reasons</li>
+                <li>If you didn't request this OTP, please ignore this email</li>
+            </ul>
+        </div>
+
+        <div class="security-notice">
+            <h3>🔒 Security Notice</h3>
+            <p>For your security, never share your OTP with anyone. Aarogya Healthcare will never ask for your OTP via phone or email. If you suspect any suspicious activity, please contact our support team immediately.</p>
+        </div>
+
+        <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+
+        <p style="margin-top: 30px;">
+            Best regards,<br>
+            <strong>The Aarogya Healthcare Team</strong>
+        </p>
+    </div>
+
+    <div class="footer">
+        <div class="footer-content">
+            <h3>Aarogya Healthcare</h3>
+            <div class="contact-info">
+                <p>📧 Email: <a href="mailto:support@aarogya.com" th:text="${supportEmail}">support@aarogya.com</a></p>
+                <p>🌐 Website: <a href="#" th:href="${websiteUrl}" th:text="${websiteUrl}">www.aarogya.com</a></p>
+                <p>📞 Support: +1 (555) 123-4567</p>
+            </div>
+
+            <div class="social-links">
+                <a href="#">Facebook</a> |
+                <a href="#">Twitter</a> |
+                <a href="#">LinkedIn</a> |
+                <a href="#">Instagram</a>
+            </div>
+        </div>
+
+        <div class="copyright">
+            <p>&copy; <span th:text="${currentYear}">2024</span> <span th:text="${companyName}">Aarogya Healthcare</span>. All rights reserved.</p>
+            <p>This email was sent to <span th:text="${recipientEmail}">user@example.com</span></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
