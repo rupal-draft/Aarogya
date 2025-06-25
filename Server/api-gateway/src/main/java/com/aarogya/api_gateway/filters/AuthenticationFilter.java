@@ -63,6 +63,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 ServerWebExchange mutatedExchange = exchange.mutate()
                         .request(req -> req
                                 .header("X-User-Id", userDetails.get("id"))
+                                .header("X-User-Email", userDetails.get("email"))
                                 .header("X-User-Role", userDetails.get("role")))
                         .build();
 

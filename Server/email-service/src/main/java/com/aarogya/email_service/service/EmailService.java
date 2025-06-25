@@ -27,9 +27,11 @@ public interface EmailService {
 
     Page<EmailResponseDTO> getEmailsByType(EmailType emailType, Pageable pageable);
 
-    EmailStatsDTO getEmailStats();
+    EmailStatsDTO getEmailStats(String recipientEmail, int days);
 
     void retryFailedEmails();
 
-    boolean isRateLimited(String recipientEmail, EmailType emailType);
+    Page<EmailResponseDTO> getAppointmentConfirmationEmails(String patientEmail, Pageable pageable);
+
+    Page<EmailResponseDTO> getAppointmentRequestEmails(String doctorEmail, Pageable pageable);
 }

@@ -13,9 +13,10 @@ public class UserInterceptor implements HandlerInterceptor {
 
         String userId = request.getHeader("X-User-Id");
         String role = request.getHeader("X-User-Role");
+        String email = request.getHeader("X-User-Email");
 
         if(userId != null && role != null) {
-            UserContextHolder.setUserDetails(userId, role);
+            UserContextHolder.setUserDetails(userId, role, email);
         }
 
         return HandlerInterceptor.super.preHandle(request, response, handler);

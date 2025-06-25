@@ -17,23 +17,35 @@ public interface EmailLogRepository extends MongoRepository<EmailLog, String> {
 
     Page<EmailLog> findByRecipientEmailOrderByCreatedAtDesc(String recipientEmail, Pageable pageable);
 
+    Page<EmailLog> findByRecipientEmailAndEmailTypeOrderByCreatedAtDesc(String recipientEmail, EmailType type, Pageable pageable);
+
     Page<EmailLog> findByStatusOrderByCreatedAtDesc(EmailStatus status, Pageable pageable);
 
     Page<EmailLog> findByEmailTypeOrderByCreatedAtDesc(EmailType emailType, Pageable pageable);
 
     List<EmailLog> findByStatusAndRetryCountLessThanMaxRetries(EmailStatus status, Integer maxRetries);
 
-    long countByStatus(EmailStatus status);
+    long countByRecipientEmail(String recipientEmail);
 
-    long countByEmailType(EmailType emailType);
+    long countByRecipientEmailAndStatus(String recipientEmail, EmailStatus status);
 
-    @Query("{'createdAt': {'$gte': ?0, '$lte': ?1}}")
-    long countByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
+    long countByRecipientEmailAndEmailType(String recipientEmail, EmailType type);
 
-    @Query("{'status': ?0, 'createdAt': {'$gte': ?1, '$lte': ?2}}")
-    long countByStatusAndCreatedAtBetween(EmailStatus status, LocalDateTime startDate, LocalDateTime endDate);
+    @Query("{'recipientEmail': ?0, 'createdAt': {'$gte': ?1, '$lte': ?2}}")
+    long countByRecipientEmailAndCreatedAtBetween(String recipientEmail, LocalDateTime start, LocalDateTime end);
+
 
     @Query("{'recipientEmail': ?0, 'emailType': ?1, 'createdAt': {'$gte': ?2}}")
     List<EmailLog> findRecentEmailsByRecipientAndType(String recipientEmail, EmailType emailType, LocalDateTime since);
+
+    long countByRecipientEmailAndCreatedAtAfter(String recipientEmail, LocalDateTime from);
+
+    long countByRecipientEmailAndStatusAndCreatedAtAfter(String recipientEmail, EmailStatus status, LocalDateTime from);
+
+    long countByRecipientEmailAndEmailTypeAndCreatedAtAfter(String recipientEmail, EmailType type, LocalDateTime from);
+
+    @Query("{ 'recipientEmail': ?0, 'emailType': { $in: ?1 }, 'createdAt': { $gte: ?2 } }")
+    long countAppointmentEmailsByUserAndDate(String userEmail, List<EmailType> types, LocalDateTime from);
+
 }
 

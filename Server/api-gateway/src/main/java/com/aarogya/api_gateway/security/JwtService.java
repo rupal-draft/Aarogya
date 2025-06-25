@@ -36,6 +36,7 @@ public class JwtService {
 
         userDetails.put("id", claims.getSubject());
         userDetails.put("role", claims.get("role", String.class));
+        userDetails.put("email", claims.get("email", String.class));
 
         return userDetails;
     }

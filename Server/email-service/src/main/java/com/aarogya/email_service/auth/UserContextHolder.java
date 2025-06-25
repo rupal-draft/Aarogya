@@ -10,8 +10,8 @@ public class UserContextHolder {
         return userContext.get();
     }
 
-    static void setUserDetails(String userId, String role) {
-        userContext.set(new UserContext(userId, role));
+    static void setUserDetails(String userId, String role, String email) {
+        userContext.set(new UserContext(userId, role, email));
     }
 
     static void clearUserDetails() {

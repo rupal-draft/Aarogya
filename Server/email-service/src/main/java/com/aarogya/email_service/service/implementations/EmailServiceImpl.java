@@ -180,26 +180,51 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    @Cacheable(value = "emailStats", key = "'global'")
-    public EmailStatsDTO getEmailStats() {
-        log.debug("Generating email statistics");
+    @Cacheable(value = "emailStats", key = "#userEmail + '_' + #days")
+    public EmailStatsDTO getEmailStats(String userEmail, int days) {
+        log.debug("Generating email statistics for user: {} for last {} days", userEmail, days);
 
-        long totalEmails = emailLogRepository.count();
-        long sentEmails = emailLogRepository.countByStatus(EmailStatus.SENT);
-        long failedEmails = emailLogRepository.countByStatus(EmailStatus.FAILED);
-        long pendingEmails = emailLogRepository.countByStatus(EmailStatus.PENDING);
+        LocalDateTime fromDate = days > 0
+                ? LocalDateTime.now().minusDays(days)
+                : null;
+
+        long totalEmails = fromDate != null
+                ? emailLogRepository.countByRecipientEmailAndCreatedAtAfter(userEmail, fromDate)
+                : emailLogRepository.countByRecipientEmail(userEmail);
+
+        long sentEmails = fromDate != null
+                ? emailLogRepository.countByRecipientEmailAndStatusAndCreatedAtAfter(userEmail, EmailStatus.SENT, fromDate)
+                : emailLogRepository.countByRecipientEmailAndStatus(userEmail, EmailStatus.SENT);
+
+        long failedEmails = fromDate != null
+                ? emailLogRepository.countByRecipientEmailAndStatusAndCreatedAtAfter(userEmail, EmailStatus.FAILED, fromDate)
+                : emailLogRepository.countByRecipientEmailAndStatus(userEmail, EmailStatus.FAILED);
+
+        long pendingEmails = fromDate != null
+                ? emailLogRepository.countByRecipientEmailAndStatusAndCreatedAtAfter(userEmail, EmailStatus.PENDING, fromDate)
+                : emailLogRepository.countByRecipientEmailAndStatus(userEmail, EmailStatus.PENDING);
 
         double successRate = totalEmails > 0 ? (double) sentEmails / totalEmails * 100 : 0;
 
-        long appointmentEmails = emailLogRepository.countByEmailType(EmailType.APPOINTMENT_REQUEST) +
-                emailLogRepository.countByEmailType(EmailType.APPOINTMENT_CONFIRMATION) +
-                emailLogRepository.countByEmailType(EmailType.APPOINTMENT_CANCELLATION);
+        List<EmailType> appointmentTypes = List.of(
+                EmailType.APPOINTMENT_REQUEST,
+                EmailType.APPOINTMENT_CONFIRMATION,
+                EmailType.APPOINTMENT_CANCELLATION
+        );
 
-        long otpEmails = emailLogRepository.countByEmailType(EmailType.OTP_VERIFICATION);
+        long appointmentEmails = fromDate != null
+                ? emailLogRepository.countAppointmentEmailsByUserAndDate(userEmail, appointmentTypes, fromDate)
+                : appointmentTypes.stream()
+                .mapToLong(type -> emailLogRepository.countByRecipientEmailAndEmailType(userEmail, type))
+                .sum();
+
+        long otpEmails = fromDate != null
+                ? emailLogRepository.countByRecipientEmailAndEmailTypeAndCreatedAtAfter(userEmail, EmailType.OTP_VERIFICATION, fromDate)
+                : emailLogRepository.countByRecipientEmailAndEmailType(userEmail, EmailType.OTP_VERIFICATION);
 
         LocalDateTime todayStart = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
         LocalDateTime todayEnd = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
-        long todayEmails = emailLogRepository.countByCreatedAtBetween(todayStart, todayEnd);
+        long todayEmails = emailLogRepository.countByRecipientEmailAndCreatedAtBetween(userEmail, todayStart, todayEnd);
 
         return EmailStatsDTO.builder()
                 .totalEmails(totalEmails)
@@ -211,6 +236,26 @@ public class EmailServiceImpl implements EmailService {
                 .otpEmails(otpEmails)
                 .todayEmails(todayEmails)
                 .build();
+    }
+
+    @Override
+    @Cacheable(value = "appointmentConfirmationEmails", key = "#patientEmail + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
+    public Page<EmailResponseDTO> getAppointmentConfirmationEmails(String patientEmail, Pageable pageable) {
+        log.debug("Fetching appointment confirmation emails for patient: {}", patientEmail);
+        Page<EmailLog> emailLogs = emailLogRepository
+                .findByRecipientEmailAndEmailTypeOrderByCreatedAtDesc(patientEmail, EmailType.APPOINTMENT_CONFIRMATION, pageable);
+
+        return emailLogs.map(emailLog -> modelMapper.map(emailLog, EmailResponseDTO.class));
+    }
+
+    @Override
+    @Cacheable(value = "appointmentRequestEmails", key = "#doctorEmail + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
+    public Page<EmailResponseDTO> getAppointmentRequestEmails(String doctorEmail, Pageable pageable) {
+        log.debug("Fetching appointment request emails for doctor: {}", doctorEmail);
+        Page<EmailLog> emailLogs = emailLogRepository
+                .findByRecipientEmailAndEmailTypeOrderByCreatedAtDesc(doctorEmail, EmailType.APPOINTMENT_REQUEST, pageable);
+
+        return emailLogs.map(emailLog -> modelMapper.map(emailLog, EmailResponseDTO.class));
     }
 
     @Override
@@ -252,8 +297,7 @@ public class EmailServiceImpl implements EmailService {
         log.info("Completed retry process for {} failed emails", failedEmails.size());
     }
 
-    @Override
-    public boolean isRateLimited(String recipientEmail, EmailType emailType) {
+    private boolean isRateLimited(String recipientEmail, EmailType emailType) {
         if (emailType != EmailType.OTP_VERIFICATION) {
             return false;
         }
@@ -264,6 +308,8 @@ public class EmailServiceImpl implements EmailService {
 
         return recentEmails.size() >= otpRateLimit;
     }
+
+
 
     @Retryable(value = {MessagingException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
     private void sendEmailInternal(EmailLog emailLog) throws MessagingException {

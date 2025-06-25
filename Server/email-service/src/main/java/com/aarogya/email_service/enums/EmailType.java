@@ -3,7 +3,6 @@ package com.aarogya.email_service.enums;
 public enum EmailType {
     OTP_VERIFICATION,
     PASSWORD_RESET,
-    ACCOUNT_VERIFICATION,
 
     APPOINTMENT_REQUEST,
     APPOINTMENT_CONFIRMATION,
@@ -16,6 +15,5 @@ public enum EmailType {
     FOLLOW_UP_COMPLETED,
 
     WELCOME,
-    NEWSLETTER,
     SYSTEM_NOTIFICATION
 }
