@@ -1,6 +1,7 @@
 package com.aarogya.doctor_service.utility;
 
-import com.aarogya.doctor_service.dto.DoctorAvailabilityDTO;
+import com.aarogya.doctor_service.dto.doctor.DoctorAvailabilityDTO;
+import com.aarogya.doctor_service.exceptions.BadRequestException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;

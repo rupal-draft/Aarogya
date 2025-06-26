@@ -55,6 +55,29 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
         handleAppointmentRequest(request, responseObserver, false);
     }
 
+    @Override
+    public void getDoctorAppointmentsByDate(Appointment.AppointmentListRequest request, StreamObserver<Appointment.AppointmentListResponse> responseObserver) {
+        log.info("Getting doctor appointments by date");
+        try {
+            LocalDate localDate = Instant.ofEpochSecond(
+                    request.getDate().getSeconds(),
+                    request.getDate().getNanos()
+            ).atZone(ZoneId.systemDefault()).toLocalDate();
+            List<AppointmentResponseDto> appointments = appointmentService.getDoctorAppointmentsByDate(request.getDoctorId(), localDate);
+            List<Appointment.AppointmentResponseDto> grpcAppointments = appointments.stream()
+                    .map(dto -> modelMapper.map(dto, Appointment.AppointmentResponseDto.class))
+                    .collect(Collectors.toList());
+            Appointment.AppointmentListResponse response = Appointment.AppointmentListResponse.newBuilder()
+                    .addAllAppointments(grpcAppointments)
+                    .build();
+            responseObserver.onNext(response);
+            log.info("Sent {} appointments by date", appointments.size());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            handleError(responseObserver, e, "getDoctorAppointmentsByDate");
+        }
+    }
+
     private void handleAppointmentRequest(Appointment.AppointmentPageRequest request,
                                           StreamObserver<Appointment.AppointmentPageResponse> responseObserver,
                                           boolean isPatient) {

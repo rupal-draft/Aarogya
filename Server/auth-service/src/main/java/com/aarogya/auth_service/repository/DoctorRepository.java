@@ -13,7 +13,7 @@ public interface DoctorRepository extends MongoRepository<Doctor, String> {
 
     Optional<Doctor> findByEmail(String email);
 
-    Optional<Doctor> findByLicenseNumber(String licenseNumber);
+    Optional<Doctor> findFirstBySpecializationOrderByExperienceYearsDesc(Specialization specialization);
 
     List<Doctor> findBySpecialization(Specialization specialization);
 

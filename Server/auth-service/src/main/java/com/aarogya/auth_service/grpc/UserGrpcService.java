@@ -1,29 +1,32 @@
 package com.aarogya.auth_service.grpc;
 
 import com.aarogya.auth.proto.*;
+import com.aarogya.auth_service.documents.Doctor;
+import com.aarogya.auth_service.documents.enums.Specialization;
 import com.aarogya.auth_service.dto.DoctorResponseDTO;
 import com.aarogya.auth_service.dto.PatientResponseDTO;
+import com.aarogya.auth_service.repository.DoctorRepository;
 import com.aarogya.auth_service.service.AuthService;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import com.google.protobuf.util.Timestamps;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @GrpcService
 @Slf4j
+@RequiredArgsConstructor
 public class UserGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
 
     private final AuthService authService;
-
-    public UserGrpcService(AuthService authService) {
-        this.authService = authService;
-    }
+    private final DoctorRepository doctorRepository;
 
     @Override
     public void getDoctorById(IdRequest request, StreamObserver<DoctorResponse> responseObserver) {
@@ -62,6 +65,22 @@ public class UserGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
                 () -> authService.getDoctorsBySpecialization(request.getSpecialization()),
                 "getDoctorsBySpecialization"
         );
+    }
+
+    @Override
+    public void getPrefferedDoctorBySpecialization(SpecializationRequest request, StreamObserver<PrefferedDoctorId> responseObserver) {
+        log.info("Processing gRPC request for getPrefferedDoctorBySpecialization with specialization: {}", request.getSpecialization());
+        try {
+            Specialization specialization = Specialization.valueOf(request.getSpecialization());
+            Optional<Doctor> preferredDoctor = doctorRepository.findFirstBySpecializationOrderByExperienceYearsDesc(specialization);
+            PrefferedDoctorId prefferedDoctorId = PrefferedDoctorId
+                    .newBuilder()
+                    .setId(preferredDoctor.get().getId())
+                    .build();
+            responseObserver.onNext(prefferedDoctorId);
+        } catch (Exception e) {
+            handleError(responseObserver, e, "getPrefferedDoctorBySpecialization");
+        }
     }
 
     @Override

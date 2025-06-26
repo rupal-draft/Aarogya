@@ -25,6 +25,8 @@ public interface AppointmentService {
     Page<AppointmentResponseDto> getDoctorAppointments(String status, LocalDate date,
                                                        int page, int size);
 
+    List<AppointmentResponseDto> getDoctorAppointmentsByDate(String doctorId, LocalDate date);
+
     List<AppointmentResponseDto> getUpcomingAppointments(LocalDate fromDate);
 
     List<AppointmentResponseDto> getDoctorAppointmentsBetweenDates(String doctorId, LocalDate startDate, LocalDate endDate);

@@ -34,6 +34,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -128,7 +129,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         try {
             String patientId = UserContextHolder.getUserDetails().getUserId();
-            String doctorId = findAvailableDoctorForEmergency(emergencyDto.getPreferredSpecialization());
+            String doctorId = authServiceClient.getPreferredDoctorId(emergencyDto.getPreferredSpecialization());
 
             LocalTime currentTime = LocalTime.now();
             LocalTime endTime = currentTime.plusMinutes(30);
@@ -150,10 +151,6 @@ public class AppointmentServiceImpl implements AppointmentService {
             log.error("{} Unexpected error creating emergency appointment", EMERGENCY_APPOINTMENT_LOG_PREFIX, e);
             throw new ServiceUnavailable(e.getLocalizedMessage());
         }
-    }
-
-    private String findAvailableDoctorForEmergency(String preferredSpecialization) {
-        return "682c9dadc231b526e2eecca7";
     }
 
     @Cacheable(value = APPOINTMENT_CACHE, key = "#appointmentId")
@@ -207,6 +204,24 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             Page<Appointment> appointments = fetchDoctorAppointments(doctorId, AppointmentStatus.valueOf(status.toUpperCase()), date, pageable);
             return appointments.map(this::mapToResponseDto);
+        } catch (Exception e) {
+            log.error("Error fetching doctor appointments", e);
+            throw new ServiceUnavailable(e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    @Cacheable(value = APPOINTMENT_CACHE, key = "#doctorId + #date")
+    public List<AppointmentResponseDto> getDoctorAppointmentsByDate(String doctorId, LocalDate date) {
+        log.debug("Fetching doctor appointments for doctor {} on date {}", doctorId, date);
+        try {
+            List<Appointment> appointments = appointmentRepository.findByDoctorIdAndAppointmentDate(doctorId, date);
+            if (!appointments.isEmpty()) {
+                return appointments.stream()
+                        .map(this::mapToResponseDto)
+                        .collect(Collectors.toList());
+            }
+            return new ArrayList<>();
         } catch (Exception e) {
             log.error("Error fetching doctor appointments", e);
             throw new ServiceUnavailable(e.getLocalizedMessage());

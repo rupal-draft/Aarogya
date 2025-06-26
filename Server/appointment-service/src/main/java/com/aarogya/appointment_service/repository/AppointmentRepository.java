@@ -26,6 +26,8 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
     Page<Appointment> findByPatientIdAndAppointmentDate(String patientId, LocalDate appointmentDate, Pageable pageable);
     Page<Appointment> findByDoctorIdAndAppointmentDate(String doctorId, LocalDate appointmentDate, Pageable pageable);
 
+    List<Appointment> findByDoctorIdAndAppointmentDate(String doctorId, LocalDate appointmentDate);
+
     Page<Appointment> findByPatientIdAndStatusAndAppointmentDate(
             String patientId, AppointmentStatus status, LocalDate appointmentDate, Pageable pageable);
     Page<Appointment> findByDoctorIdAndStatusAndAppointmentDate(

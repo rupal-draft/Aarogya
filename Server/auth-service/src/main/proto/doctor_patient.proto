@@ -46,6 +46,10 @@ message SpecializationRequest {
     string specialization = 1;
 }
 
+message PrefferedDoctorId {
+    string id = 1;
+}
+
 message GenderRequest {
     string gender = 1;
 }
@@ -64,4 +68,6 @@ service AuthService {
 
     rpc GetDoctorsBySpecialization(SpecializationRequest) returns (DoctorListResponse);
     rpc GetPatientsByGender(GenderRequest) returns (PatientListResponse);
+
+    rpc GetPrefferedDoctorBySpecialization(SpecializationRequest) returns (PrefferedDoctorId);
 }

@@ -3,10 +3,7 @@ package com.aarogya.appointment_service.Clients;
 import com.aarogya.appointment_service.dto.response.DoctorResponseDTO;
 import com.aarogya.appointment_service.dto.response.PatientResponseDTO;
 import com.aarogya.appointment_service.exceptions.*;
-import com.aarogya.auth.proto.AuthServiceGrpc;
-import com.aarogya.auth.proto.DoctorResponse;
-import com.aarogya.auth.proto.IdRequest;
-import com.aarogya.auth.proto.PatientResponse;
+import com.aarogya.auth.proto.*;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -89,6 +86,23 @@ public class UserGrpcClient {
             return mapToPatientResponseDTO(patient);
         } catch (StatusRuntimeException e) {
             handleGrpcException(e, "Failed to get patient with id: " + patientId);
+            return null;
+        }
+    }
+
+    @Cacheable(value = "doctor", key = "#Specialization")
+    public String getPreferredDoctorId(String Specialization) {
+        checkServiceHealth();
+        log.info("Getting doctor with specialization: {}", Specialization);
+        try {
+            SpecializationRequest request = SpecializationRequest
+                    .newBuilder()
+                    .setSpecialization(Specialization)
+                    .build();
+            PrefferedDoctorId response =  authServiceBlockingStub.getPrefferedDoctorBySpecialization(request);
+            return response.getId();
+        } catch (StatusRuntimeException e) {
+            handleGrpcException(e, "Failed to get doctor with specialization: " + Specialization);
             return null;
         }
     }

@@ -1,7 +1,8 @@
 package com.aarogya.doctor_service.services.implementations;
 
-import com.aarogya.doctor_service.dto.AvailableSlotDTO;
-import com.aarogya.doctor_service.dto.DoctorAvailabilityDTO;
+import com.aarogya.doctor_service.clients.AppointmentGrpcClient;
+import com.aarogya.doctor_service.dto.appointments.AvailableSlotDTO;
+import com.aarogya.doctor_service.dto.doctor.DoctorAvailabilityDTO;
 import com.aarogya.doctor_service.exceptions.BadRequestException;
 import com.aarogya.doctor_service.exceptions.ResourceNotFoundException;
 import com.aarogya.doctor_service.models.DoctorAvailability;
@@ -29,7 +30,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
     private final DoctorAvailabilityRepository availabilityRepository;
     private final ModelMapper modelMapper;
-    private final AppointmentServiceClient appointmentServiceClient;
+    private final AppointmentGrpcClient appointmentGrpcClient;
 
     @Override
     @Transactional
@@ -124,7 +125,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
             return new ArrayList<>();
         }
 
-        var appointments = appointmentServiceClient.getDoctorAppointmentsByDate(doctorId, date);
+        var appointments = appointmentGrpcClient.getAppointmentsByDate(doctorId, date);
         List<LocalTime> allSlots = DateTimeUtil.generateTimeSlots(
                 availability.getStartTime(),
                 availability.getEndTime(),
@@ -133,7 +134,6 @@ public class AvailabilityServiceImpl implements AvailabilityService {
                 availability.getBreakEnd()
         );
 
-        // Filter out booked slots
         List<AvailableSlotDTO> availableSlots = new ArrayList<>();
         for (LocalTime slotStart : allSlots) {
             LocalTime slotEnd = slotStart.plusMinutes(availability.getSlotDuration());

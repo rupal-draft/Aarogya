@@ -1,7 +1,7 @@
 package com.aarogya.doctor_service.services;
 
-import com.aarogya.doctor_service.dto.AvailableSlotDTO;
-import com.aarogya.doctor_service.dto.DoctorAvailabilityDTO;
+import com.aarogya.doctor_service.dto.appointments.AvailableSlotDTO;
+import com.aarogya.doctor_service.dto.doctor.DoctorAvailabilityDTO;
 
 import java.time.LocalDate;
 import java.util.List;
