@@ -21,7 +21,7 @@ public class Review {
     @Id
     private String id;
 
-    private String diseaseId;
+    private String review;
     private String doctorId;
     private String status;
 

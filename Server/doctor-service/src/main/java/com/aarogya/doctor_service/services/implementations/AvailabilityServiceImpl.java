@@ -86,10 +86,8 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         List<DoctorAvailabilityDTO> updatedAvailabilities = new ArrayList<>();
 
         for (DoctorAvailabilityDTO availabilityDTO : availabilityDTOs) {
-            // Validate each availability
             validateTimeRanges(availabilityDTO);
 
-            // Set doctor ID to ensure consistency
             availabilityDTO.setDoctorId(doctorId);
 
             updatedAvailabilities.add(setDoctorAvailability(doctorId, availabilityDTO));

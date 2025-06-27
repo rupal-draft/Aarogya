@@ -1,5 +1,6 @@
 package com.aarogya.doctor_service.dto.dashboard;
 
+import com.aarogya.doctor_service.dto.appointments.AppointmentStatsDTO;
 import com.aarogya.doctor_service.dto.patient.PatientDemographicsDTO;
 import com.aarogya.doctor_service.dto.appointments.RatingStatsDTO;
 import com.aarogya.doctor_service.dto.doctor.DoctorRatingDTO;

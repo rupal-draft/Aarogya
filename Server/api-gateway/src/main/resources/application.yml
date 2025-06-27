@@ -76,3 +76,12 @@ spring:
           filters:
             - StripPrefix=2
             - name: AuthenticationFilter
+
+
+        - id: doctor-service
+          uri: lb://DOCTOR-SERVICE
+          predicates:
+            - Path=/api/v1/doctors/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter

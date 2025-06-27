@@ -1,5 +1,7 @@
 package com.aarogya.doctor_service.dto.appointments;
 
+import com.aarogya.doctor_service.dto.doctor.DoctorResponseDTO;
+import com.aarogya.doctor_service.dto.patient.PatientResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +15,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ReviewDTO {
     private String id;
-    private String diseaseId;
-    private String doctorId;
+    private String review;
+    private DoctorResponseDTO doctor;
     private String status;
     private LocalDateTime createdAt;
 
@@ -25,9 +27,5 @@ public class ReviewDTO {
     private String diet;
     private String workout;
 
-    private String patientId;
-    private String patientFirstName;
-    private String patientLastName;
-    private String patientPhone;
-    private String patientImageUrl;
+    private PatientResponseDTO patient;
 }

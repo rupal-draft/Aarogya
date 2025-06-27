@@ -1,5 +1,6 @@
 package com.aarogya.doctor_service.dto.patient;
 
+import com.aarogya.doctor_service.dto.appointments.AppointmentDto;
 import com.aarogya.doctor_service.dto.prescription.PrescriptionDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatientHistoryDTO {
-    private List<AppointmentDTO> appointments;
+    private List<AppointmentDto> appointments;
     private List<PrescriptionDTO> prescriptions;
-    private PatientDTO patient;
+    private PatientResponseDTO patient;
 }

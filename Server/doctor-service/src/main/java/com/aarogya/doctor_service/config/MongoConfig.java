@@ -13,7 +13,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "com.aarogya.doctor_service.repository")
+@EnableMongoRepositories(basePackages = "com.aarogya.doctor_service.repositories")
 @EnableMongoAuditing
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
