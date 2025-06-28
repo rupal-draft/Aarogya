@@ -17,7 +17,7 @@ export enum AppointmentType {
     startTime: string
     endTime: string
     type?: AppointmentType
-    reason?: string
+    reason: string
     symptoms?: string[]
     priority: number
     isVirtual?: boolean

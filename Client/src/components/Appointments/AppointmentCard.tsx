@@ -1,8 +1,24 @@
 import type React from "react"
 import type { AppointmentResponseDto } from "../../types/appointment"
 import {AppointmentStatus,AppointmentType } from "../../types/appointment"
-import { useScrollAnimation } from "../../hooks/Animation/useScrollAnimation"
-
+import { motion } from "framer-motion"
+import {
+  Calendar,
+  Clock,
+  User,
+  Video,
+  Star,
+  Activity,
+  Heart,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Eye,
+  Edit,
+  Trash2,
+  FileText,
+  Thermometer,
+} from "lucide-react"
 
 interface AppointmentCardProps {
   appointment: AppointmentResponseDto
@@ -10,8 +26,6 @@ interface AppointmentCardProps {
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index }) => {
-  const [cardRef, cardVisible] = useScrollAnimation<HTMLDivElement>()
-
   const getStatusColor = (status: AppointmentStatus) => {
     switch (status) {
       case AppointmentStatus.PENDING:
@@ -30,26 +44,37 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index })
   const getStatusIcon = (status: AppointmentStatus) => {
     switch (status) {
       case AppointmentStatus.PENDING:
-        return "⏳"
+        return Clock
       case AppointmentStatus.CONFIRMED:
-        return "✅"
+        return CheckCircle
       case AppointmentStatus.CANCELLED:
-        return "❌"
+        return XCircle
       case AppointmentStatus.COMPLETED:
-        return "✔️"
+        return CheckCircle
       default:
-        return "📅"
+        return Calendar
     }
   }
 
   const getTypeIcon = (type: AppointmentType) => {
     switch (type) {
       case AppointmentType.EMERGENCY:
-        return "🚨"
+        return AlertTriangle
       case AppointmentType.FOLLOW_UP:
-        return "🔄"
+        return Activity
       default:
-        return "📋"
+        return FileText
+    }
+  }
+
+  const getTypeColor = (type: AppointmentType) => {
+    switch (type) {
+      case AppointmentType.EMERGENCY:
+        return "bg-red-100 text-red-800 border-red-200"
+      case AppointmentType.FOLLOW_UP:
+        return "bg-blue-100 text-blue-800 border-blue-200"
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200"
     }
   }
 
@@ -80,16 +105,49 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index })
     return appointmentDateTime < new Date()
   }
 
+  const StatusIcon = getStatusIcon(appointment.status)
+  const TypeIcon = getTypeIcon(appointment.type)
+
+  const cardVariants = {
+    hidden: {
+      opacity: 0,
+      y: 50,
+      scale: 0.95,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        delay: index * 0.1,
+        ease: "easeOut",
+      },
+    },
+  }
+
+  const hoverVariants = {
+    hover: {
+      y: -8,
+      scale: 1.02,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+  }
+
   return (
-    <div
-      ref={cardRef}
-      className={`transition-all duration-700 ${
-        cardVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-      }`}
-      style={{ transitionDelay: `${index * 100}ms` }}
+    <motion.div
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover="hover"
+      className="group cursor-pointer"
     >
-      <div
-        className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-l-4 ${
+      <motion.div
+        variants={hoverVariants}
+        className={`bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border-l-8 ${
           appointment.type === AppointmentType.EMERGENCY
             ? "border-l-red-500"
             : isUpcoming()
@@ -97,13 +155,20 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index })
               : isPast()
                 ? "border-l-gray-400"
                 : "border-l-blue-500"
-        } hover:scale-[1.02] group`}
+        } relative`}
       >
-        <div className="p-6">
-          {/* Header */}
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30"></div>
+
+        {/* Header Section */}
+        <div className="relative p-6 pb-4">
           <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center overflow-hidden">
+            {/* Doctor Info */}
+            <div className="flex items-center space-x-4">
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center overflow-hidden relative"
+              >
                 {appointment.doctor?.imageUrl ? (
                   <img
                     src={appointment.doctor.imageUrl || "/placeholder.svg"}
@@ -111,68 +176,79 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index })
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-white text-xl">👨‍⚕️</span>
+                  <span className="text-white text-xl font-bold">
+                    {appointment.doctor?.firstName?.[0]}
+                    {appointment.doctor?.lastName?.[0]}
+                  </span>
                 )}
-              </div>
+              </motion.div>
+
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-xl font-bold text-gray-900 mb-1">
                   Dr. {appointment.doctor?.firstName} {appointment.doctor?.lastName}
                 </h3>
                 <p className="text-blue-600 font-medium">{appointment.doctor?.specialization}</p>
               </div>
             </div>
 
+            {/* Status and Type Badges */}
             <div className="flex flex-col items-end space-y-2">
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(appointment.status)}`}
+              <motion.span
+                whileHover={{ scale: 1.05 }}
+                className={`px-4 py-2 rounded-full text-sm font-medium border-2 ${getStatusColor(appointment.status)} flex items-center space-x-2`}
               >
-                {getStatusIcon(appointment.status)} {appointment.status}
-              </span>
+                <StatusIcon className="w-4 h-4" />
+                <span>{appointment.status}</span>
+              </motion.span>
+
               {appointment.type !== AppointmentType.REGULAR && (
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    appointment.type === AppointmentType.EMERGENCY
-                      ? "bg-red-100 text-red-800"
-                      : "bg-blue-100 text-blue-800"
-                  }`}
+                <motion.span
+                  whileHover={{ scale: 1.05 }}
+                  className={`px-3 py-1 rounded-full text-xs font-medium border ${getTypeColor(appointment.type)} flex items-center space-x-1`}
                 >
-                  {getTypeIcon(appointment.type)} {appointment.type}
-                </span>
+                  <TypeIcon className="w-3 h-3" />
+                  <span>{appointment.type}</span>
+                </motion.span>
               )}
             </div>
           </div>
 
-          {/* Appointment Details */}
+          {/* Appointment Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="space-y-3">
               <div className="flex items-center text-gray-600">
-                <span className="text-lg mr-3">📅</span>
+                <Calendar className="w-5 h-5 mr-3 text-blue-500" />
                 <div>
-                  <p className="font-medium">{formatDate(appointment.appointmentDate)}</p>
+                  <p className="font-semibold text-gray-900">{formatDate(appointment.appointmentDate)}</p>
                   <p className="text-sm text-gray-500">
                     {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
                   </p>
                 </div>
               </div>
 
-              {appointment.isVirtual && (
-                <div className="flex items-center text-gray-600">
-                  <span className="text-lg mr-3">💻</span>
-                  <span className="text-sm">Virtual Appointment</span>
-                </div>
-              )}
-
               <div className="flex items-center text-gray-600">
-                <span className="text-lg mr-3">⚡</span>
+                <Star className="w-5 h-5 mr-3 text-yellow-500" />
                 <span className="text-sm">Priority: {appointment.priority}/5</span>
               </div>
+
+              {appointment.isVirtual && (
+                <div className="flex items-center text-gray-600">
+                  <Video className="w-5 h-5 mr-3 text-green-500" />
+                  <span className="text-sm font-medium text-green-700">Virtual Appointment</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
               {appointment.reason && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">Reason:</p>
-                  <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">{appointment.reason}</p>
+                  <p className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                    <FileText className="w-4 h-4 mr-2 text-blue-500" />
+                    Reason:
+                  </p>
+                  <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-xl border border-blue-100 line-clamp-2">
+                    {appointment.reason}
+                  </p>
                 </div>
               )}
             </div>
@@ -181,30 +257,53 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index })
           {/* Symptoms */}
           {appointment.symptoms && appointment.symptoms.length > 0 && (
             <div className="mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">Symptoms:</p>
+              <p className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                <Activity className="w-4 h-4 mr-2 text-orange-500" />
+                Symptoms:
+              </p>
               <div className="flex flex-wrap gap-2">
-                {appointment.symptoms.map((symptom, idx) => (
-                  <span key={idx} className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs">
-                    {symptom}
-                  </span>
+                {appointment.symptoms.slice(0, 4).map((symptom, idx) => (
+                  <motion.span
+                    key={idx}
+                    whileHover={{ scale: 1.05 }}
+                    className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium border border-orange-200 flex items-center space-x-1"
+                  >
+                    <Thermometer className="w-3 h-3" />
+                    <span>{symptom}</span>
+                  </motion.span>
                 ))}
+                {appointment.symptoms.length > 4 && (
+                  <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                    +{appointment.symptoms.length - 4} more
+                  </span>
+                )}
               </div>
             </div>
           )}
 
           {/* Notes */}
           {(appointment.notes || appointment.doctorNotes) && (
-            <div className="mb-4 space-y-2">
+            <div className="mb-4 space-y-3">
               {appointment.notes && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Patient Notes:</p>
-                  <p className="text-sm text-gray-600 bg-blue-50 p-2 rounded-lg">{appointment.notes}</p>
+                  <p className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                    <User className="w-4 h-4 mr-2 text-blue-500" />
+                    Patient Notes:
+                  </p>
+                  <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-xl border border-blue-100">
+                    {appointment.notes}
+                  </p>
                 </div>
               )}
               {appointment.doctorNotes && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Doctor Notes:</p>
-                  <p className="text-sm text-gray-600 bg-green-50 p-2 rounded-lg">{appointment.doctorNotes}</p>
+                  <p className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                    <Heart className="w-4 h-4 mr-2 text-green-500" />
+                    Doctor Notes:
+                  </p>
+                  <p className="text-sm text-gray-600 bg-green-50 p-3 rounded-xl border border-green-100">
+                    {appointment.doctorNotes}
+                  </p>
                 </div>
               )}
             </div>
@@ -213,48 +312,97 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index })
           {/* Cancellation Reason */}
           {appointment.status === AppointmentStatus.CANCELLED && appointment.cancellationReason && (
             <div className="mb-4">
-              <p className="text-sm font-medium text-red-700">Cancellation Reason:</p>
-              <p className="text-sm text-red-600 bg-red-50 p-2 rounded-lg">{appointment.cancellationReason}</p>
+              <p className="text-sm font-semibold text-red-700 mb-1 flex items-center">
+                <XCircle className="w-4 h-4 mr-2" />
+                Cancellation Reason:
+              </p>
+              <p className="text-sm text-red-600 bg-red-50 p-3 rounded-xl border border-red-100">
+                {appointment.cancellationReason}
+              </p>
             </div>
           )}
+        </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-            <div className="text-xs text-gray-500">
-              <p>Created: {new Date(appointment.createdAt).toLocaleDateString()}</p>
+        {/* Footer Actions */}
+        <div className="relative bg-gray-50/50 p-6 pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between">
+            {/* Timestamps */}
+            <div className="text-xs text-gray-500 space-y-1">
+              <p className="flex items-center">
+                <Clock className="w-3 h-3 mr-1" />
+                Created: {new Date(appointment.createdAt).toLocaleDateString()}
+              </p>
               {appointment.updatedAt !== appointment.createdAt && (
-                <p>Updated: {new Date(appointment.updatedAt).toLocaleDateString()}</p>
+                <p className="flex items-center">
+                  <Activity className="w-3 h-3 mr-1" />
+                  Updated: {new Date(appointment.updatedAt).toLocaleDateString()}
+                </p>
               )}
             </div>
 
+            {/* Action Buttons */}
             <div className="flex space-x-2">
               {appointment.isVirtual && appointment.meetingLink && isUpcoming() && (
-                <a
+                <motion.a
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
                   href={appointment.meetingLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors duration-200"
+                  className="px-4 py-2 bg-green-500 text-white text-sm rounded-xl hover:bg-green-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
                 >
-                  Join Meeting
-                </a>
+                  <Video className="w-4 h-4" />
+                  <span>Join Meeting</span>
+                </motion.a>
               )}
 
               {isUpcoming() && appointment.status === AppointmentStatus.CONFIRMED && (
-                <button className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors duration-200">
-                  Reschedule
-                </button>
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 bg-blue-500 text-white text-sm rounded-xl hover:bg-blue-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>Reschedule</span>
+                </motion.button>
               )}
 
               {appointment.status === AppointmentStatus.PENDING && (
-                <button className="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors duration-200">
-                  Cancel
-                </button>
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 bg-red-500 text-white text-sm rounded-xl hover:bg-red-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Cancel</span>
+                </motion.button>
               )}
+
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-4 py-2 bg-gray-500 text-white text-sm rounded-xl hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
+              >
+                <Eye className="w-4 h-4" />
+                <span>View Details</span>
+              </motion.button>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+
+        {/* Hover Glow Effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500 rounded-3xl pointer-events-none"></div>
+
+        {/* Priority Indicator */}
+        {appointment.priority >= 4 && (
+          <motion.div
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+            className="absolute top-4 right-4 w-3 h-3 bg-red-500 rounded-full"
+          />
+        )}
+      </motion.div>
+    </motion.div>
   )
 }
 

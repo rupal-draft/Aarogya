@@ -6,15 +6,17 @@ import { Link } from "react-router-dom"
 import Logo from "../../assets/images/Logo.png"
 import { doctorNavItems, patientNavItems, publicNavItems } from "../../Data/navigation"
 import { useAuth } from "../../hooks/Redux/useAuth"
-import CartIcon from "../Pharmacy/Cart/CartIcon"
+import { useCart } from "../../context/Cart/CartContext"
+import { LogOut, Menu, Settings, ShoppingCart, User, X } from "lucide-react"
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { isAuthenticated, userType, profileImage, userName, handleLogout } = useAuth()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const { cart } = useCart()
 
-  // Determine which navigation items to show based on auth state and user type
+  const itemCount = cart?.totalItems || 0
   const navItems = isAuthenticated ? (userType === "doctor" ? doctorNavItems : patientNavItems) : publicNavItems
 
   const toggleMobileMenu = () => {
@@ -267,6 +269,53 @@ const Header = () => {
     }
   }
 
+  // Enhanced Cart Icon Component
+  const CartIconComponent = () => (
+    <Link to="/pharmacy/cart" className="relative">
+      <motion.div
+        className="p-2 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-green-50 hover:text-teal-600 relative transition-all duration-300"
+        whileHover={{ scale: 1.1, y: -2 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        <motion.div
+          animate={itemCount > 0 ? { rotate: [0, -10, 10, -10, 0] } : {}}
+          transition={{ duration: 0.5, repeat: itemCount > 0 ? Number.POSITIVE_INFINITY : 0, repeatDelay: 3 }}
+        >
+          <ShoppingCart className="h-6 w-6" />
+        </motion.div>
+
+        <AnimatePresence>
+          {itemCount > 0 && (
+            <motion.div
+              key="badge"
+              initial={{ scale: 0, rotate: 180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              exit={{ scale: 0, rotate: -180 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              className="absolute -top-1 -right-1 bg-gradient-to-r from-teal-500 to-green-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg border-2 border-white"
+            >
+              <motion.span
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+              >
+                {itemCount > 99 ? "99+" : itemCount}
+              </motion.span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Pulse effect when items are added */}
+        {itemCount > 0 && (
+          <motion.div
+            className="absolute inset-0 bg-teal-400 rounded-xl opacity-20"
+            animate={{ scale: [1, 1.5], opacity: [0.2, 0] }}
+            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, repeatDelay: 2 }}
+          />
+        )}
+      </motion.div>
+    </Link>
+  )
+
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -317,7 +366,7 @@ const Header = () => {
                 >
                   <Link to={item.url}>
                     <motion.div
-                      className="flex items-center px-3 py-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="flex items-center px-3 py-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors relative"
                       whileHover={{ y: -2, backgroundColor: "rgba(59, 130, 246, 0.1)" }}
                       whileTap={{ y: 0 }}
                     >
@@ -333,6 +382,16 @@ const Header = () => {
                 </motion.li>
               ))}
             </ul>
+
+            {/* Cart Icon for Desktop */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: navItems.length * 0.1 }}
+              className="ml-4"
+            >
+              <CartIconComponent />
+            </motion.div>
 
             {/* Auth buttons or profile */}
             {isAuthenticated ? (
@@ -382,27 +441,14 @@ const Header = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50"
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-100"
                     >
                       <Link to="/profile">
                         <motion.div
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                           whileHover={{ x: 5 }}
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 mr-2"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                            />
-                          </svg>
+                          <User className="h-5 w-5 mr-2" />
                           Profile
                         </motion.div>
                       </Link>
@@ -411,42 +457,10 @@ const Header = () => {
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                           whileHover={{ x: 5 }}
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 mr-2"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                          </svg>
+                          <Settings className="h-5 w-5 mr-2" />
                           Settings
                         </motion.div>
                       </Link>
-                      <motion.li
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ duration: 0.3, delay: (navItems.length + 1) * 0.05 }}
-  >
-    <motion.div
-      className="flex items-center px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600"
-      whileTap={{ backgroundColor: "rgba(34, 197, 94, 0.1)" }}
-    >
-      <CartIcon />
-      Cart
-    </motion.div>
-  </motion.li>
                       <motion.div
                         className="border-t border-gray-100 my-1"
                         initial={{ scaleX: 0 }}
@@ -458,20 +472,7 @@ const Header = () => {
                         className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                         whileHover={{ x: 5 }}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 mr-2"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                          />
-                        </svg>
+                        <LogOut className="h-5 w-5 mr-2" />
                         Logout
                       </motion.button>
                     </motion.div>
@@ -488,29 +489,47 @@ const Header = () => {
                     Login
                   </Link>
                 </motion.div>
-
               </div>
             )}
           </nav>
 
           {/* Mobile menu button */}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="md:hidden text-gray-700 focus:outline-none"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          <div className="md:hidden flex items-center space-x-2">
+            {/* Cart Icon for Mobile */}
+            <CartIconComponent />
+
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="text-gray-700 focus:outline-none p-2"
+              onClick={toggleMobileMenu}
+              aria-label="Toggle menu"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </motion.button>
+              <AnimatePresence mode="wait">
+                {mobileMenuOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <X className="h-6 w-6" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu className="h-6 w-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -521,7 +540,7 @@ const Header = () => {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="md:hidden mt-4 bg-white rounded-lg shadow-lg overflow-hidden"
+              className="md:hidden mt-4 bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100"
             >
               {isAuthenticated && (
                 <div className="p-4 border-b border-gray-100">
@@ -573,37 +592,12 @@ const Header = () => {
                           className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                           whileTap={{ backgroundColor: "rgba(59, 130, 246, 0.1)" }}
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 mr-3"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                            />
-                          </svg>
+                          <User className="h-5 w-5 mr-3" />
                           Profile
                         </motion.div>
                       </Link>
                     </motion.li>
-                    <motion.li
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ duration: 0.3, delay: (navItems.length + 1) * 0.05 }}
-  >
-    <motion.div
-      className="flex items-center px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600"
-      whileTap={{ backgroundColor: "rgba(34, 197, 94, 0.1)" }}
-    >
-      <CartIcon />
-      <span className="ml-3">Cart</span>
-    </motion.div>
-  </motion.li>
+
                     <motion.li
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -614,20 +608,7 @@ const Header = () => {
                         className="flex w-full items-center px-4 py-3 text-red-600 hover:bg-red-50"
                         whileTap={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 mr-3"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                          />
-                        </svg>
+                        <LogOut className="h-5 w-5 mr-3" />
                         Logout
                       </motion.button>
                     </motion.li>

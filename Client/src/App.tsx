@@ -25,8 +25,8 @@ function App() {
         <Route path='/pharmacy/medicines/:id' element={<MedicineDetailPage/>} />
         <Route path="/pharmacy/cart" element={<CartPage />} />
         <Route path="/pharmacy/checkout" element={<CheckoutPage />} />
-        <Route path="/pharmacy/order-confirmation/:orderId" element={<OrderConfirmationPage />} /></Route>
-        <Route path="/appointments" element={<AppointmentBooking/>} />
+        <Route path="/pharmacy/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+        <Route path="/appointments" element={<AppointmentBooking/>} /></Route>
       </Routes>
     </Router>
   );

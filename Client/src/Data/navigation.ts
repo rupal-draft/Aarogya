@@ -17,7 +17,7 @@
     { name: "Dashboard", url: "/patient/dashboard", icon: "dashboard" },
     { name: "Blogs", url: "/blogs", icon: "edit" },
     { name: "Food", url: "/food", icon: "utensils" },
-    { name: "Appointment", url: "/appointment", icon: "calendar" },
+    { name: "Appointment", url: "/appointments", icon: "calendar" },
   ]
 
   // Public navigation items (when not logged in)
