@@ -3,6 +3,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { departments, doctors } from "../../Data/medical"
+import type { DoctorResponseDTO } from "../../types/doctor"
 
 interface FormData {
   name: string
@@ -15,7 +16,15 @@ interface FormData {
   doctor: string
 }
 
-const AppointmentForm = () => {
+interface AppointmentFormProps {
+  doctor: DoctorResponseDTO
+  date: string
+  slot: { startTime: string; endTime: string }
+  onComplete: () => void
+  onBack: () => void
+}
+
+const AppointmentForm : React.FC<AppointmentFormProps> = () => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     age: "",

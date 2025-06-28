@@ -10,6 +10,7 @@ import MedicineDetailPage from './pages/Pharmacy/Medicines/MedicineDetailPage';
 import CartPage from './pages/Pharmacy/Cart/CartPage';
 import CheckoutPage from './pages/Pharmacy/Order/CheckoutPage';
 import OrderConfirmationPage from './pages/Pharmacy/Order/OrderConfirmationPage';
+import AppointmentBooking from './pages/Appointments/AppointmentBooking';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/pharmacy/cart" element={<CartPage />} />
         <Route path="/pharmacy/checkout" element={<CheckoutPage />} />
         <Route path="/pharmacy/order-confirmation/:orderId" element={<OrderConfirmationPage />} /></Route>
+        <Route path="/appointments" element={<AppointmentBooking/>} />
       </Routes>
     </Router>
   );

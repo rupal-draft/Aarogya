@@ -105,9 +105,12 @@ public class AuthController {
 
     @GetMapping("/doctors")
     @RateLimiter(name = "getDoctors", fallbackMethod = "rateLimitFallbackFetchDoctors")
-    public ResponseEntity<List<DoctorResponseDTO>> getDoctorsBySpeciality(@RequestParam String specialization) {
-        return new ResponseEntity<>(authService.getDoctorsBySpecialization(specialization), HttpStatus.OK);
+    public ResponseEntity<List<DoctorResponseDTO>> getDoctorsBySpeciality(
+            @RequestParam(value = "specialization", required = false) String specialization) {
+
+        return ResponseEntity.ok(authService.getDoctorsBySpecialization(specialization));
     }
+
 
     @GetMapping("/patients")
     @RateLimiter(name = "getPatients", fallbackMethod = "rateLimitFallbackFetchPatients")

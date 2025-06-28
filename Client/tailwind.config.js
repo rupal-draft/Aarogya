@@ -10,6 +10,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        
         blue: {
           50: "#eff6ff",
           100: "#dbeafe",
@@ -38,6 +39,7 @@ export default {
       boxShadow: {
         "inner-lg": "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
       },
+      border: "#e5e7eb",
     },
   },
   // theme: {

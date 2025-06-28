@@ -392,12 +392,16 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "doctors", key = "#specialization")
+    @Cacheable(value = "doctors", key = "#specialization != null ? #specialization : 'ALL'")
     public List<DoctorResponseDTO> getDoctorsBySpecialization(String specialization) {
         log.info("Fetching doctors by specialization: {}", specialization);
         try {
             if (specialization == null || specialization.isBlank()) {
-                throw new BadRequestException("Specialization is required");
+                List<Doctor> doctors = doctorRepository.findAll();
+                log.info("{} Doctors found for specialization: {}",doctors.size(), specialization);
+                return doctors.stream()
+                        .map(doctor -> modelMapper.map(doctor, DoctorResponseDTO.class))
+                        .collect(Collectors.toList());
             }
             List<Doctor> doctors = doctorRepository
                     .findBySpecialization(Specialization
