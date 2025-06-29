@@ -1,4 +1,4 @@
-package auth_service.events;
+package com.aarogya.auth_service.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

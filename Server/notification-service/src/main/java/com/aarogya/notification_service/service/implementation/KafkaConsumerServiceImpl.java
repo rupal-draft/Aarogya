@@ -1,7 +1,7 @@
 package com.aarogya.notification_service.service.implementation;
 
-import appointment_service.events.NotificationSaveEvent;
-import article_service.event.NotificationEvent;
+import com.aarogya.appointment_service.events.NotificationSaveEvent;
+import com.aarogya.article_service.event.NotificationEvent;
 import com.aarogya.notification_service.enums.NotificationStatus;
 import com.aarogya.notification_service.enums.NotificationType;
 import com.aarogya.notification_service.model.BaseNotification;

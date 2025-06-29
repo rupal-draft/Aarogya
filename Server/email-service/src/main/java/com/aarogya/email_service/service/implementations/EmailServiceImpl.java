@@ -29,7 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +62,30 @@ public class EmailServiceImpl implements EmailService {
     @Transactional
     public EmailResponseDTO sendEmail(EmailRequestDTO emailRequest) {
         log.info("Processing email request for: {}", emailRequest.getRecipientEmail());
+        Map<String, Object> templateData = emailRequest.getTemplateData();
+
+        String appointmentDateStr = (String) templateData.get("appointmentDate");
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
+
+        LocalDate appointmentDate = LocalDate.parse(appointmentDateStr, inputFormatter);
+        String formattedAppointmentDate = appointmentDate.format(outputFormatter);
+
+        String startTimeStr = (String) templateData.get("startTime");
+        String endTimeStr = (String) templateData.get("endTime");
+
+        DateTimeFormatter timeInputFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        DateTimeFormatter timeOutputFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+        LocalTime startTime = LocalTime.parse(startTimeStr, timeInputFormatter);
+        LocalTime endTime = LocalTime.parse(endTimeStr, timeInputFormatter);
+
+        String formattedStartTime = startTime.format(timeOutputFormatter);
+        String formattedEndTime = endTime.format(timeOutputFormatter);
+
+        templateData.put("startTime", formattedStartTime);
+        templateData.put("endTime", formattedEndTime);
+        templateData.put("appointmentDate", formattedAppointmentDate);
 
         if (isRateLimited(emailRequest.getRecipientEmail(), emailRequest.getEmailType())) {
             throw new RateLimitExceededException("Rate limit exceeded for email type: " + emailRequest.getEmailType());
@@ -71,7 +98,7 @@ public class EmailServiceImpl implements EmailService {
                 .emailType(emailRequest.getEmailType())
                 .status(EmailStatus.PENDING)
                 .templateName(emailRequest.getTemplateName())
-                .templateData(emailRequest.getTemplateData())
+                .templateData(templateData)
                 .correlationId(emailRequest.getCorrelationId())
                 .createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusDays(90))

@@ -1,19 +1,17 @@
-package article_service.event;
+package com.aarogya.appointment_service.events;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class NotificationEvent {
+public class NotificationSaveEvent {
     private String userId;
     private SaveNotificationType type;
     private String title;
@@ -23,8 +21,7 @@ public class NotificationEvent {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     public enum SaveNotificationType {
-        POST,
-        LIKE,
-        COMMENT
+        APPOINTMENT,
+        FOLLOWUP
     }
 }

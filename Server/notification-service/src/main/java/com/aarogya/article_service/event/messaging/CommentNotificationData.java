@@ -1,4 +1,4 @@
-package article_service.event.messaging;
+package com.aarogya.article_service.event.messaging;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

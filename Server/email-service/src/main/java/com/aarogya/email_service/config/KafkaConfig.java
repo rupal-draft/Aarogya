@@ -1,7 +1,7 @@
 package com.aarogya.email_service.config;
 
-import appointment_service.events.NotificationEmailEvent;
-import auth_service.events.SendOtpEvent;
+import com.aarogya.appointment_service.events.NotificationEmailEvent;
+import com.aarogya.auth_service.events.SendOtpEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

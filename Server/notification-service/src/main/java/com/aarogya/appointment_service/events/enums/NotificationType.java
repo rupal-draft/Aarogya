@@ -1,4 +1,4 @@
-package appointment_service.events.enums;
+package com.aarogya.appointment_service.events.enums;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 

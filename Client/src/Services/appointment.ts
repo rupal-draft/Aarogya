@@ -15,7 +15,7 @@ const api = axios.create({
 // Request regular appointment
 export const requestAppointment = async (requestDto: AppointmentRequestDto): Promise<AppointmentResponseDto> => {
   try {
-    const response = await api.post<ApiResponse<AppointmentResponseDto>>(`${API_BASE_URL}/appointments`, requestDto)
+    const response = await api.post<ApiResponse<AppointmentResponseDto>>(`${API_BASE_URL}`, requestDto)
     return response.data.data
   } catch (error) {
     console.error("Error requesting appointment:", error)
@@ -63,7 +63,7 @@ export const getPatientAppointments = async (
     if (date) params.date = date
 
     const response = await api.get<ApiResponse<PageResponse<AppointmentResponseDto>>>(
-      `${API_BASE_URL}/appointments/patient`,
+      `${API_BASE_URL}/patient`,
       { params },
     )
     return response.data.data

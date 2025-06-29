@@ -1,7 +1,7 @@
 package com.aarogya.email_service.service;
 
-import appointment_service.events.NotificationEmailEvent;
-import auth_service.events.SendOtpEvent;
+import com.aarogya.appointment_service.events.NotificationEmailEvent;
+import com.aarogya.auth_service.events.SendOtpEvent;
 import com.aarogya.email_service.enums.EmailType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -174,7 +174,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
-    @Cacheable(value = APPOINTMENT_CACHE, key = "{#status, #date, #page, #size, 'patient'}")
+    @Cacheable(
+            value = APPOINTMENT_CACHE,
+            key = "T(String).valueOf(#status ?: 'ANY') + '_' + T(String).valueOf(#date ?: 'ANY') + '_' + #page + '_' + #size + '_patient'"
+    )
     @Transactional(readOnly = true)
     @Override
     public Page<AppointmentResponseDto> getPatientAppointments(String status, LocalDate date, int page, int size) {
@@ -182,15 +185,22 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         try {
             String patientId = UserContextHolder.getUserDetails().getUserId();
-            Pageable pageable = PageRequest.of(page, size, Sort.by("appointmentDate").descending().and(Sort.by("startTime").descending()));
+            Pageable pageable = PageRequest.of(page, size,
+                    Sort.by("appointmentDate").descending().and(Sort.by("startTime").descending()));
 
-            Page<Appointment> appointments = fetchPatientAppointments(patientId, AppointmentStatus.valueOf(status.toUpperCase()), date, pageable);
+            AppointmentStatus appointmentStatus = null;
+            if (status != null && !status.isBlank()) {
+                appointmentStatus = AppointmentStatus.valueOf(status.toUpperCase());
+            }
+
+            Page<Appointment> appointments = fetchPatientAppointments(patientId, appointmentStatus, date, pageable);
             return appointments.map(this::mapToResponseDto);
         } catch (Exception e) {
             log.error("Error fetching patient appointments", e);
             throw new ServiceUnavailable(e.getLocalizedMessage());
         }
     }
+
 
     @Cacheable(value = APPOINTMENT_CACHE, key = "{#status, #date, #page, #size, 'doctor'}")
     @Transactional(readOnly = true)

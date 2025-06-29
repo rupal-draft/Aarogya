@@ -1,7 +1,7 @@
 package com.aarogya.notification_service.service;
 
-import appointment_service.events.NotificationSaveEvent;
-import article_service.event.NotificationEvent;
+import com.aarogya.appointment_service.events.NotificationSaveEvent;
+import com.aarogya.article_service.event.NotificationEvent;
 
 public interface KafkaConsumerService {
 

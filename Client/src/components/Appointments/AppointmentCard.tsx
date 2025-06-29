@@ -378,14 +378,14 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index })
                 </motion.button>
               )}
 
-              <motion.button
+              {/* <motion.button
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-4 py-2 bg-gray-500 text-white text-sm rounded-xl hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
               >
                 <Eye className="w-4 h-4" />
                 <span>View Details</span>
-              </motion.button>
+              </motion.button> */}
             </div>
           </div>
         </div>

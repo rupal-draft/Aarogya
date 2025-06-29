@@ -1,6 +1,6 @@
-package appointment_service.events;
+package com.aarogya.appointment_service.events;
 
-import appointment_service.events.enums.NotificationType;
+import com.aarogya.appointment_service.events.enums.NotificationType;
 import lombok.*;
 
 import java.time.LocalDateTime;

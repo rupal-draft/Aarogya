@@ -1,7 +1,7 @@
 package com.aarogya.notification_service.config;
 
-import appointment_service.events.NotificationSaveEvent;
-import article_service.event.NotificationEvent;
+import com.aarogya.appointment_service.events.NotificationSaveEvent;
+import com.aarogya.article_service.event.NotificationEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -14,10 +14,8 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.DefaultErrorHandler;
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
+
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.util.backoff.ExponentialBackOff;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +42,7 @@ public class KafkaConfig {
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, NotificationSaveEvent.class.getName());
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, NotificationSaveEvent.class);
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
@@ -60,7 +58,7 @@ public class KafkaConfig {
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, NotificationEvent.class.getName());
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, NotificationEvent.class);
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
@@ -76,7 +74,7 @@ public class KafkaConfig {
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, pharmacy_service.events.NotificationEvent.class.getName());
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, pharmacy_service.events.NotificationEvent.class);
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);

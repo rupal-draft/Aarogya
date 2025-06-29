@@ -46,7 +46,7 @@ spring:
             - name: AuthenticationFilter
 
         - id: appointment-service
-          uri: lb://APPINTMENT-SERVICE
+          uri: lb://APPOINTMENT-SERVICE
           predicates:
             - Path=/api/v1/appointment/**
           filters:

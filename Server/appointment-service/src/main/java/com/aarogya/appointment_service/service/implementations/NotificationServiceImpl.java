@@ -14,6 +14,8 @@ import com.aarogya.appointment_service.models.FollowUp;
 import com.aarogya.appointment_service.models.enums.AppointmentStatus;
 import com.aarogya.appointment_service.models.enums.FollowUpStatus;
 import com.aarogya.appointment_service.service.NotificationService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -33,7 +35,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final KafkaTemplate<String, NotificationEmailEvent> emailNotificationKafkaTemplate;
     private final KafkaTemplate<String, NotificationSaveEvent> saveNotificationKafkaTemplate;
     private final String saveTopic = "notification-save";
-    private final ModelMapper modelMapper;
+    private final ObjectMapper objectMapper;
     private final UserGrpcClient userGrpcClient;
 
     @Override
@@ -337,7 +339,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     private NotificationEmailEvent buildNotificationEmailEvent(NotificationType type, String email,
                                                      String name, String subject, Object data) {
-        Map<String, Object> dataMap = modelMapper.map(data, Map.class);
+        Map<String, Object> dataMap = objectMapper.convertValue(data, new TypeReference<>() {});
 
         return NotificationEmailEvent.builder()
                 .type(type)
@@ -350,7 +352,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private NotificationSaveEvent buildNotificationSaveEvent(NotificationSaveEvent.SaveNotificationType type, String userId, String title, Object data) {
-        Map<String, Object> dataMap = modelMapper.map(data, Map.class);
+        Map<String, Object> dataMap = objectMapper.convertValue(data, new TypeReference<>() {});
 
         return NotificationSaveEvent
                 .builder()
