@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import type { DoctorResponseDTO } from "../../types/doctor"
 import type { AppointmentRequestDto } from "../../types/appointment"
-import {AppointmentType} from "../../types/appointment"
+import {AppointmentType} from "../../Data/enums/Appointment"
 import { requestAppointment } from "../../Services/appointment"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -22,7 +22,7 @@ import {
   Loader,
   Activity,
 } from "lucide-react"
-import { commonSymptoms } from "../../utils/data"
+import { commonSymptoms } from "../../Data/appointment"
 
 interface AppointmentFormProps {
   doctor: DoctorResponseDTO

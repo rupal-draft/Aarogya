@@ -14,7 +14,7 @@ import {
   Heart,
   Users,
 } from "lucide-react"
-import { getSpecializationColor, getSpecializationIcon } from "../../utils/data"
+import { getSpecializationColor, getSpecializationIcon } from "../../Data/appointment"
 
 interface DoctorCardProps {
   doctor: DoctorResponseDTO
@@ -25,55 +25,33 @@ interface DoctorCardProps {
 
 
 const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onSelect, index }) => {
-  const SpecIcon = getSpecializationIcon(doctor.specialization)
-  const specColor = getSpecializationColor(doctor.specialization)
+  const SpecIcon = getSpecializationIcon(doctor.specialization);
+  const specColor = getSpecializationColor(doctor.specialization);
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.9 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.6,
-        delay: index * 0.1,
-        ease: "easeOut",
-      },
-    },
-    hover: {
-      scale: 1.02,
-      y: -10,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut",
-      },
-    },
-  }
-
-
-  const hoverVariants = {
-    hover: {
-      y: -10,
-      scale: 1.02,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut",
-      },
-    },
-  }
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log("Book appointment clicked");
+    onSelect(doctor);
+  };
 
   return (
     <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      whileHover="hover"
-      className="group cursor-pointer"
+      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        duration: 0.6,
+        delay: index * 0.1,
+        ease: "easeOut"
+      }}
+      whileHover={{
+        scale: 1.02,
+        y: -10,
+        transition: { duration: 0.3 }
+      }}
+      className="group"
     >
-      <motion.div
-        variants={hoverVariants}
-        className="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 relative"
-      >
+      <div className="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 relative">
+
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50"></div>
 
@@ -88,7 +66,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onSelect, index }) => {
               >
                 {doctor.imageUrl ? (
                   <img
-                    src={doctor.imageUrl || "/placeholder.svg"}
+                    src={doctor.imageUrl}
                     alt={`Dr. ${doctor.firstName} ${doctor.lastName}`}
                     className="w-full h-full object-cover"
                   />
@@ -103,7 +81,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onSelect, index }) => {
               {/* Online Status */}
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                transition={{ duration: 2, repeat: Infinity }}
                 className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center"
               >
                 <div className="w-2 h-2 bg-white rounded-full"></div>
@@ -116,9 +94,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onSelect, index }) => {
               </h3>
               <p className="text-blue-600 font-medium">{doctor.specialization}</p>
 
-              <div
-                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white bg-gradient-to-r ${specColor} mb-2`}
-              >
+              <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white bg-gradient-to-r ${specColor} mb-2`}>
                 <SpecIcon className="w-4 h-4 mr-1" />
                 {doctor.specialization}
               </div>
@@ -137,7 +113,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onSelect, index }) => {
             <div>
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, delay: 0 }}
+                transition={{ duration: 3, repeat: Infinity, delay: 0 }}
                 className="text-2xl font-bold text-blue-600"
               >
                 4.9
@@ -150,7 +126,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onSelect, index }) => {
             <div>
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
+                transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
                 className="text-2xl font-bold text-blue-600"
               >
                 500+
@@ -163,7 +139,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onSelect, index }) => {
             <div>
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, delay: 1 }}
+                transition={{ duration: 3, repeat: Infinity, delay: 1 }}
                 className="text-2xl font-bold text-blue-600"
               >
                 98%
@@ -193,21 +169,18 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onSelect, index }) => {
         </div>
 
         {/* Action Button */}
-        <div className="p-6 pt-4">
+        <div className="p-6 pt-4 relative z-10">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={(e) => {
-              e.stopPropagation()
-              onSelect(doctor)
-            }}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-2xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 group"
+            onClick={handleButtonClick}
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-2xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 group relative z-10"
           >
             <Calendar className="w-5 h-5 group-hover:scale-110 transition-transform" />
             <span>Book Appointment</span>
             <motion.div
               animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+              transition={{ duration: 1.5, repeat: Infinity }}
               className="opacity-0 group-hover:opacity-100 transition-opacity"
             >
               →
@@ -223,20 +196,17 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onSelect, index }) => {
           }}
           transition={{
             duration: 10,
-            repeat: Number.POSITIVE_INFINITY,
+            repeat: Infinity,
             ease: "linear",
           }}
           className="absolute top-4 right-4 text-blue-200 opacity-50"
         >
           <Clock className="w-6 h-6" />
         </motion.div>
-
-        {/* Hover Glow Effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500 rounded-3xl"></div>
-      </motion.div>
+      </div>
     </motion.div>
-  )
-}
+  );
+};
 
 
 export default DoctorCard

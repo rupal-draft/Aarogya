@@ -7,7 +7,7 @@ import DoctorCard from "./DoctorCard"
 import type { DoctorResponseDTO } from "../../types/doctor"
 import { motion, AnimatePresence } from "framer-motion"
 import { getDoctorsBySpecialization } from "../../Services/doctor"
-import { specializations } from "../../utils/data"
+import { specializations } from "../../Data/appointment"
 import {
   Search,
   Filter,

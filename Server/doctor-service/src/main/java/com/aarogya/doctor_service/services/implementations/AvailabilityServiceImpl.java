@@ -1,6 +1,7 @@
 package com.aarogya.doctor_service.services.implementations;
 
 import com.aarogya.doctor_service.clients.AppointmentGrpcClient;
+import com.aarogya.doctor_service.dto.appointments.AppointmentDto;
 import com.aarogya.doctor_service.dto.appointments.AvailableSlotDTO;
 import com.aarogya.doctor_service.dto.doctor.DoctorAvailabilityDTO;
 import com.aarogya.doctor_service.exceptions.BadRequestException;
@@ -123,7 +124,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
             return new ArrayList<>();
         }
 
-        var appointments = appointmentGrpcClient.getAppointmentsByDate(doctorId, date);
+        List<AppointmentDto> appointments = appointmentGrpcClient.getAppointmentsByDate(doctorId, date);
         List<LocalTime> allSlots = DateTimeUtil.generateTimeSlots(
                 availability.getStartTime(),
                 availability.getEndTime(),

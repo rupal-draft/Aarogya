@@ -16,7 +16,7 @@ import {
   Loader,
 } from "lucide-react"
 import { requestEmergencyAppointment } from "../../Services/appointment"
-import { emergencySymptoms, emmergency_specializations, specializations } from "../../utils/data"
+import { emergencySymptoms, emmergency_specializations } from "../../Data/appointment"
 
 
 interface EmergencyAppointmentFormProps {

@@ -6,7 +6,6 @@ import EmergencyAppointmentForm from "../../components/Appointments/EmergencyApp
 import PatientAppointments from "../../components/Appointments/PatientAppointments"
 import DoctorSearch from "../../components/Doctors/DoctorSearch"
 import DoctorAvailability from "../../components/Doctors/DoctorAvailability"
-import AppointmentForm from "../../components/Home/AppointmentForm"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Search,
@@ -25,6 +24,7 @@ import {
   Video,
   MapPin,
 } from "lucide-react"
+import AppointmentForm from "../../components/Appointments/AppointmentForm"
 
 type BookingStep = "search" | "availability" | "booking" | "emergency" | "appointments"
 

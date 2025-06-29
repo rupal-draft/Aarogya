@@ -1,15 +1,4 @@
-export enum AppointmentType {
-    REGULAR = "REGULAR",
-    EMERGENCY = "EMERGENCY",
-    FOLLOW_UP = "FOLLOW_UP",
-  }
-
-  export enum AppointmentStatus {
-    PENDING = "PENDING",
-    CONFIRMED = "CONFIRMED",
-    CANCELLED = "CANCELLED",
-    COMPLETED = "COMPLETED",
-  }
+import type { AppointmentStatus, AppointmentType } from "../Data/enums/Appointment"
 
   export interface AppointmentRequestDto {
     doctorId: string

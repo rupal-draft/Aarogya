@@ -1,6 +1,6 @@
 import type React from "react"
 import type { AppointmentResponseDto } from "../../types/appointment"
-import {AppointmentStatus,AppointmentType } from "../../types/appointment"
+import {AppointmentStatus,AppointmentType } from "../../Data/enums/Appointment"
 import { motion } from "framer-motion"
 import {
   Calendar,

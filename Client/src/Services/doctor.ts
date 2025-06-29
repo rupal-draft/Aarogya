@@ -29,7 +29,7 @@ export const getDoctorsBySpecialization = async (specialization?: string): Promi
 // Get doctor availability for a specific date
 export const getDoctorAvailability = async (doctorId: string, date: string): Promise<DoctorAvailabilityResponse> => {
   try {
-    const response = await api.get(`${API_BASE_URL}/doctors/${doctorId}`, {
+    const response = await api.get(`${API_BASE_URL}/availability/${doctorId}`, {
       params: { date },
     })
     return response.data

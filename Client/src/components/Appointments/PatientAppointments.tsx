@@ -5,7 +5,6 @@ import { useState, useEffect } from "react"
 
 import AppointmentCard from "./AppointmentCard"
 import type { AppointmentResponseDto } from "../../types/appointment"
-import {AppointmentStatus } from "../../types/appointment"
 import { getPatientAppointments } from "../../Services/appointment"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -20,6 +19,7 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react"
+import { AppointmentStatus } from "../../Data/enums/Appointment"
 
 interface PatientAppointmentsProps {
   onBack: () => void

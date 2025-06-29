@@ -4,6 +4,7 @@ import com.aarogya.appointment_service.dto.request.AppointmentRequestDto;
 import com.aarogya.appointment_service.dto.request.EmergencyAppointmentDto;
 import com.aarogya.appointment_service.dto.request.UpdateAppointmentStatusDto;
 import com.aarogya.appointment_service.dto.response.AppointmentResponseDto;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDate;
@@ -11,11 +12,11 @@ import java.util.List;
 
 public interface AppointmentService {
 
-    AppointmentResponseDto requestAppointment(AppointmentRequestDto requestDto);
+    AppointmentResponseDto requestAppointment(@Valid AppointmentRequestDto requestDto);
 
-    AppointmentResponseDto updateAppointmentStatus(String appointmentId, UpdateAppointmentStatusDto updateDto);
+    AppointmentResponseDto updateAppointmentStatus(String appointmentId, @Valid UpdateAppointmentStatusDto updateDto);
 
-    AppointmentResponseDto requestEmergencyAppointment(EmergencyAppointmentDto emergencyDto);
+    AppointmentResponseDto requestEmergencyAppointment(@Valid EmergencyAppointmentDto emergencyDto);
 
     AppointmentResponseDto getAppointmentDetails(String appointmentId);
 
