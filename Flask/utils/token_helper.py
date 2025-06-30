@@ -23,7 +23,7 @@ def extract_token_from_request(request_obj) -> Optional[str]:
 def decode_jwt_token(token: str) -> Optional[dict]:
     """Decode a JWT token and return the payload"""
     try:
-        return jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        return jwt.decode(token, SECRET_KEY, algorithms=['HS384'])
     except Exception as e:
         print(f"❌ Token decode error: {e}")
         return None

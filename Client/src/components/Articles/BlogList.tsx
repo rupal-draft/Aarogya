@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import BlogCard from "./BlogCard"
 import BlogCardSkeleton from "./BlogCardSkeleton"
 import type { ArticleResponseDTO } from "../../types/article"
-import Pagination from "../Pagination/Pagination"
+import Pagination from "../../common/Pagination/Pagination"
 
 interface BlogListProps {
   articles: ArticleResponseDTO[]

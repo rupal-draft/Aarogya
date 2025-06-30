@@ -1,3 +1,5 @@
+import datetime
+
 import requests
 import json
 from typing import Dict, List, Optional
@@ -6,7 +8,7 @@ from typing import Dict, List, Optional
 class OllamaService:
     def __init__(self, base_url: str = "http://localhost:11434"):
         self.base_url = base_url
-        self.model = "gemma2:2b"  # You can change this to gemma3:4b when available
+        self.model = "gemma3:4b"  # You can change this to gemma3:4b when available
 
     def check_connection(self) -> str:
         """Check if Ollama service is running"""
@@ -28,7 +30,7 @@ class OllamaService:
 
             # Parse and structure the response
             structured_advice = self._parse_medical_response(response, disease, risk_level)
-
+            print(structured_advice)
             return structured_advice
 
         except Exception as e:
@@ -103,7 +105,7 @@ Please be specific, practical, and medically accurate. Focus on actionable advic
         response = requests.post(
             f"{self.base_url}/api/generate",
             json=payload,
-            timeout=30
+            timeout=900
         )
 
         if response.status_code == 200:

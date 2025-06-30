@@ -45,29 +45,6 @@ def require_auth(f):
         return f(*args, **kwargs)
     return decorated
 
-
-@app.route('/')
-def home():
-    """API home endpoint"""
-    return jsonify({
-        "message": "🏥 AI Medical Assistant API",
-        "version": "1.0.0",
-        "status": "active",
-        "endpoints": {
-            "chat": {
-                "start": "POST /chat/start",
-                "message": "POST /chat/message",
-                "history": "GET /chat/history/<session_id>"
-            },
-            "medical": {
-                "predict": "POST /medical/predict",
-                "consultation": "GET /medical/consultation/<id>",
-                "history": "GET /medical/history"
-            }
-        }
-    })
-
-
 # Chat Routes
 @app.route('/chat/start', methods=['POST'])
 @require_auth

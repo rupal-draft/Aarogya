@@ -54,6 +54,8 @@ class MLPredictor:
 
     def predict_diseases(self, symptoms: List[str], patient: Dict) -> List[Dict]:
         """Predict diseases based on symptoms"""
+
+
         if not self.model_loaded:
             return self._get_fallback_predictions(symptoms)
 
@@ -78,7 +80,6 @@ class MLPredictor:
                         'confidence': float(confidence),
                         'risk_level': self._assess_disease_risk(disease_name, confidence)
                     })
-
             return predictions
 
         except Exception as e:

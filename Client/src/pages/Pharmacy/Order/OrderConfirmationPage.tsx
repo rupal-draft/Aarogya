@@ -5,8 +5,8 @@ import { useParams, Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import type { Order } from "../../../types/order"
 import { getOrderById } from "../../../Services/orderService"
-import LoadingSpinner from "../../../components/Spinners/LoadingSpinner"
-import ErrorDisplay from "../../../components/Error/ErrorDisplay"
+import LoadingSpinner from "../../../common/Spinners/LoadingSpinner"
+import ErrorDisplay from "../../../common/Error/ErrorDisplay"
 
 
 const OrderConfirmationPage = () => {

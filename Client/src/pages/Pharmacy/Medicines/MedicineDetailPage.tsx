@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import type { MedicineResponseDTO } from "../../../types/medicine"
 import { useCart } from "../../../context/Cart/CartContext"
 import { fetchMedicinesByCategory, getMedicineById } from "../../../Services/medicineService"
-import LoadingSpinner from "../../../components/Spinners/LoadingSpinner"
-import ErrorDisplay from "../../../components/Error/ErrorDisplay"
+import LoadingSpinner from "../../../common/Spinners/LoadingSpinner"
+import ErrorDisplay from "../../../common/Error/ErrorDisplay"
 
 
 const MedicineDetailPage = () => {

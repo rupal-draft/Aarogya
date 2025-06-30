@@ -16,7 +16,7 @@ import {
 } from "./../../Services/articleService"
 import type { ArticleResponseDTO, ArticleCommentResponseDTO, ArticleCommentRequestDTO } from "../../types/article"
 import BlogDetailBanner from "../../components/Articles/BlogDetailBanner"
-import ErrorDisplay from "../../components/Error/ErrorDisplay"
+import ErrorDisplay from "../../common/Error/ErrorDisplay"
 import BlogDetailSkeleton from "../../components/Articles/BlogDetailSkeleton"
 import ShareSection from "../../components/Articles/ShareSection"
 import CommentSection from "../../components/Articles/CommentSection"

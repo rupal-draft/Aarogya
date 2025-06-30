@@ -11,6 +11,7 @@ import CartPage from './pages/Pharmacy/Cart/CartPage';
 import CheckoutPage from './pages/Pharmacy/Order/CheckoutPage';
 import OrderConfirmationPage from './pages/Pharmacy/Order/OrderConfirmationPage';
 import AppointmentBooking from './pages/Appointments/AppointmentBooking';
+import Assistant from './pages/AiAssistant';
 
 function App() {
   return (
@@ -26,7 +27,9 @@ function App() {
         <Route path="/pharmacy/cart" element={<CartPage />} />
         <Route path="/pharmacy/checkout" element={<CheckoutPage />} />
         <Route path="/pharmacy/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
-        <Route path="/appointments" element={<AppointmentBooking/>} /></Route>
+        <Route path="/appointments" element={<AppointmentBooking/>} />
+        <Route path='/assistant' element={<Assistant />} />
+        </Route>
       </Routes>
     </Router>
   );
