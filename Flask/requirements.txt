@@ -1,3 +1,11 @@
 flask
 flask-cors
 spacy
+Flask-JWT-Extended
+pymongo
+bcrypt
+scikit-learn==1.4.1.post1
+requests
+python-dotenv
+gunicorn
+PyJWT
