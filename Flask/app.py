@@ -5,12 +5,11 @@ import logging
 from flask_jwt_extended import JWTManager, decode_token
 from datetime import datetime, timedelta
 import uuid
-import os
 from functools import wraps
 from flask_cors import CORS
 
 from database.disease_database import DatabaseManager
-from services.conversation_manager import ConversationManager
+from services.conversation_manager import EnhancedConversationManager
 from services.ml_predictor import MLPredictor
 from services.ollama_service import OllamaService
 from utils.risk_assessor import RiskAssessor
@@ -23,7 +22,7 @@ jwt = JWTManager(app)
 
 db = DatabaseManager()
 ollama_service = OllamaService()
-conversation_manager = ConversationManager(db)
+conversation_manager = EnhancedConversationManager(db)
 ml_predictor = MLPredictor()
 risk_assessor = RiskAssessor()
 
