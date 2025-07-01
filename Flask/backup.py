@@ -2,15 +2,15 @@ from flask import Flask, request, jsonify
 import spacy
 from spacy.matcher import PhraseMatcher
 import logging
-from flask_jwt_extended import JWTManager, decode_token
-from datetime import datetime, timedelta
+from flask_jwt_extended import JWTManager
+from datetime import datetime
 import uuid
 from functools import wraps
 from flask_cors import CORS
 import os
 
 from conversation_manager import EnhancedConversationManager
-from database.disease_database import DatabaseManager
+from src.database.database import DatabaseManager
 from predictor import MLPredictor
 from report import ReportGenerator
 from utils.risk_assessor import RiskAssessor
