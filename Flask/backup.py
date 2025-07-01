@@ -7,11 +7,12 @@ from datetime import datetime, timedelta
 import uuid
 from functools import wraps
 from flask_cors import CORS
+import os
 
+from conversation_manager import EnhancedConversationManager
 from database.disease_database import DatabaseManager
-from services.conversation_manager import EnhancedConversationManager
-from services.ml_predictor import MLPredictor
-from services.ollama_service import OllamaService
+from predictor import MLPredictor
+from report import ReportGenerator
 from utils.risk_assessor import RiskAssessor
 from utils.token_helper import get_user_id_from_token, extract_token_from_request
 
@@ -21,7 +22,7 @@ CORS(app, supports_credentials=True)
 jwt = JWTManager(app)
 
 db = DatabaseManager()
-ollama_service = OllamaService()
+generator = ReportGenerator(api_key=os.getenv("GEMINI_API_KEY"))
 conversation_manager = EnhancedConversationManager(db)
 ml_predictor = MLPredictor()
 risk_assessor = RiskAssessor()
@@ -195,8 +196,11 @@ def trigger_disease_prediction(user_id: str, session_id: str, symptoms: list) ->
     risk_level = risk_assessor.assess_risk(predictions, symptoms, patient)
 
     # Get AI recommendations from Ollama
-    ai_recommendations = ollama_service.get_medical_advice(
-        disease_name, symptoms, patient, risk_level
+    ai_recommendations = generator.get_medical_advice(
+        disease=disease_name,
+        symptoms=symptoms,
+        patient=patient,
+        risk_level=risk_level
     )
 
     # Save consultation
@@ -275,14 +279,10 @@ def health_check():
         # Check ML model
         ml_status = "loaded" if ml_predictor.model_loaded else "not_loaded"
 
-        # Check Ollama service
-        ollama_status = ollama_service.check_connection()
-
         return jsonify({
             'status': 'healthy',
             'database': db_status,
             'ml_model': ml_status,
-            'ollama_service': ollama_status,
             'timestamp': datetime.utcnow().isoformat()
         }), 200
 
@@ -324,9 +324,6 @@ if __name__ == "__main__":
 
     if not ml_predictor.load_model():
         print("⚠️  Warning: ML model not loaded")
-
-    if ollama_service.check_connection() != "connected":
-        print("⚠️  Warning: Ollama service not available")
 
     print("🚀 Server starting on http://localhost:5000")
     app.run(debug=True, host='0.0.0.0', port=5000)
