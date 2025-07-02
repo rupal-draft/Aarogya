@@ -1,0 +1,6 @@
+package com.aarogya.lab_service.enums;
+
+public enum EquipmentType {
+    ANALYZER, MICROSCOPE, CENTRIFUGE, INCUBATOR, SPECTROPHOTOMETER,
+    PCR_MACHINE, HEMATOLOGY_ANALYZER, CHEMISTRY_ANALYZER, OTHER
+}
