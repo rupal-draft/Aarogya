@@ -20,7 +20,7 @@
         </processorPath>
         <module name="notification-service" />
       </profile>
-      <profile name="Annotation profile for email-service" enabled="true">
+      <profile name="Annotation profile for lab-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -34,6 +34,7 @@
         <module name="article-service" />
         <module name="email-service" />
         <module name="doctor-service" />
+        <module name="lab-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -52,6 +53,7 @@
       <module name="discovery-server" options="-parameters" />
       <module name="doctor-service" options="-parameters" />
       <module name="email-service" options="-parameters" />
+      <module name="lab-service" options="-parameters" />
       <module name="notification-service" options="-parameters" />
       <module name="pharmacy-service" options="-parameters" />
       <module name="prescription-service" options="-parameters" />
