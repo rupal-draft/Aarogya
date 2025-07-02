@@ -5,20 +5,16 @@ import { motion } from "framer-motion"
 import {
   Calendar,
   Clock,
-  User,
   Video,
   Star,
-  Activity,
   Heart,
-  AlertTriangle,
   CheckCircle,
   XCircle,
-  Eye,
-  Edit,
-  Trash2,
-  FileText,
-  Thermometer,
+  AlertCircle,
+  Sparkles,
+  Award,
 } from "lucide-react"
+import { useScrollAnimation } from "../../hooks/Animation/useScrollAnimation"
 
 interface AppointmentCardProps {
   appointment: AppointmentResponseDto
@@ -26,55 +22,46 @@ interface AppointmentCardProps {
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index }) => {
+  const [cardRef, cardVisible] = useScrollAnimation<HTMLDivElement>()
+
   const getStatusColor = (status: AppointmentStatus) => {
     switch (status) {
       case AppointmentStatus.PENDING:
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+        return "from-yellow-400 to-orange-500"
       case AppointmentStatus.CONFIRMED:
-        return "bg-green-100 text-green-800 border-green-200"
+        return "from-green-400 to-emerald-500"
       case AppointmentStatus.CANCELLED:
-        return "bg-red-100 text-red-800 border-red-200"
+        return "from-red-400 to-pink-500"
       case AppointmentStatus.COMPLETED:
-        return "bg-blue-100 text-blue-800 border-blue-200"
+        return "from-blue-400 to-indigo-500"
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "from-gray-400 to-gray-500"
     }
   }
 
   const getStatusIcon = (status: AppointmentStatus) => {
     switch (status) {
       case AppointmentStatus.PENDING:
-        return Clock
+        return <AlertCircle className="h-5 w-5" />
       case AppointmentStatus.CONFIRMED:
-        return CheckCircle
+        return <CheckCircle className="h-5 w-5" />
       case AppointmentStatus.CANCELLED:
-        return XCircle
+        return <XCircle className="h-5 w-5" />
       case AppointmentStatus.COMPLETED:
-        return CheckCircle
+        return <Award className="h-5 w-5" />
       default:
-        return Calendar
+        return <Calendar className="h-5 w-5" />
     }
   }
 
   const getTypeIcon = (type: AppointmentType) => {
     switch (type) {
       case AppointmentType.EMERGENCY:
-        return AlertTriangle
+        return "🚨"
       case AppointmentType.FOLLOW_UP:
-        return Activity
+        return "🔄"
       default:
-        return FileText
-    }
-  }
-
-  const getTypeColor = (type: AppointmentType) => {
-    switch (type) {
-      case AppointmentType.EMERGENCY:
-        return "bg-red-100 text-red-800 border-red-200"
-      case AppointmentType.FOLLOW_UP:
-        return "bg-blue-100 text-blue-800 border-blue-200"
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "📋"
     }
   }
 
@@ -105,49 +92,16 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index })
     return appointmentDateTime < new Date()
   }
 
-  const StatusIcon = getStatusIcon(appointment.status)
-  const TypeIcon = getTypeIcon(appointment.type)
-
-  const cardVariants = {
-    hidden: {
-      opacity: 0,
-      y: 50,
-      scale: 0.95,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.6,
-        delay: index * 0.1,
-        ease: "easeOut",
-      },
-    },
-  }
-
-  const hoverVariants = {
-    hover: {
-      y: -8,
-      scale: 1.02,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut",
-      },
-    },
-  }
-
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      whileHover="hover"
-      className="group cursor-pointer"
+    <div
+      ref={cardRef}
+      className={`transition-all duration-700 ${
+        cardVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+      }`}
+      style={{ transitionDelay: `${index * 100}ms` }}
     >
       <motion.div
-        variants={hoverVariants}
-        className={`bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border-l-8 ${
+        className={`bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden border-l-8 ${
           appointment.type === AppointmentType.EMERGENCY
             ? "border-l-red-500"
             : isUpcoming()
@@ -155,254 +109,327 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index })
               : isPast()
                 ? "border-l-gray-400"
                 : "border-l-blue-500"
-        } relative`}
+        } hover:scale-[1.02] group relative`}
+        whileHover={{ y: -5 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: index * 0.1 }}
       >
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30"></div>
+        {/* Floating decorative elements */}
+        <motion.div
+          className="absolute top-4 right-4 text-yellow-400 z-10"
+          animate={{
+            rotate: [0, 360],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
+        >
+          <Sparkles className="h-5 w-5" />
+        </motion.div>
 
-        {/* Header Section */}
-        <div className="relative p-6 pb-4">
-          <div className="flex items-start justify-between mb-4">
-            {/* Doctor Info */}
+        {/* Background gradient animation */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/30 to-pink-50/30">
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+            animate={{
+              x: ["-100%", "100%"],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "linear",
+            }}
+          />
+        </div>
+
+        <div className="p-8 relative z-10">
+          {/* Header Section */}
+          <div className="flex items-start justify-between mb-6">
             <div className="flex items-center space-x-4">
+              {/* Doctor Avatar */}
               <motion.div
+                className="relative w-16 h-16 rounded-2xl overflow-hidden border-4 border-white shadow-lg"
                 whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center overflow-hidden relative"
               >
                 {appointment.doctor?.imageUrl ? (
                   <img
-                    src={appointment.doctor.imageUrl || "/placeholder.svg"}
+                    src={appointment.doctor.imageUrl || "/placeholder.svg?height=64&width=64"}
                     alt={`Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName}`}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-white text-xl font-bold">
-                    {appointment.doctor?.firstName?.[0]}
-                    {appointment.doctor?.lastName?.[0]}
-                  </span>
+                  <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-2xl">
+                    👨‍⚕️
+                  </div>
                 )}
+
+                {/* Online status indicator */}
+                <motion.div
+                  className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-white"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                />
               </motion.div>
 
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">
+                <motion.h3 className="text-xl font-bold text-gray-900 mb-1" whileHover={{ scale: 1.02 }}>
                   Dr. {appointment.doctor?.firstName} {appointment.doctor?.lastName}
-                </h3>
-                <p className="text-blue-600 font-medium">{appointment.doctor?.specialization}</p>
+                </motion.h3>
+                <motion.div
+                  className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  {appointment.doctor?.specialization}
+                </motion.div>
               </div>
             </div>
 
-            {/* Status and Type Badges */}
             <div className="flex flex-col items-end space-y-2">
-              <motion.span
+              {/* Status Badge */}
+              <motion.div
+                className={`px-4 py-2 rounded-full text-white font-semibold text-sm shadow-lg bg-gradient-to-r ${getStatusColor(appointment.status)} flex items-center space-x-2`}
                 whileHover={{ scale: 1.05 }}
-                className={`px-4 py-2 rounded-full text-sm font-medium border-2 ${getStatusColor(appointment.status)} flex items-center space-x-2`}
+                animate={{
+                  boxShadow: [
+                    "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                    "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                  ],
+                }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
               >
-                <StatusIcon className="w-4 h-4" />
+                {getStatusIcon(appointment.status)}
                 <span>{appointment.status}</span>
-              </motion.span>
+              </motion.div>
 
+              {/* Type Badge */}
               {appointment.type !== AppointmentType.REGULAR && (
-                <motion.span
+                <motion.div
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    appointment.type === AppointmentType.EMERGENCY
+                      ? "bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-300"
+                      : "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300"
+                  }`}
                   whileHover={{ scale: 1.05 }}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border ${getTypeColor(appointment.type)} flex items-center space-x-1`}
                 >
-                  <TypeIcon className="w-3 h-3" />
-                  <span>{appointment.type}</span>
-                </motion.span>
+                  <span className="mr-1">{getTypeIcon(appointment.type)}</span>
+                  {appointment.type}
+                </motion.div>
               )}
             </div>
           </div>
 
           {/* Appointment Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="space-y-3">
-              <div className="flex items-center text-gray-600">
-                <Calendar className="w-5 h-5 mr-3 text-blue-500" />
-                <div>
-                  <p className="font-semibold text-gray-900">{formatDate(appointment.appointmentDate)}</p>
-                  <p className="text-sm text-gray-500">
-                    {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
-                  </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Date and Time */}
+            <motion.div
+              className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-2xl border border-blue-200"
+              whileHover={{ scale: 1.02 }}
+            >
+              <div className="flex items-center mb-3">
+                <div className="p-2 bg-blue-500 rounded-lg mr-3">
+                  <Calendar className="h-5 w-5 text-white" />
                 </div>
+                <h4 className="font-semibold text-blue-800">Date & Time</h4>
               </div>
+              <p className="font-bold text-gray-900 text-lg mb-1">{formatDate(appointment.appointmentDate)}</p>
+              <p className="text-blue-600 font-medium">
+                {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
+              </p>
+            </motion.div>
 
-              <div className="flex items-center text-gray-600">
-                <Star className="w-5 h-5 mr-3 text-yellow-500" />
-                <span className="text-sm">Priority: {appointment.priority}/5</span>
-              </div>
-
+            {/* Additional Info */}
+            <div className="space-y-3">
               {appointment.isVirtual && (
-                <div className="flex items-center text-gray-600">
-                  <Video className="w-5 h-5 mr-3 text-green-500" />
-                  <span className="text-sm font-medium text-green-700">Virtual Appointment</span>
-                </div>
+                <motion.div
+                  className="flex items-center p-3 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200"
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <div className="p-2 bg-green-500 rounded-lg mr-3">
+                    <Video className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="text-green-800 font-medium">Virtual Appointment</span>
+                </motion.div>
               )}
-            </div>
 
-            <div className="space-y-3">
-              {appointment.reason && (
-                <div>
-                  <p className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
-                    <FileText className="w-4 h-4 mr-2 text-blue-500" />
-                    Reason:
-                  </p>
-                  <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-xl border border-blue-100 line-clamp-2">
-                    {appointment.reason}
-                  </p>
+              <motion.div
+                className="flex items-center p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200"
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="p-2 bg-purple-500 rounded-lg mr-3">
+                  <Star className="h-4 w-4 text-white" />
                 </div>
-              )}
+                <span className="text-purple-800 font-medium">Priority: {appointment.priority}/5</span>
+              </motion.div>
             </div>
           </div>
 
-          {/* Symptoms */}
-          {appointment.symptoms && appointment.symptoms.length > 0 && (
-            <div className="mb-4">
-              <p className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                <Activity className="w-4 h-4 mr-2 text-orange-500" />
-                Symptoms:
+          {/* Reason Section */}
+          {appointment.reason && (
+            <motion.div
+              className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl border border-gray-200"
+              whileHover={{ scale: 1.01 }}
+            >
+              <h4 className="text-sm font-bold text-gray-800 mb-2 flex items-center">
+                <div className="p-1 bg-gray-500 rounded mr-2">
+                  <Heart className="h-3 w-3 text-white" />
+                </div>
+                Reason for Visit:
+              </h4>
+              <p className="text-gray-700 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+                {appointment.reason}
               </p>
-              <div className="flex flex-wrap gap-2">
-                {appointment.symptoms.slice(0, 4).map((symptom, idx) => (
-                  <motion.span
-                    key={idx}
-                    whileHover={{ scale: 1.05 }}
-                    className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium border border-orange-200 flex items-center space-x-1"
-                  >
-                    <Thermometer className="w-3 h-3" />
-                    <span>{symptom}</span>
-                  </motion.span>
-                ))}
-                {appointment.symptoms.length > 4 && (
-                  <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
-                    +{appointment.symptoms.length - 4} more
-                  </span>
-                )}
-              </div>
-            </div>
+            </motion.div>
           )}
 
-          {/* Notes */}
-          {(appointment.notes || appointment.doctorNotes) && (
-            <div className="mb-4 space-y-3">
-              {appointment.notes && (
-                <div>
-                  <p className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
-                    <User className="w-4 h-4 mr-2 text-blue-500" />
-                    Patient Notes:
-                  </p>
-                  <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-xl border border-blue-100">
-                    {appointment.notes}
-                  </p>
+          {/* Symptoms */}
+          {appointment.symptoms && appointment.symptoms.length > 0 && (
+            <motion.div className="mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+              <h4 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                <div className="p-1 bg-orange-500 rounded mr-2">
+                  <AlertCircle className="h-3 w-3 text-white" />
                 </div>
+                Symptoms:
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {appointment.symptoms.map((symptom, idx) => (
+                  <motion.span
+                    key={idx}
+                    className="px-3 py-2 bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 rounded-full text-sm font-medium border border-orange-300 shadow-sm"
+                    whileHover={{ scale: 1.05 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.1 }}
+                  >
+                    {symptom}
+                  </motion.span>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Notes Section */}
+          {(appointment.notes || appointment.doctorNotes) && (
+            <div className="mb-6 space-y-3">
+              {appointment.notes && (
+                <motion.div
+                  className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl border border-blue-200"
+                  whileHover={{ scale: 1.01 }}
+                >
+                  <h4 className="text-sm font-bold text-blue-800 mb-2">Patient Notes:</h4>
+                  <p className="text-blue-700 bg-white p-3 rounded-xl shadow-sm">{appointment.notes}</p>
+                </motion.div>
               )}
               {appointment.doctorNotes && (
-                <div>
-                  <p className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
-                    <Heart className="w-4 h-4 mr-2 text-green-500" />
-                    Doctor Notes:
-                  </p>
-                  <p className="text-sm text-gray-600 bg-green-50 p-3 rounded-xl border border-green-100">
-                    {appointment.doctorNotes}
-                  </p>
-                </div>
+                <motion.div
+                  className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-2xl border border-green-200"
+                  whileHover={{ scale: 1.01 }}
+                >
+                  <h4 className="text-sm font-bold text-green-800 mb-2">Doctor Notes:</h4>
+                  <p className="text-green-700 bg-white p-3 rounded-xl shadow-sm">{appointment.doctorNotes}</p>
+                </motion.div>
               )}
             </div>
           )}
 
           {/* Cancellation Reason */}
           {appointment.status === AppointmentStatus.CANCELLED && appointment.cancellationReason && (
-            <div className="mb-4">
-              <p className="text-sm font-semibold text-red-700 mb-1 flex items-center">
-                <XCircle className="w-4 h-4 mr-2" />
-                Cancellation Reason:
-              </p>
-              <p className="text-sm text-red-600 bg-red-50 p-3 rounded-xl border border-red-100">
-                {appointment.cancellationReason}
-              </p>
-            </div>
+            <motion.div
+              className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-2xl border border-red-200"
+              whileHover={{ scale: 1.01 }}
+            >
+              <h4 className="text-sm font-bold text-red-800 mb-2">Cancellation Reason:</h4>
+              <p className="text-red-700 bg-white p-3 rounded-xl shadow-sm">{appointment.cancellationReason}</p>
+            </motion.div>
           )}
-        </div>
 
-        {/* Footer Actions */}
-        <div className="relative bg-gray-50/50 p-6 pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            {/* Timestamps */}
+          {/* Actions Section */}
+          <div className="flex items-center justify-between pt-6 border-t border-gray-200">
             <div className="text-xs text-gray-500 space-y-1">
               <p className="flex items-center">
-                <Clock className="w-3 h-3 mr-1" />
+                <Clock className="h-3 w-3 mr-1" />
                 Created: {new Date(appointment.createdAt).toLocaleDateString()}
               </p>
               {appointment.updatedAt !== appointment.createdAt && (
                 <p className="flex items-center">
-                  <Activity className="w-3 h-3 mr-1" />
+                  <Clock className="h-3 w-3 mr-1" />
                   Updated: {new Date(appointment.updatedAt).toLocaleDateString()}
                 </p>
               )}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
               {appointment.isVirtual && appointment.meetingLink && isUpcoming() && (
                 <motion.a
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
                   href={appointment.meetingLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-green-500 text-white text-sm rounded-xl hover:bg-green-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
+                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 shadow-lg flex items-center space-x-2"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <Video className="w-4 h-4" />
+                  <Video className="h-4 w-4" />
                   <span>Join Meeting</span>
                 </motion.a>
               )}
 
               {isUpcoming() && appointment.status === AppointmentStatus.CONFIRMED && (
                 <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
+                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg flex items-center space-x-2"
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-4 py-2 bg-blue-500 text-white text-sm rounded-xl hover:bg-blue-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
                 >
-                  <Edit className="w-4 h-4" />
+                  <Calendar className="h-4 w-4" />
                   <span>Reschedule</span>
                 </motion.button>
               )}
 
               {appointment.status === AppointmentStatus.PENDING && (
                 <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
+                  className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-lg flex items-center space-x-2"
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-4 py-2 bg-red-500 text-white text-sm rounded-xl hover:bg-red-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <XCircle className="h-4 w-4" />
                   <span>Cancel</span>
                 </motion.button>
               )}
-
-              {/* <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 bg-gray-500 text-white text-sm rounded-xl hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
-              >
-                <Eye className="w-4 h-4" />
-                <span>View Details</span>
-              </motion.button> */}
             </div>
           </div>
         </div>
 
-        {/* Hover Glow Effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500 rounded-3xl pointer-events-none"></div>
+        {/* Decorative floating elements */}
+        <motion.div
+          className="absolute -top-3 -left-3 w-16 h-16 bg-gradient-to-br from-blue-300 to-purple-400 rounded-full opacity-20 blur-xl"
+          animate={{
+            scale: [1, 1.3, 1],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
+        />
 
-        {/* Priority Indicator */}
-        {appointment.priority >= 4 && (
-          <motion.div
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-            className="absolute top-4 right-4 w-3 h-3 bg-red-500 rounded-full"
-          />
-        )}
+        <motion.div
+          className="absolute -bottom-3 -right-3 w-12 h-12 bg-gradient-to-br from-pink-300 to-yellow-400 rounded-full opacity-20 blur-xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [360, 180, 0],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
+        />
       </motion.div>
-    </motion.div>
+    </div>
   )
 }
 

@@ -7,7 +7,7 @@ import Logo from "../../assets/images/Logo.png"
 import { doctorNavItems, patientNavItems, publicNavItems } from "../../Data/navigation"
 import { useAuth } from "../../hooks/Redux/useAuth"
 import { useCart } from "../../context/Cart/CartContext"
-import { LogOut, Menu, Settings, ShoppingCart, User, X } from "lucide-react"
+import { Bell, Heart, LogOut, Menu, Settings, ShoppingCart, Star, User, X } from "lucide-react"
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -271,9 +271,9 @@ const Header = () => {
 
   // Enhanced Cart Icon Component
   const CartIconComponent = () => (
-    <Link to="/pharmacy/cart" className="relative">
+    <Link to="/pharmacy/cart" className="relative group">
       <motion.div
-        className="p-2 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-green-50 hover:text-teal-600 relative transition-all duration-300"
+        className="relative p-3 rounded-2xl bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-100 hover:from-teal-100 hover:to-emerald-100 hover:border-teal-200 transition-all duration-300 shadow-lg hover:shadow-xl"
         whileHover={{ scale: 1.1, y: -2 }}
         whileTap={{ scale: 0.9 }}
       >
@@ -281,7 +281,7 @@ const Header = () => {
           animate={itemCount > 0 ? { rotate: [0, -10, 10, -10, 0] } : {}}
           transition={{ duration: 0.5, repeat: itemCount > 0 ? Number.POSITIVE_INFINITY : 0, repeatDelay: 3 }}
         >
-          <ShoppingCart className="h-6 w-6" />
+          <ShoppingCart className="h-6 w-6 text-teal-600" />
         </motion.div>
 
         <AnimatePresence>
@@ -292,7 +292,7 @@ const Header = () => {
               animate={{ scale: 1, rotate: 0 }}
               exit={{ scale: 0, rotate: -180 }}
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              className="absolute -top-1 -right-1 bg-gradient-to-r from-teal-500 to-green-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg border-2 border-white"
+              className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full h-7 w-7 flex items-center justify-center shadow-lg border-2 border-white"
             >
               <motion.span
                 animate={{ scale: [1, 1.2, 1] }}
@@ -307,11 +307,28 @@ const Header = () => {
         {/* Pulse effect when items are added */}
         {itemCount > 0 && (
           <motion.div
-            className="absolute inset-0 bg-teal-400 rounded-xl opacity-20"
+            className="absolute inset-0 bg-teal-400 rounded-2xl opacity-20"
             animate={{ scale: [1, 1.5], opacity: [0.2, 0] }}
             transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, repeatDelay: 2 }}
           />
         )}
+
+        {/* Floating hearts animation */}
+        <motion.div
+          className="absolute -top-1 -right-1 text-pink-400"
+          animate={{
+            y: [-5, -15, -5],
+            opacity: [0, 1, 0],
+            scale: [0.5, 1, 0.5],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatDelay: 4,
+          }}
+        >
+          <Heart className="h-3 w-3 fill-current" />
+        </motion.div>
       </motion.div>
     </Link>
   )
@@ -321,42 +338,82 @@ const Header = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, type: "spring", stiffness: 120 }}
-      className={`bg-white sticky top-0 z-40 transition-all duration-300 ${
-        scrolled ? "shadow-lg py-2" : "shadow-md py-4"
+      className={`bg-white/95 backdrop-blur-lg sticky top-0 z-40 transition-all duration-300 border-b border-gray-100 ${
+        scrolled ? "shadow-2xl py-2" : "shadow-lg py-4"
       }`}
     >
-      <div className="container mx-auto px-4">
+      {/* Animated background pattern */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          animate={{
+            backgroundPosition: ["0% 0%", "100% 100%"],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
+          className="absolute inset-0 bg-gradient-to-r from-blue-50/30 via-purple-50/30 to-teal-50/30"
+          style={{
+            backgroundSize: "400% 400%",
+          }}
+        />
+      </div>
+
+      <div className="container mx-auto px-4 relative">
         <div className="flex justify-between items-center">
-          {/* Logo */}
+          {/* Enhanced Logo */}
           <div className="flex items-center">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="relative">
-              <Link to="/" className="flex items-center">
-                <motion.img
-                  src={Logo}
-                  alt="Logo"
-                  className="h-12 w-auto"
-                  initial={{ rotate: 0 }}
-                  whileHover={{ rotate: [0, -10, 10, -10, 0] }}
-                  transition={{ duration: 0.5 }}
-                />
-                <motion.span
-                  className="ml-2 text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-400 text-transparent bg-clip-text"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  Aarogya
-                </motion.span>
+              <Link to="/" className="flex items-center group">
+                <div className="relative">
+                  <motion.img
+                    src={Logo}
+                    alt="Logo"
+                    className="h-14 w-auto relative z-10"
+                    initial={{ rotate: 0 }}
+                    whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+                    transition={{ duration: 0.5 }}
+                  />
+                  {/* Glowing effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-blue-400 to-teal-400 rounded-full blur-lg opacity-20"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                  />
+                </div>
+                <div className="ml-3">
+                  <motion.span
+                    className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-teal-500 text-transparent bg-clip-text"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    Aarogya
+                  </motion.span>
+                  <motion.div
+                    className="text-xs text-gray-500 font-medium tracking-wider"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    Healthcare Excellence
+                  </motion.div>
+                </div>
               </Link>
+
+              {/* Floating notification dot */}
               <motion.div
-                className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full"
-                animate={{ scale: [1, 1.2, 1] }}
+                className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-red-400 to-pink-400 rounded-full flex items-center justify-center"
+                animate={{ scale: [1, 1.3, 1] }}
                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-              />
+              >
+                <Bell className="h-2 w-2 text-white" />
+              </motion.div>
             </motion.div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
-            <ul className="flex space-x-1">
+          <nav className="hidden md:flex items-center space-x-2">
+            <ul className="flex space-x-2">
               {navItems.map((item, index) => (
                 <motion.li
                   key={index}
@@ -366,63 +423,107 @@ const Header = () => {
                 >
                   <Link to={item.url}>
                     <motion.div
-                      className="flex items-center px-3 py-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors relative"
-                      whileHover={{ y: -2, backgroundColor: "rgba(59, 130, 246, 0.1)" }}
+                      className="flex items-center px-4 py-3 rounded-xl text-gray-700 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-300 relative group border border-transparent hover:border-blue-100 shadow-sm hover:shadow-md"
+                      whileHover={{ y: -2, scale: 1.02 }}
                       whileTap={{ y: 0 }}
                     >
-                      <span className="mr-1.5">{getIcon(item.icon)}</span>
-                      <span>{item.name}</span>
                       <motion.span
-                        className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 scale-x-0 origin-left"
+                        className="mr-2 p-1 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 group-hover:from-blue-200 group-hover:to-purple-200 transition-all duration-300"
+                        whileHover={{ rotate: 360 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        {getIcon(item.icon)}
+                      </motion.span>
+                      <span className="font-medium">{item.name}</span>
+
+                      {/* Animated underline */}
+                      <motion.span
+                        className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 scale-x-0 origin-left rounded-full"
                         transition={{ duration: 0.3 }}
                         whileHover={{ scaleX: 1 }}
                       />
+
+                      {/* Floating sparkles */}
+                      <motion.div
+                        className="absolute -top-1 -right-1 text-yellow-400"
+                        animate={{
+                          rotate: [0, 360],
+                          scale: [0, 1, 0],
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Number.POSITIVE_INFINITY,
+                          repeatDelay: 5,
+                        }}
+                      >
+                        <Star className="h-3 w-3 fill-current" />
+                      </motion.div>
                     </motion.div>
                   </Link>
                 </motion.li>
               ))}
             </ul>
 
-            {/* Cart Icon for Desktop */}
+            {/* Enhanced Cart Icon for Desktop */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: navItems.length * 0.1 }}
-              className="ml-4"
+              className="ml-6"
             >
               <CartIconComponent />
             </motion.div>
 
             {/* Auth buttons or profile */}
             {isAuthenticated ? (
-              <div className="relative ml-4">
+              <div className="relative ml-6">
                 <motion.div
-                  className="flex items-center cursor-pointer"
+                  className="flex items-center cursor-pointer group"
                   onClick={toggleProfileMenu}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <motion.div
-                    className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500"
+                    className="relative w-12 h-12 rounded-2xl overflow-hidden border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg"
                     whileHover={{ borderColor: "#38bdf8" }}
-                    animate={{ borderColor: ["#3b82f6", "#38bdf8", "#3b82f6"] }}
+                    animate={{
+                      boxShadow: [
+                        "0 0 0 0 rgba(59, 130, 246, 0.4)",
+                        "0 0 0 10px rgba(59, 130, 246, 0)",
+                        "0 0 0 0 rgba(59, 130, 246, 0)",
+                      ],
+                    }}
                     transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                   >
                     <img
-                      src={profileImage || "/placeholder.svg"}
+                      src={profileImage || "/placeholder.svg?height=48&width=48"}
                       alt={userName}
                       className="w-full h-full object-cover"
                     />
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-transparent"
+                      className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 via-purple-500/20 to-transparent"
                       animate={{ opacity: [0, 0.5, 0] }}
                       transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                     />
+
+                    {/* Online status indicator */}
+                    <motion.div
+                      className="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                    />
                   </motion.div>
-                  <motion.span className="ml-2 font-medium text-gray-700">{userName}</motion.span>
+
+                  <div className="ml-3">
+                    <motion.span className="block font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                      {userName}
+                    </motion.span>
+                    <motion.span className="block text-sm text-gray-500 capitalize">{userType}</motion.span>
+                  </div>
+
                   <motion.svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 ml-1 text-gray-500"
+                    className="h-5 w-5 ml-2 text-gray-400 group-hover:text-blue-500"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -433,7 +534,7 @@ const Header = () => {
                   </motion.svg>
                 </motion.div>
 
-                {/* Profile dropdown */}
+                {/* Enhanced Profile dropdown */}
                 <AnimatePresence>
                   {showProfileMenu && (
                     <motion.div
@@ -441,52 +542,84 @@ const Header = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-100"
+                      className="absolute right-0 mt-4 w-64 bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl py-2 z-50 border border-gray-100"
                     >
+                      {/* Profile header */}
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={profileImage || "/placeholder.svg?height=40&width=40"}
+                            alt={userName}
+                            className="w-10 h-10 rounded-xl object-cover"
+                          />
+                          <div>
+                            <p className="font-semibold text-gray-800">{userName}</p>
+                            <p className="text-sm text-gray-500 capitalize">{userType}</p>
+                          </div>
+                        </div>
+                      </div>
+
                       <Link to="/profile">
                         <motion.div
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 transition-all duration-200"
                           whileHover={{ x: 5 }}
                         >
-                          <User className="h-5 w-5 mr-2" />
-                          Profile
+                          <div className="p-2 rounded-lg bg-blue-100 mr-3">
+                            <User className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <span className="font-medium">Profile Settings</span>
                         </motion.div>
                       </Link>
+
                       <Link to="/settings">
                         <motion.div
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:text-purple-600 transition-all duration-200"
                           whileHover={{ x: 5 }}
                         >
-                          <Settings className="h-5 w-5 mr-2" />
-                          Settings
+                          <div className="p-2 rounded-lg bg-purple-100 mr-3">
+                            <Settings className="h-4 w-4 text-purple-600" />
+                          </div>
+                          <span className="font-medium">Account Settings</span>
                         </motion.div>
                       </Link>
+
                       <motion.div
-                        className="border-t border-gray-100 my-1"
+                        className="border-t border-gray-100 my-2"
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
                         transition={{ duration: 0.3 }}
                       />
+
                       <motion.button
                         onClick={handleLogout}
-                        className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        className="flex w-full items-center px-4 py-3 text-sm text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 transition-all duration-200"
                         whileHover={{ x: 5 }}
                       >
-                        <LogOut className="h-5 w-5 mr-2" />
-                        Logout
+                        <div className="p-2 rounded-lg bg-red-100 mr-3">
+                          <LogOut className="h-4 w-4 text-red-600" />
+                        </div>
+                        <span className="font-medium">Sign Out</span>
                       </motion.button>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             ) : (
-              <div className="flex items-center ml-4 space-x-2">
+              <div className="flex items-center ml-6 space-x-3">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link
                     to="/auth"
-                    className="px-4 py-2 text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
+                    className="px-6 py-3 text-blue-600 border-2 border-blue-600 rounded-xl hover:bg-blue-50 transition-all duration-300 font-medium shadow-sm hover:shadow-md"
                   >
-                    Login
+                    Sign In
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    to="/auth/register"
+                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+                  >
+                    Get Started
                   </Link>
                 </motion.div>
               </div>
@@ -494,14 +627,14 @@ const Header = () => {
           </nav>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-2">
+          <div className="md:hidden flex items-center space-x-3">
             {/* Cart Icon for Mobile */}
             <CartIconComponent />
 
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="text-gray-700 focus:outline-none p-2"
+              className="text-gray-700 focus:outline-none p-3 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 shadow-sm"
               onClick={toggleMobileMenu}
               aria-label="Toggle menu"
             >
@@ -532,29 +665,30 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Enhanced Mobile Navigation */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
+              initial={{ opacity: 0, height: 0, y: -20 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="md:hidden mt-4 bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100"
+              className="md:hidden mt-6 bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-100"
             >
               {isAuthenticated && (
-                <div className="p-4 border-b border-gray-100">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500">
+                <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50">
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
                       <img
-                        src={profileImage || "/placeholder.svg"}
+                        src={profileImage || "/placeholder.svg?height=48&width=48"}
                         alt={userName}
-                        className="w-full h-full object-cover"
+                        className="w-12 h-12 rounded-xl object-cover border-2 border-white shadow-md"
                       />
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
                     </div>
-                    <div className="ml-3">
-                      <p className="font-medium text-gray-800">{userName}</p>
-                      <p className="text-sm text-gray-500 capitalize">{userType}</p>
+                    <div>
+                      <p className="font-semibold text-gray-800 text-lg">{userName}</p>
+                      <p className="text-sm text-gray-600 capitalize bg-white/50 px-2 py-1 rounded-full">{userType}</p>
                     </div>
                   </div>
                 </div>
@@ -570,11 +704,13 @@ const Header = () => {
                   >
                     <Link to={item.url}>
                       <motion.div
-                        className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                        className="flex items-center px-6 py-4 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 transition-all duration-200 border-l-4 border-transparent hover:border-blue-400"
                         whileTap={{ backgroundColor: "rgba(59, 130, 246, 0.1)" }}
                       >
-                        <span className="mr-3">{getIcon(item.icon)}</span>
-                        <span>{item.name}</span>
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 mr-4">
+                          {getIcon(item.icon)}
+                        </div>
+                        <span className="font-medium text-lg">{item.name}</span>
                       </motion.div>
                     </Link>
                   </motion.li>
@@ -589,11 +725,13 @@ const Header = () => {
                     >
                       <Link to="/profile">
                         <motion.div
-                          className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                          className="flex items-center px-6 py-4 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 transition-all duration-200 border-l-4 border-transparent hover:border-blue-400"
                           whileTap={{ backgroundColor: "rgba(59, 130, 246, 0.1)" }}
                         >
-                          <User className="h-5 w-5 mr-3" />
-                          Profile
+                          <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 mr-4">
+                            <User className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <span className="font-medium text-lg">Profile</span>
                         </motion.div>
                       </Link>
                     </motion.li>
@@ -605,11 +743,13 @@ const Header = () => {
                     >
                       <motion.button
                         onClick={handleLogout}
-                        className="flex w-full items-center px-4 py-3 text-red-600 hover:bg-red-50"
+                        className="flex w-full items-center px-6 py-4 text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 transition-all duration-200 border-l-4 border-transparent hover:border-red-400"
                         whileTap={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}
                       >
-                        <LogOut className="h-5 w-5 mr-3" />
-                        Logout
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-red-100 to-red-200 mr-4">
+                          <LogOut className="h-5 w-5 text-red-600" />
+                        </div>
+                        <span className="font-medium text-lg">Sign Out</span>
                       </motion.button>
                     </motion.li>
                   </>
@@ -618,20 +758,20 @@ const Header = () => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: navItems.length * 0.05 }}
-                    className="px-4 py-3"
+                    className="px-6 py-4"
                   >
-                    <div className="flex flex-col space-y-2">
+                    <div className="flex flex-col space-y-3">
                       <Link
                         to="/auth"
-                        className="w-full py-2 text-center text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
+                        className="w-full py-3 text-center text-blue-600 border-2 border-blue-600 rounded-xl hover:bg-blue-50 transition-all duration-300 font-medium"
                       >
-                        Login
+                        Sign In
                       </Link>
                       <Link
                         to="/auth/register"
-                        className="w-full py-2 text-center bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        className="w-full py-3 text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-medium shadow-lg"
                       >
-                        Register
+                        Get Started
                       </Link>
                     </div>
                   </motion.li>
