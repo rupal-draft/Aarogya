@@ -20,19 +20,7 @@ public interface TestRecommendationService {
 
     List<String> getSmartTestSuggestions(String searchQuery);
 
-
-    TestRecommendationResponseDto getLLMEnhancedTestRecommendations(SymptomAnalysisRequestDto requestDto);
-
-
-    List<TestRecommendationResponseDto> getPersonalizedPreventiveRecommendations(
-            String patientId, int age, String gender, String medicalHistory);
-
-
-    TestRecommendationResponseDto getLLMEnhancedFollowUpRecommendations(
-            String patientId, String previousTestId, String previousTestResults);
-
-
-    TestRecommendationResponseDto setRecommendationStatus(
+    TestRecommendationResponseDto setRecommendationDoctorStatus(
             String recommendationId, boolean accepted, String notes);
 
 

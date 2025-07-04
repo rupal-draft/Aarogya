@@ -52,6 +52,7 @@ public class TestRecommendation {
     @AllArgsConstructor
     @NoArgsConstructor
     @Data
+    @Builder
     public static class RecommendedTest {
         private String testId;
         private String testName;

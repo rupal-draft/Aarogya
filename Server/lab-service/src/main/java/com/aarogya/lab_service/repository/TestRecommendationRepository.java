@@ -2,6 +2,8 @@ package com.aarogya.lab_service.repository;
 
 import com.aarogya.lab_service.enums.RecommendationType;
 import com.aarogya.lab_service.model.TestRecommendation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -22,5 +24,7 @@ public interface TestRecommendationRepository extends MongoRepository<TestRecomm
     List<TestRecommendation> findByIsAcceptedByDoctorTrueAndIsOrderedByDoctorFalse();
 
     List<TestRecommendation> findByCreatedAtAfterOrderByConfidenceScoreDesc(LocalDateTime date);
+
+    Page<TestRecommendation> findByPatientId(String patientId, Pageable pageable);
 }
 

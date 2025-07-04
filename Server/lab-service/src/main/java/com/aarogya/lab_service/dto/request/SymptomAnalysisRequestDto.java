@@ -15,6 +15,12 @@ public class SymptomAnalysisRequestDto {
     @NotBlank(message = "Patient ID is required")
     private String patientId;
 
+    @NotBlank(message = "Age is required")
+    private int age;
+
+    @NotBlank(message = "Gender is required")
+    private String gender;
+
     @NotEmpty(message = "At least one symptom must be provided")
     private List<@NotBlank String> symptoms;
 
