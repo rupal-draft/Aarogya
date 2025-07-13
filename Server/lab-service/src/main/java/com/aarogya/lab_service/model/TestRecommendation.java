@@ -1,6 +1,9 @@
 package com.aarogya.lab_service.model;
 
 import com.aarogya.lab_service.enums.RecommendationType;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +14,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -29,9 +33,11 @@ public class TestRecommendation {
     @Indexed
     private String doctorId;
 
-    private List<String> symptoms;
+    @Builder.Default
+    private List<String> symptoms = new ArrayList<>();
 
-    private List<RecommendedTest> recommendedTests;
+    @Builder.Default
+    private List<RecommendedTest> recommendedTests = new ArrayList<>();
 
     private String aiInsight;
 
@@ -41,8 +47,19 @@ public class TestRecommendation {
 
     private String reasoning;
 
+    @Min(value = 1, message = "Duration must be at least 1 day")
+    @Max(value = 365, message = "Duration cannot exceed 365 days")
+    private Integer durationInDays = 1;
+
+    @Pattern(regexp = "MILD|MODERATE|SEVERE", message = "Severity must be MILD, MODERATE, or SEVERE")
+    private String severity = "MODERATE";
+
+    private String additionalNotes;
+
+    @Builder.Default
     private Boolean isAcceptedByDoctor = false;
 
+    @Builder.Default
     private Boolean isOrderedByDoctor = false;
 
     @CreatedDate

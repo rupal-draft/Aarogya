@@ -40,22 +40,9 @@ public class TestOrderResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private List<LabTestSummaryDto> testDetails;
+    private LabTestResponseDto labTestResponseDto;
+
 
     private PatientResponseDTO patientDetails;
     private DoctorResponseDTO doctorDetails;
-
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class LabTestSummaryDto {
-        private String id;
-        private String name;
-        private String code;
-        private String sampleType;
-        private BigDecimal price;
-        private Integer processingTimeHours;
-        private Boolean isFasting;
-    }
 }

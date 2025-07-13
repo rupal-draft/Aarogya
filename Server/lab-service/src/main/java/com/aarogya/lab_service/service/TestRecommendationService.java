@@ -3,7 +3,9 @@ package com.aarogya.lab_service.service;
 
 import com.aarogya.lab_service.dto.request.SymptomAnalysisRequestDto;
 import com.aarogya.lab_service.dto.response.TestRecommendationResponseDto;
+import com.aarogya.lab_service.enums.RecommendationType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TestRecommendationService {
@@ -28,4 +30,12 @@ public interface TestRecommendationService {
 
 
     List<TestRecommendationResponseDto> getRecommendationHistory(String patientId, int limit);
+
+    List<TestRecommendationResponseDto> getRecommendationsByDoctor(String doctorId);
+
+    List<TestRecommendationResponseDto> getRecommendationsByType(RecommendationType type);
+
+    List<TestRecommendationResponseDto> getPendingDoctorAcceptance();
+
+    List<TestRecommendationResponseDto> getRecentHighConfidenceRecommendations(LocalDateTime since);
 }

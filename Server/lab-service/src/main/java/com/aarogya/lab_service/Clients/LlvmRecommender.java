@@ -8,8 +8,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "llm-recomendor", url = "${gemini.service.url}")
-public interface LlmRecomendor {
+@FeignClient(name = "llm-recommender", url = "${gemini.service.url}")
+public interface LlvmRecommender {
 
     @PostMapping("/recommend/tests")
     GeminiRecommendationResponse getTestRecommendations(

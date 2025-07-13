@@ -1,6 +1,6 @@
 package com.aarogya.lab_service.service.implementations;
 
-import com.aarogya.lab_service.Clients.LlmRecomendor;
+import com.aarogya.lab_service.Clients.LlvmRecommender;
 import com.aarogya.lab_service.auth.UserContext;
 import com.aarogya.lab_service.auth.UserContextHolder;
 import com.aarogya.lab_service.dto.request.FollowUpRequest;
@@ -27,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +41,7 @@ public class TestRecommendationServiceImpl implements TestRecommendationService 
     private final TestRecommendationRepository recommendationRepository;
     private final LabTestRepository labTestRepository;
     private final ModelMapper modelMapper;
-    private final LlmRecomendor llmRecomendor;
+    private final LlvmRecommender llvmRecommender;
 
     @Override
     public TestRecommendationResponseDto getTestRecommendationsForSymptoms(SymptomAnalysisRequestDto requestDto) {
@@ -50,7 +51,7 @@ public class TestRecommendationServiceImpl implements TestRecommendationService 
         String doctorId = UserContextHolder.getUserDetails().getUserId();
 
 
-        GeminiRecommendationResponse aiResponse = llmRecomendor.getTestRecommendations(
+        GeminiRecommendationResponse aiResponse = llvmRecommender.getTestRecommendations(
                 new SymptomAnalysisRequest(
                         requestDto.getSymptoms(),
                         requestDto.getAge(),
@@ -67,6 +68,10 @@ public class TestRecommendationServiceImpl implements TestRecommendationService 
         );
 
         recommendation.setSymptoms(requestDto.getSymptoms());
+        recommendation.setAdditionalNotes(requestDto.getAdditionalNotes());
+        recommendation.setSeverity(requestDto.getSeverity());
+        recommendation.setDurationInDays(requestDto.getDurationInDays());
+
         recommendation = recommendationRepository.save(recommendation);
 
         return enrichResponseDto(mapToResponseDto(recommendation));
@@ -79,7 +84,7 @@ public class TestRecommendationServiceImpl implements TestRecommendationService 
         validatePatientInfo(patientId, age, gender);
         String doctorId = UserContextHolder.getUserDetails().getUserId();
 
-        GeminiRecommendationResponse aiResponse = llmRecomendor.getPreventiveRecommendations(
+        GeminiRecommendationResponse aiResponse = llvmRecommender.getPreventiveRecommendations(
                 new PreventiveCareRequest(age, gender)
         );
 
@@ -107,7 +112,7 @@ public class TestRecommendationServiceImpl implements TestRecommendationService 
         LabTest previousTest = labTestRepository.findById(previousTestId)
                 .orElseThrow(() -> new ResourceNotFound("Previous test not found"));
 
-        GeminiRecommendationResponse aiResponse = llmRecomendor.getFollowUpRecommendations(
+        GeminiRecommendationResponse aiResponse = llvmRecommender.getFollowUpRecommendations(
                 new FollowUpRequest(previousTest.getName(), "Normal")
         );
 
@@ -224,7 +229,7 @@ public class TestRecommendationServiceImpl implements TestRecommendationService 
         }
 
         Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<TestRecommendation> recommendations = recommendationRepository.findByPatientId(patientId, pageable);
+        Page<TestRecommendation> recommendations = recommendationRepository.findByPatientIdOrderByCreatedAtDesc(patientId, pageable);
 
         return recommendations.getContent().stream()
                 .map(this::mapToResponseDto)
@@ -232,35 +237,96 @@ public class TestRecommendationServiceImpl implements TestRecommendationService 
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<TestRecommendationResponseDto> getRecommendationsByDoctor(String doctorId) {
+        if (StringUtils.isBlank(doctorId)) {
+            throw new IllegalArgumentException("Doctor ID cannot be null or empty");
+        }
+
+        UserContext currentUser = UserContextHolder.getUserDetails();
+        if (!currentUser.getUserId().equals(doctorId) && !"ADMIN".equals(currentUser.getRole())) {
+            throw new AccessForbidden("Only the doctor or admin can view these recommendations");
+        }
+
+        List<TestRecommendation> recommendations = recommendationRepository.findByDoctorIdOrderByCreatedAtDesc(doctorId);
+        return recommendations.stream()
+                .map(this::mapToResponseDto)
+                .map(this::enrichResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TestRecommendationResponseDto> getRecommendationsByType(RecommendationType type) {
+        List<TestRecommendation> recommendations = recommendationRepository.findByTypeOrderByCreatedAtDesc(type);
+        return recommendations.stream()
+                .map(this::mapToResponseDto)
+                .map(this::enrichResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TestRecommendationResponseDto> getPendingDoctorAcceptance() {
+        List<TestRecommendation> recommendations = recommendationRepository.findByIsAcceptedByDoctorTrueAndIsOrderedByDoctorFalse();
+        return recommendations.stream()
+                .map(this::mapToResponseDto)
+                .map(this::enrichResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TestRecommendationResponseDto> getRecentHighConfidenceRecommendations(LocalDateTime since) {
+        if (since == null) {
+            since = LocalDateTime.now().minusDays(7);
+        }
+
+        List<TestRecommendation> recommendations = recommendationRepository.findByCreatedAtAfterOrderByConfidenceScoreDesc(since);
+        return recommendations.stream()
+                .map(this::mapToResponseDto)
+                .map(this::enrichResponseDto)
+                .collect(Collectors.toList());
+    }
+
     private TestRecommendation buildRecommendationFromAIResponse(
-            String patientId,
-            String doctorId,
-            RecommendationType type,
-            GeminiRecommendationResponse aiResponse,
-            String reasoning) {
+            String patientId, String doctorId, RecommendationType type,
+            GeminiRecommendationResponse aiResponse, String reasoning) {
+
+        if (aiResponse == null || aiResponse.getRecommendations() == null) {
+            throw new IllegalStateException("AI response is invalid");
+        }
 
         List<TestRecommendation.RecommendedTest> recommendedTests = aiResponse.getRecommendations().stream()
+                .filter(Objects::nonNull)
                 .map(aiRec -> {
+                    String reason = (aiRec.getReason() == null || aiRec.getReason().trim().isEmpty())
+                            ? "Recommended based on analysis"
+                            : aiRec.getReason();
+                    String urgency = (aiRec.getUrgency() == null || aiRec.getUrgency().trim().isEmpty())
+                            ? "MEDIUM"
+                            : aiRec.getUrgency();
                     return labTestRepository.findByCodeAndIsActiveTrue(aiRec.getTestCode())
                             .map(test -> TestRecommendation.RecommendedTest.builder()
                                     .testId(test.getId())
                                     .testName(test.getName())
-                                    .reason(aiRec.getReason())
-                                    .urgency(aiRec.getUrgency())
-                                    .relevanceScore(aiRec.getRelevanceScore())
+                                    .reason(reason)
+                                    .urgency(urgency)
+                                    .relevanceScore(aiRec.getRelevanceScore() != null ?
+                                            aiRec.getRelevanceScore() : 0.5)
                                     .build())
                             .orElse(null);
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        String insights = (aiResponse.getAiInsight() == null || aiResponse.getAiInsight().trim().isEmpty() ?
+                "No additional insights provided" : aiResponse.getAiInsight());
         return TestRecommendation.builder()
                 .patientId(patientId)
                 .doctorId(doctorId)
                 .type(type)
                 .recommendedTests(recommendedTests)
-                .confidenceScore(aiResponse.getConfidenceScore())
-                .aiInsight(aiResponse.getAiInsight())
+                .confidenceScore(aiResponse.getConfidenceScore() != null ?
+                        aiResponse.getConfidenceScore() : 0.0)
+                .aiInsight(insights)
                 .reasoning(reasoning)
                 .build();
     }
@@ -300,16 +366,22 @@ public class TestRecommendationServiceImpl implements TestRecommendationService 
     }
 
     private TestRecommendationResponseDto enrichResponseDto(TestRecommendationResponseDto dto) {
+        if (dto == null) return null;
+
         if (dto.getRecommendedTests() != null && !dto.getRecommendedTests().isEmpty()) {
             boolean hasHighUrgency = dto.getRecommendedTests().stream()
-                    .anyMatch(t -> "HIGH".equals(t.getUrgency()));
+                    .anyMatch(t -> t != null && "HIGH".equals(t.getUrgency()));
 
             boolean hasMediumUrgency = dto.getRecommendedTests().stream()
-                    .anyMatch(t -> "MEDIUM".equals(t.getUrgency()));
+                    .anyMatch(t -> t != null && "MEDIUM".equals(t.getUrgency()));
 
             dto.setUrgencyLevel(hasHighUrgency ? "HIGH" : hasMediumUrgency ? "MEDIUM" : "LOW");
         } else {
             dto.setUrgencyLevel("LOW");
+        }
+
+        if (dto.getConfidenceScore() != null && dto.getConfidenceLevel() == null) {
+            dto.setConfidenceScore(dto.getConfidenceScore() * 100);
         }
 
         return dto;

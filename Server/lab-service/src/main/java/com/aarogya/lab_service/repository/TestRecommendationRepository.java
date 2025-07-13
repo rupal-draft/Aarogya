@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface TestRecommendationRepository extends MongoRepository<TestRecommendation, String> {
 
-    List<TestRecommendation> findByPatientIdOrderByCreatedAtDesc(String patientId);
+    Page<TestRecommendation> findByPatientIdOrderByCreatedAtDesc(String patientId, Pageable pageable);
 
     List<TestRecommendation> findByDoctorIdOrderByCreatedAtDesc(String doctorId);
 
@@ -24,7 +24,5 @@ public interface TestRecommendationRepository extends MongoRepository<TestRecomm
     List<TestRecommendation> findByIsAcceptedByDoctorTrueAndIsOrderedByDoctorFalse();
 
     List<TestRecommendation> findByCreatedAtAfterOrderByConfidenceScoreDesc(LocalDateTime date);
-
-    Page<TestRecommendation> findByPatientId(String patientId, Pageable pageable);
 }
 

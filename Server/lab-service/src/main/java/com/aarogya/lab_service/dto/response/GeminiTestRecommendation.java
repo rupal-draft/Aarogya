@@ -11,6 +11,6 @@ public class GeminiTestRecommendation {
     private String testName;
     private String testCode;
     private String reason;
-    private double relevanceScore;
+    private Double relevanceScore;
     private String urgency;
 }
