@@ -1,5 +1,6 @@
 package com.aarogya.lab_service.dto.response;
 
+import com.aarogya.lab_service.models.LabResult;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

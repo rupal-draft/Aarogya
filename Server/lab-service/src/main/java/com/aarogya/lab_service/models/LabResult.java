@@ -5,10 +5,13 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,6 +20,9 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Document(collection = "lab_results")
+@CompoundIndexes({
+        @CompoundIndex(name = "order_test_unique", def = "{'orderId': 1, 'testId': 1}", unique = true)
+})
 public class LabResult {
     @Id
     private String id;
@@ -33,7 +39,10 @@ public class LabResult {
     private String testId;
     private String testCode;
     private String testName;
-    private List<ResultParameter> parameters;
+
+    @Builder.Default
+    private List<ResultParameter> parameters = new ArrayList<>();
+
     private String overallResult;
     private String interpretation;
     private String technicalNotes;
@@ -65,5 +74,16 @@ public class LabResult {
         private String normalRange;
         private ResultParameterStatus status;
         private String notes;
+    }
+
+    public static LabResult fromOrderAndTest(LabOrder order, LabOrder.OrderedTest ot) {
+        return LabResult.builder()
+                .orderId(order.getId())
+                .patientId(order.getPatientId())
+                .doctorId(order.getDoctorId())
+                .testId(ot.getTestId())
+                .testCode(ot.getTestCode())
+                .testName(ot.getTestName())
+                .build();
     }
 }
