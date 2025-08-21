@@ -1,11 +1,14 @@
 package com.aarogya.lab_service.controller;
 
+import com.aarogya.lab_service.advices.ApiError;
 import com.aarogya.lab_service.advices.ApiResponse;
 import com.aarogya.lab_service.auth.UserContextHolder;
 import com.aarogya.lab_service.dto.request.CreateLabOrderRequest;
 import com.aarogya.lab_service.dto.response.LabOrderResponse;
 import com.aarogya.lab_service.enums.OrderStatus;
 import com.aarogya.lab_service.service.LabOrderService;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -15,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/orders")
 @Slf4j
@@ -22,11 +27,12 @@ public class LabOrderController {
 
     private final LabOrderService labOrderService;
 
-    public LabOrderController(LabOrderService labOrderService) {
+    public LabOrderController(LabOrderService labOrderService, RateLimiterRegistry rateLimiterRegistry) {
         this.labOrderService = labOrderService;
     }
 
     @PostMapping
+    @RateLimiter(name = "labOrderController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<LabOrderResponse>> createOrder(
             @Valid @RequestBody CreateLabOrderRequest request) {
 
@@ -39,6 +45,7 @@ public class LabOrderController {
     }
 
     @GetMapping("/my-orders")
+    @RateLimiter(name = "highRateEndpoints", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<Page<LabOrderResponse>>> getMyOrders(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) int size) {
@@ -52,6 +59,7 @@ public class LabOrderController {
     }
 
     @GetMapping("/doctor-orders")
+    @RateLimiter(name = "highRateEndpoints", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<Page<LabOrderResponse>>> getDoctorOrders(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) int size) {
@@ -65,6 +73,7 @@ public class LabOrderController {
     }
 
     @GetMapping("/{orderId}")
+    @RateLimiter(name = "labOrderController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<LabOrderResponse>> getOrderById(
             @PathVariable @NotBlank String orderId) {
 
@@ -75,6 +84,7 @@ public class LabOrderController {
     }
 
     @GetMapping("/number/{orderNumber}")
+    @RateLimiter(name = "labOrderController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<LabOrderResponse>> getOrderByNumber(
             @PathVariable @NotBlank String orderNumber) {
 
@@ -85,6 +95,7 @@ public class LabOrderController {
     }
 
     @PutMapping("/{orderId}/status")
+    @RateLimiter(name = "lowRateEndpoints", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<LabOrderResponse>> updateOrderStatus(
             @PathVariable @NotBlank String orderId,
             @RequestParam String status) {
@@ -96,6 +107,7 @@ public class LabOrderController {
     }
 
     @PutMapping("/{orderId}/cancel")
+    @RateLimiter(name = "lowRateEndpoints", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<LabOrderResponse>> cancelOrder(
             @PathVariable @NotBlank String orderId,
             @RequestParam @NotBlank String reason) {
@@ -104,5 +116,18 @@ public class LabOrderController {
 
         LabOrderResponse order = labOrderService.cancelOrder(orderId, reason);
         return ResponseEntity.ok(ApiResponse.success("Order cancelled successfully", order));
+    }
+
+    public ResponseEntity<ApiResponse<?>> rateLimitFallback(Exception ex) {
+        log.warn("Rate limit exceeded for LabOrderController: {}", ex.getMessage());
+
+        ApiError error = new ApiError.ApiErrorBuilder()
+                .setMessage("Too many requests. Please try again later.")
+                .setStatus(HttpStatus.TOO_MANY_REQUESTS)
+                .setSubErrors(List.of("Rate limit exceeded", "Please wait before making another request"))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ApiResponse.error("Too many requests. Please try again later.",error));
     }
 }

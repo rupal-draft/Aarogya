@@ -1,12 +1,16 @@
 package com.aarogya.lab_service.controller;
 
+import com.aarogya.lab_service.advices.ApiError;
 import com.aarogya.lab_service.advices.ApiResponse;
 import com.aarogya.lab_service.dto.response.LabTestResponse;
 import com.aarogya.lab_service.service.LabTestService;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,13 +20,15 @@ import java.util.List;
 @RequestMapping("/api/v1/lab/tests")
 @Slf4j
 public class LabTestController {
-    
+
     private final LabTestService labTestService;
-    public LabTestController(LabTestService labTestService) {
+
+    public LabTestController(LabTestService labTestService, RateLimiterRegistry rateLimiterRegistry) {
         this.labTestService = labTestService;
     }
 
     @GetMapping
+    @RateLimiter(name = "highRateEndpoints", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<Page<LabTestResponse>>> getAllTests(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) int size) {
@@ -34,6 +40,7 @@ public class LabTestController {
     }
 
     @GetMapping("/all")
+    @RateLimiter(name = "highRateEndpoints", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<List<LabTestResponse>>> getAllTestsList() {
         log.info("GET /api/v1/lab/tests/all");
 
@@ -42,6 +49,7 @@ public class LabTestController {
     }
 
     @GetMapping("/search")
+    @RateLimiter(name = "highRateEndpoints", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<Page<LabTestResponse>>> searchTests(
             @RequestParam @NotBlank String query,
             @RequestParam(defaultValue = "0") @Min(0) int page,
@@ -54,6 +62,7 @@ public class LabTestController {
     }
 
     @GetMapping("/categories")
+    @RateLimiter(name = "labTestController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<List<String>>> getCategories() {
         log.info("GET /api/v1/lab/tests/categories");
 
@@ -62,6 +71,7 @@ public class LabTestController {
     }
 
     @GetMapping("/category/{category}")
+    @RateLimiter(name = "labTestController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<List<LabTestResponse>>> getTestsByCategory(
             @PathVariable @NotBlank String category) {
 
@@ -72,6 +82,7 @@ public class LabTestController {
     }
 
     @GetMapping("/{testId}")
+    @RateLimiter(name = "labTestController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<LabTestResponse>> getTestById(
             @PathVariable @NotBlank String testId) {
 
@@ -82,6 +93,7 @@ public class LabTestController {
     }
 
     @GetMapping("/code/{testCode}")
+    @RateLimiter(name = "labTestController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<LabTestResponse>> getTestByCode(
             @PathVariable @NotBlank String testCode) {
 
@@ -89,5 +101,18 @@ public class LabTestController {
 
         LabTestResponse test = labTestService.getTestByCode(testCode);
         return ResponseEntity.ok(ApiResponse.success("Lab test retrieved successfully", test));
+    }
+
+    public ResponseEntity<ApiResponse<?>> rateLimitFallback(Exception ex) {
+        log.warn("Rate limit exceeded for LabTestController: {}", ex.getMessage());
+
+        ApiError error = new ApiError.ApiErrorBuilder()
+                .setMessage("Too many requests. Please try again later.")
+                .setStatus(HttpStatus.TOO_MANY_REQUESTS)
+                .setSubErrors(List.of("Rate limit exceeded", "Please wait before making another request"))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ApiResponse.error("Too many requests. Please try again later.", error));
     }
 }

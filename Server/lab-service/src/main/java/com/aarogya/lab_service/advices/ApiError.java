@@ -1,11 +1,13 @@
 package com.aarogya.lab_service.advices;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+@Getter
 public final class ApiError {
 
     private final String message;
@@ -18,18 +20,6 @@ public final class ApiError {
         this.subErrors = builder.subErrors != null ?
                 Collections.unmodifiableList(builder.subErrors) :
                 Collections.emptyList();
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
-    }
-
-    public List<String> getSubErrors() {
-        return subErrors;
     }
 
     public static class ApiErrorBuilder {

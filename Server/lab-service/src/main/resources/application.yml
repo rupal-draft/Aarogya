@@ -59,3 +59,27 @@ grpc:
 
 deploy:
   env: ${DEPLOY_ENV}
+
+
+resilience4j:
+  ratelimiter:
+    configs:
+      default:
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeoutDuration: 0
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+    instances:
+      labOrderController:
+        baseConfig: default
+      labResultController:
+        baseConfig: default
+      labTestController:
+        baseConfig: default
+      highRateEndpoints:
+        limitForPeriod: 20
+        limitRefreshPeriod: 1s
+      lowRateEndpoints:
+        limitForPeriod: 5
+        limitRefreshPeriod: 1s

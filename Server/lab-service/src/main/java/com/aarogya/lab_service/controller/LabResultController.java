@@ -1,16 +1,20 @@
 package com.aarogya.lab_service.controller;
 
+import com.aarogya.lab_service.advices.ApiError;
 import com.aarogya.lab_service.advices.ApiResponse;
 import com.aarogya.lab_service.auth.UserContextHolder;
 import com.aarogya.lab_service.dto.request.UpdateLabResultRequest;
 import com.aarogya.lab_service.dto.response.LabResultResponse;
 import com.aarogya.lab_service.service.LabResultService;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,11 +27,13 @@ import java.util.List;
 public class LabResultController {
 
     private final LabResultService labResultService;
-    public LabResultController(LabResultService labResultService) {
+
+    public LabResultController(LabResultService labResultService, RateLimiterRegistry rateLimiterRegistry) {
         this.labResultService = labResultService;
     }
 
     @GetMapping("/my-results")
+    @RateLimiter(name = "highRateEndpoints", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<Page<LabResultResponse>>> getMyResults(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) int size) {
@@ -41,6 +47,7 @@ public class LabResultController {
     }
 
     @GetMapping("/doctor-results")
+    @RateLimiter(name = "highRateEndpoints", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<Page<LabResultResponse>>> getDoctorResults(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) int size) {
@@ -54,6 +61,7 @@ public class LabResultController {
     }
 
     @GetMapping("/order/{orderId}")
+    @RateLimiter(name = "labResultController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<List<LabResultResponse>>> getOrderResults(
             @PathVariable @NotBlank String orderId) {
 
@@ -64,6 +72,7 @@ public class LabResultController {
     }
 
     @GetMapping("/{resultId}")
+    @RateLimiter(name = "labResultController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<LabResultResponse>> getResultById(
             @PathVariable @NotBlank String resultId) {
 
@@ -74,6 +83,7 @@ public class LabResultController {
     }
 
     @GetMapping("/date-range")
+    @RateLimiter(name = "labResultController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<List<LabResultResponse>>> getResultsByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
@@ -88,6 +98,7 @@ public class LabResultController {
     }
 
     @GetMapping("/abnormal")
+    @RateLimiter(name = "labResultController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<List<LabResultResponse>>> getAbnormalResults() {
         String patientId = UserContextHolder.getUserDetails().getUserId();
         log.info("GET /api/v1/lab/results/abnormal - patient: {}", patientId);
@@ -97,6 +108,7 @@ public class LabResultController {
     }
 
     @PutMapping("/{resultId}")
+    @RateLimiter(name = "lowRateEndpoints", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<LabResultResponse>> updateResult(
             @PathVariable @NotBlank String resultId,
             @Valid @RequestBody UpdateLabResultRequest request) {
@@ -105,5 +117,18 @@ public class LabResultController {
 
         LabResultResponse result = labResultService.updateResult(resultId, request);
         return ResponseEntity.ok(ApiResponse.success("Lab result updated successfully", result));
+    }
+
+    public ResponseEntity<ApiResponse<?>> rateLimitFallback(Exception ex) {
+        log.warn("Rate limit exceeded for LabResultController: {}", ex.getMessage());
+
+        ApiError error = new ApiError.ApiErrorBuilder()
+                .setMessage("Too many requests. Please try again later.")
+                .setStatus(HttpStatus.TOO_MANY_REQUESTS)
+                .setSubErrors(List.of("Rate limit exceeded", "Please wait before making another request"))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ApiResponse.error("Too many requests. Please try again later.",error));
     }
 }
