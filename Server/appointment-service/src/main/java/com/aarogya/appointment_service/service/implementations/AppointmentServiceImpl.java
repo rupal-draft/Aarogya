@@ -1,6 +1,6 @@
 package com.aarogya.appointment_service.service.implementations;
 
-import com.aarogya.appointment_service.Clients.UserGrpcClient;
+import com.aarogya.appointment_service.clients.UserGrpcClient;
 import com.aarogya.appointment_service.auth.UserContextHolder;
 import com.aarogya.appointment_service.dto.request.AppointmentRequestDto;
 import com.aarogya.appointment_service.dto.request.EmergencyAppointmentDto;

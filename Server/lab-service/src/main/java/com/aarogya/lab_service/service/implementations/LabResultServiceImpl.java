@@ -1,6 +1,9 @@
 package com.aarogya.lab_service.service.implementations;
 
 import com.aarogya.lab_service.auth.UserContextHolder;
+import com.aarogya.lab_service.clients.UserGrpcClient;
+import com.aarogya.lab_service.dto.grpc.DoctorResponseDTO;
+import com.aarogya.lab_service.dto.grpc.PatientResponseDTO;
 import com.aarogya.lab_service.dto.request.UpdateLabResultRequest;
 import com.aarogya.lab_service.dto.response.LabResultResponse;
 import com.aarogya.lab_service.enums.OrderStatus;
@@ -34,6 +37,7 @@ public class LabResultServiceImpl implements LabResultService {
     private final LabResultRepository labResultRepository;
     private final LabOrderRepository labOrderRepository;
     private final ModelMapper modelMapper;
+    private final UserGrpcClient userGrpcClient;
 
     @Override
     @Cacheable(value = "patientResults", key = "#patientId + '_' + #page + '_' + #size")
@@ -187,11 +191,12 @@ public class LabResultServiceImpl implements LabResultService {
         labOrderRepository.findById(result.getOrderId())
                 .ifPresent(order -> response.setOrderNumber(order.getOrderNumber()));
 
-        // TODO: Fetch patient and doctor names using gRPC clients
-        // response.setPatientName(patientGrpcClient.getPatientName(result.getPatientId()));
-        // if (result.getDoctorId() != null) {
-        //     response.setDoctorName(doctorGrpcClient.getDoctorName(result.getDoctorId()));
-        // }
+        PatientResponseDTO patientResponseDTO = userGrpcClient.getPatient(result.getPatientId());
+        response.setPatientName(patientResponseDTO.getFirstName() + " " + patientResponseDTO.getLastName());
+        if (result.getDoctorId() != null) {
+            DoctorResponseDTO doctorResponseDTO = userGrpcClient.getDoctor(result.getDoctorId());
+            response.setDoctorName(doctorResponseDTO.getFirstName() + " " + doctorResponseDTO.getLastName());
+        }
 
         return response;
     }

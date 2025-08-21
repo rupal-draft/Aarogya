@@ -1,9 +1,10 @@
-package com.aarogya.appointment_service.clients;
+package com.aarogya.lab_service.clients;
 
-import com.aarogya.appointment_service.dto.response.DoctorResponseDTO;
-import com.aarogya.appointment_service.dto.response.PatientResponseDTO;
-import com.aarogya.appointment_service.exceptions.*;
+
 import com.aarogya.auth.proto.*;
+import com.aarogya.lab_service.dto.grpc.DoctorResponseDTO;
+import com.aarogya.lab_service.dto.grpc.PatientResponseDTO;
+import com.aarogya.lab_service.exceptions.*;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -183,7 +184,7 @@ public class UserGrpcClient {
 
         switch (code) {
             case NOT_FOUND:
-                throw new ResourceNotFound(description != null ? description : "Requested blog not found");
+                throw new ResourceNotFoundException(description != null ? description : "Requested blog not found");
             case INVALID_ARGUMENT:
                 throw new BadRequestException(description != null ? description : "Invalid blog request parameters");
             case PERMISSION_DENIED:

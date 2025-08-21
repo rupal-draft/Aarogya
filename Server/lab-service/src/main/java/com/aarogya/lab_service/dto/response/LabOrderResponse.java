@@ -1,6 +1,8 @@
 package com.aarogya.lab_service.dto.response;
 
-import com.aarogya.lab_service.models.LabOrder;
+import com.aarogya.lab_service.enums.OrderStatus;
+import com.aarogya.lab_service.enums.PaymentStatus;
+import com.aarogya.lab_service.enums.TestStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,11 +24,11 @@ public class LabOrderResponse {
     private String doctorName;
     private List<OrderedTestResponse> orderedTests;
     private BigDecimal totalAmount;
-    private LabOrder.OrderStatus status;
-    private LabOrder.PaymentStatus paymentStatus;
+    private OrderStatus status;
+    private PaymentStatus paymentStatus;
     private String paymentId;
     private LocalDateTime scheduledDateTime;
-    private String labLocation;
+    private String location;
     private String specialInstructions;
     private String cancellationReason;
     private LocalDateTime createdAt;
@@ -40,7 +42,7 @@ public class LabOrderResponse {
         private String testCode;
         private String testName;
         private BigDecimal price;
-        private LabOrder.TestStatus status;
+        private TestStatus status;
         private LocalDateTime sampleCollectedAt;
         private LocalDateTime resultExpectedAt;
     }

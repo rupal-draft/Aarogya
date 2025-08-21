@@ -1,6 +1,6 @@
 package com.aarogya.appointment_service.service.implementations;
 
-import com.aarogya.appointment_service.Clients.UserGrpcClient;
+import com.aarogya.appointment_service.clients.UserGrpcClient;
 import com.aarogya.appointment_service.dto.response.DoctorResponseDTO;
 import com.aarogya.appointment_service.dto.response.PatientResponseDTO;
 import com.aarogya.appointment_service.events.NotificationEmailEvent;
@@ -18,7 +18,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
