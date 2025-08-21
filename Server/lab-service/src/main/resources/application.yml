@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: lab-service
+
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+      database: ${MONGO_DATABASE}
+      auto-index-creation: true
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=30m
+    cache-names:
+      - labTests
+      - labOrders
+      - patientOrders
+      - patientResults
+      - doctorResults
+
+logging:
+  level:
+    com.healthcare.lab: DEBUG
+    org.springframework.data.mongodb: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+lab:
+  business-hours:
+    start: 8
+    end: 18
+  max-tests-per-order: 10
+  result-retention-days: 365
+
+server:
+  port: ${LAB_SERVICE_PORT}
+  servlet:
+    context-path: /lab
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_URL}
+
+grpc:
+  server:
+    port: ${GRPC_PORT}
+
+deploy:
+  env: ${DEPLOY_ENV}
