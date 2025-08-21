@@ -1,5 +1,6 @@
 package com.aarogya.lab_service.dto.request;
 
+import com.aarogya.lab_service.models.LabResult;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
