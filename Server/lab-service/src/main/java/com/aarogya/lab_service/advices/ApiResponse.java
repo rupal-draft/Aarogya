@@ -1,45 +1,51 @@
 package com.aarogya.lab_service.advices;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
-public class ApiResponse <T>{
+@Getter
+@Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ApiResponse<T> {
+    private boolean success;
+    private String message;
+    private T data;
+    private ApiError error;
+    private LocalDateTime timestamp;
 
-    private final LocalDateTime timeStamp;
-    private final ApiError error;
-    private final T data;
-    private final boolean success;
+    public ApiResponse() {
+        this.timestamp = LocalDateTime.now();
+    }
 
-    public ApiResponse(T data,ApiError error, boolean success) {
-        this.timeStamp = LocalDateTime.now();
-        this.error = error;
-        this.data = data;
+    public ApiResponse(boolean success, String message, T data) {
+        this();
         this.success = success;
+        this.message = message;
+        this.data = data;
+    }
+
+    public ApiResponse(boolean success, String message, T data, ApiError error) {
+        this(success, message, data);
+        this.error = error;
     }
 
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(Objects.requireNonNull(data, "Data cannot be null"), null, true);
+        return new ApiResponse<>(true, "Success", data);
     }
 
-    public static <T> ApiResponse<T> error(ApiError error) {
-        return new ApiResponse<>(null, Objects.requireNonNull(error, "Error cannot be null"), false);
+    public static <T> ApiResponse<T> success(String message, T data) {
+        return new ApiResponse<>(true, message, data);
     }
 
-    public LocalDateTime getTimeStamp() {
-        return timeStamp;
+    public static <T> ApiResponse<T> error(String message) {
+        return new ApiResponse<>(false, message, null);
     }
 
-    public ApiError getError() {
-        return error;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public boolean isSuccess() {
-        return success;
+    public static <T> ApiResponse<T> error(String message, ApiError error) {
+        return new ApiResponse<>(false, message, null, error);
     }
 }
