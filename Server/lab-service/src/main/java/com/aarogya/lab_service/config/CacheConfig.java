@@ -20,7 +20,9 @@ public class CacheConfig {
                 "labOrders",
                 "patientOrders",
                 "patientResults",
-                "doctorResults"
+                "doctorResults",
+                "patient",
+                "doctor"
         );
 
         cacheManager.setCaffeine(Caffeine.newBuilder()
