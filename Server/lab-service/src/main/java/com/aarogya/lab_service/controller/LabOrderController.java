@@ -14,10 +14,13 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -118,6 +121,41 @@ public class LabOrderController {
         return ResponseEntity.ok(ApiResponse.success("Order cancelled successfully", order));
     }
 
+    @PutMapping("/{orderId}/collect-sample")
+    @RateLimiter(name = "labOrderController", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<LabOrderResponse>> collectSample(
+            @PathVariable @NotBlank String orderId,
+            @RequestParam @NotBlank String technicianId) {
+
+        log.info("PUT /api/v1/lab/orders/{}/collect-sample - technician: {}", orderId, technicianId);
+
+        LabOrderResponse order = labOrderService.collectSample(orderId, technicianId);
+        return ResponseEntity.ok(ApiResponse.success("Sample collected successfully", order));
+    }
+
+    @GetMapping("/collection-schedule")
+    @RateLimiter(name = "labOrderController", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<List<LabOrderResponse>>> getCollectionSchedule(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        log.info("GET /api/v1/lab/orders/collection-schedule - date: {}", date);
+
+        List<LabOrderResponse> orders = labOrderService.getCollectionSchedule(date);
+        return ResponseEntity.ok(ApiResponse.success("Collection schedule retrieved successfully", orders));
+    }
+
+    @PutMapping("/{orderId}/reschedule")
+    @RateLimiter(name = "labOrderController", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<LabOrderResponse>> rescheduleOrder(
+            @PathVariable @NotBlank String orderId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime newDateTime) {
+
+        log.info("PUT /api/v1/lab/orders/{}/reschedule - new time: {}", orderId, newDateTime);
+
+        LabOrderResponse order = labOrderService.rescheduleOrder(orderId, newDateTime);
+        return ResponseEntity.ok(ApiResponse.success("Order rescheduled successfully", order));
+    }
+
     public ResponseEntity<ApiResponse<?>> rateLimitFallback(Exception ex) {
         log.warn("Rate limit exceeded for LabOrderController: {}", ex.getMessage());
 
@@ -128,6 +166,6 @@ public class LabOrderController {
                 .build();
 
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(ApiResponse.error("Too many requests. Please try again later.",error));
+                .body(ApiResponse.error(error));
     }
 }

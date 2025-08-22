@@ -3,6 +3,7 @@ package com.aarogya.lab_service.controller;
 import com.aarogya.lab_service.advices.ApiError;
 import com.aarogya.lab_service.advices.ApiResponse;
 import com.aarogya.lab_service.auth.UserContextHolder;
+import com.aarogya.lab_service.dto.request.CreateLabResultRequest;
 import com.aarogya.lab_service.dto.request.UpdateLabResultRequest;
 import com.aarogya.lab_service.dto.response.LabResultResponse;
 import com.aarogya.lab_service.service.LabResultService;
@@ -108,7 +109,7 @@ public class LabResultController {
     }
 
     @PutMapping("/{resultId}")
-    @RateLimiter(name = "lowRateEndpoints", fallbackMethod = "rateLimitFallback")
+    @RateLimiter(name = "labResultController", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<LabResultResponse>> updateResult(
             @PathVariable @NotBlank String resultId,
             @Valid @RequestBody UpdateLabResultRequest request) {
@@ -117,6 +118,63 @@ public class LabResultController {
 
         LabResultResponse result = labResultService.updateResult(resultId, request);
         return ResponseEntity.ok(ApiResponse.success("Lab result updated successfully", result));
+    }
+
+    @PostMapping
+    @RateLimiter(name = "labResultController", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<LabResultResponse>> createResult(
+            @Valid @RequestBody CreateLabResultRequest request) {
+
+        log.info("POST /api/v1/lab/results - Creating result for order: {}", request.getOrderId());
+
+        LabResultResponse result = labResultService.createResult(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Lab result created successfully", result));
+    }
+
+    @PostMapping("/bulk")
+    @RateLimiter(name = "labResultController", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<List<LabResultResponse>>> createResultsBulk(
+            @Valid @RequestBody List<CreateLabResultRequest> requests) {
+
+        log.info("POST /api/v1/lab/results/bulk - Creating {} results", requests.size());
+
+        List<LabResultResponse> results = labResultService.createResultsBulk(requests);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Lab results created successfully", results));
+    }
+
+    @PutMapping("/{resultId}/verify")
+    @RateLimiter(name = "labResultController", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<LabResultResponse>> verifyResult(
+            @PathVariable @NotBlank String resultId,
+            @RequestParam @NotBlank String pathologistId) {
+
+        log.info("PUT /api/v1/lab/results/{}/verify - pathologist: {}", resultId, pathologistId);
+
+        LabResultResponse result = labResultService.verifyResult(resultId, pathologistId);
+        return ResponseEntity.ok(ApiResponse.success("Lab result verified successfully", result));
+    }
+
+    @GetMapping("/pending-processing")
+    @RateLimiter(name = "highRateEndpoints", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<Page<LabResultResponse>>> getPendingResults(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size) {
+
+        log.info("GET /api/v1/lab/results/pending-processing - page: {}, size: {}", page, size);
+
+        Page<LabResultResponse> results = labResultService.getPendingResults(page, size);
+        return ResponseEntity.ok(ApiResponse.success("Pending results retrieved successfully", results));
+    }
+
+    @PostMapping("/{resultId}/notify-critical")
+    @RateLimiter(name = "labResultController", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<String>> notifyCriticalResult(@PathVariable @NotBlank String resultId) {
+        log.info("POST /api/v1/lab/results/{}/notify-critical", resultId);
+
+        labResultService.notifyCriticalResult(resultId);
+        return ResponseEntity.ok(ApiResponse.success("Critical result notification sent", "Notification sent"));
     }
 
     public ResponseEntity<ApiResponse<?>> rateLimitFallback(Exception ex) {
@@ -129,6 +187,6 @@ public class LabResultController {
                 .build();
 
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(ApiResponse.error("Too many requests. Please try again later.",error));
+                .body(ApiResponse.error(error));
     }
 }

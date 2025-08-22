@@ -5,7 +5,17 @@ import com.aarogya.lab_service.dto.response.LabOrderResponse;
 import com.aarogya.lab_service.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
 public interface LabOrderService {
+
+    LabOrderResponse collectSample(String orderId, String technicianId);
+
+    List<LabOrderResponse> getCollectionSchedule(LocalDate date);
+
+    LabOrderResponse rescheduleOrder(String orderId, LocalDateTime newDateTime);
 
     LabOrderResponse createOrder(CreateLabOrderRequest request);
 

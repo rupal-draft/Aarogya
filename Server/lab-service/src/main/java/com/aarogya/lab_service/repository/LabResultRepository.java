@@ -33,4 +33,9 @@ public interface LabResultRepository extends MongoRepository<LabResult, String> 
     List<LabResult> findByPatientIdAndOverallResult(String patientId, String overallResult);
 
     long countByPatientIdAndOverallResult(String patientId, String overallResult);
+
+    Page<LabResult> findByIsVerifiedFalse(Pageable pageable);
+
+    @Query("{'labTechnicianId': ?0, 'isVerified': false}")
+    List<LabResult> findByLabTechnicianIdAndIsVerifiedFalse(String technicianId);
 }

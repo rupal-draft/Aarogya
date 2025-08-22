@@ -7,12 +7,14 @@ import com.aarogya.lab_service.dto.grpc.PatientResponseDTO;
 import com.aarogya.lab_service.dto.request.CreateLabOrderRequest;
 import com.aarogya.lab_service.dto.response.LabOrderResponse;
 import com.aarogya.lab_service.enums.OrderStatus;
+import com.aarogya.lab_service.enums.TestStatus;
 import com.aarogya.lab_service.exceptions.*;
 import com.aarogya.lab_service.models.LabOrder;
 import com.aarogya.lab_service.models.LabTest;
 import com.aarogya.lab_service.repository.LabOrderRepository;
 import com.aarogya.lab_service.repository.LabTestRepository;
 import com.aarogya.lab_service.service.LabOrderService;
+import com.aarogya.lab_service.service.LabResultService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +41,83 @@ public class LabOrderServiceImpl implements LabOrderService {
     private final LabTestRepository labTestRepository;
     private final ModelMapper modelMapper;
     private final UserGrpcClient userGrpcClient;
+    private final LabResultService labResultService;
+
+    @Override
+    @Transactional
+    @CacheEvict(value = {"labOrders", "patientOrders"}, allEntries = true)
+    public LabOrderResponse collectSample(String orderId, String technicianId) {
+        log.info("Collecting sample for order: {} by technician: {}", orderId, technicianId);
+
+        LabOrder order = labOrderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lab Order", orderId));
+
+        if (order.getStatus() != OrderStatus.SAMPLE_COLLECTION_SCHEDULED) {
+            throw new LabServiceException("Order is not ready for sample collection", "INVALID_STATUS");
+        }
+
+        order.setStatus(OrderStatus.SAMPLE_COLLECTED);
+
+        order.getOrderedTests().forEach(test -> {
+            test.setStatus(TestStatus.SAMPLE_COLLECTED);
+            test.setSampleCollectedAt(LocalDateTime.now());
+        });
+
+        LabOrder updatedOrder = labOrderRepository.save(order);
+
+        labResultService.createResultsForOrder(orderId);
+
+        log.info("Sample collected successfully for order: {}", orderId);
+        return mapToOrderResponse(updatedOrder);
+    }
+
+    @Override
+    public List<LabOrderResponse> getCollectionSchedule(LocalDate date) {
+        log.info("Fetching collection schedule for date: {}", date);
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(23, 59, 59);
+
+        List<LabOrder> orders = labOrderRepository.findByStatusAndScheduledDateTimeBetween(
+                OrderStatus.SAMPLE_COLLECTION_SCHEDULED, startOfDay, endOfDay);
+
+        return orders.stream()
+                .map(this::mapToOrderResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = {"labOrders", "patientOrders"}, allEntries = true)
+    public LabOrderResponse rescheduleOrder(String orderId, LocalDateTime newDateTime) {
+        log.info("Rescheduling order: {} to new time: {}", orderId, newDateTime);
+
+        LabOrder order = labOrderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lab Order", orderId));
+
+        String currentUserId = UserContextHolder.getUserDetails().getUserId();
+        if (!order.getPatientId().equals(currentUserId)) {
+            throw new AccessForbidden("Access denied to reschedule this order");
+        }
+
+        if (order.getStatus() == OrderStatus.SAMPLE_COLLECTED ||
+                order.getStatus() == OrderStatus.IN_PROGRESS ||
+                order.getStatus() == OrderStatus.COMPLETED ||
+                order.getStatus() == OrderStatus.CANCELLED) {
+            throw new BadRequestException("Order cannot be rescheduled in current status");
+        }
+
+        if (newDateTime.isBefore(LocalDateTime.now())) {
+            throw new ValidationException("newDateTime", "New scheduled time must be in the future");
+        }
+
+        order.setScheduledDateTime(newDateTime);
+        LabOrder rescheduledOrder = labOrderRepository.save(order);
+
+        log.info("Order rescheduled successfully: {}", orderId);
+        return mapToOrderResponse(rescheduledOrder);
+    }
+
 
     @Override
     @Transactional

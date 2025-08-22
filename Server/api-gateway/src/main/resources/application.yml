@@ -77,11 +77,18 @@ spring:
             - StripPrefix=2
             - name: AuthenticationFilter
 
-
         - id: doctor-service
           uri: lb://DOCTOR-SERVICE
           predicates:
             - Path=/api/v1/doctors/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter
+
+        - id: lab-service
+          uri: lb://LAB-SERVICE
+          predicates:
+            - Path=/api/v1/lab/**
           filters:
             - StripPrefix=2
             - name: AuthenticationFilter

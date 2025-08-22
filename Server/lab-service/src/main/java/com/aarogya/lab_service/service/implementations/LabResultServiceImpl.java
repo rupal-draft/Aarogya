@@ -4,11 +4,14 @@ import com.aarogya.lab_service.auth.UserContextHolder;
 import com.aarogya.lab_service.clients.UserGrpcClient;
 import com.aarogya.lab_service.dto.grpc.DoctorResponseDTO;
 import com.aarogya.lab_service.dto.grpc.PatientResponseDTO;
+import com.aarogya.lab_service.dto.request.CreateLabResultRequest;
 import com.aarogya.lab_service.dto.request.UpdateLabResultRequest;
 import com.aarogya.lab_service.dto.response.LabResultResponse;
 import com.aarogya.lab_service.enums.OrderStatus;
 import com.aarogya.lab_service.exceptions.AccessForbidden;
+import com.aarogya.lab_service.exceptions.BadRequestException;
 import com.aarogya.lab_service.exceptions.ResourceNotFoundException;
+import com.aarogya.lab_service.exceptions.ServiceUnavailable;
 import com.aarogya.lab_service.models.LabOrder;
 import com.aarogya.lab_service.models.LabResult;
 import com.aarogya.lab_service.repository.LabOrderRepository;
@@ -38,6 +41,135 @@ public class LabResultServiceImpl implements LabResultService {
     private final LabOrderRepository labOrderRepository;
     private final ModelMapper modelMapper;
     private final UserGrpcClient userGrpcClient;
+
+    @Override
+    @Transactional
+    @CacheEvict(value = {"patientResults", "doctorResults"}, allEntries = true)
+    public LabResultResponse createResult(CreateLabResultRequest request) {
+        log.info("Creating lab result for order: {}, test: {}", request.getOrderId(), request.getTestId());
+
+        LabOrder order = labOrderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Lab Order", request.getOrderId()));
+
+        if (labResultRepository.findByOrderIdAndTestId(request.getOrderId(), request.getTestId()).isPresent()) {
+            throw new BadRequestException("Result already exists for this order and test");
+        }
+
+        LabResult result = LabResult.builder()
+                .orderId(request.getOrderId())
+                .patientId(order.getPatientId())
+                .doctorId(order.getDoctorId())
+                .testId(request.getTestId())
+                .build();
+
+        result.setParameters(request.getParameters() != null ? request.getParameters() : List.of());
+        result.setOverallResult(request.getOverallResult());
+        result.setInterpretation(request.getInterpretation());
+        result.setTechnicalNotes(request.getTechnicalNotes());
+        result.setReportUrl(request.getReportUrl());
+        result.setSampleCollectedAt(request.getSampleCollectedAt());
+        result.setResultGeneratedAt(request.getResultGeneratedAt());
+        result.setLabTechnicianId(request.getLabTechnicianId());
+        result.setPathologistId(request.getPathologistId());
+        result.setCritical(request.isCritical() || "CRITICAL".equals(request.getOverallResult()));
+        result.setVerified(false);
+
+        LabResult savedResult = labResultRepository.save(result);
+        log.info("Lab result created successfully with ID: {}", savedResult.getId());
+
+        return mapToResultResponse(savedResult);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = {"patientResults", "doctorResults"}, allEntries = true)
+    public List<LabResultResponse> createResultsBulk(List<CreateLabResultRequest> requests) {
+        log.info("Creating {} lab results in bulk", requests.size());
+
+        List<LabResult> results = requests.stream()
+                .map(request -> {
+                    LabOrder order = labOrderRepository.findById(request.getOrderId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Lab Order", request.getOrderId()));
+
+                    LabResult result = LabResult.builder()
+                            .orderId(request.getOrderId())
+                            .patientId(order.getPatientId())
+                            .doctorId(order.getDoctorId())
+                            .testId(request.getTestId())
+                            .build();
+
+                    result.setParameters(request.getParameters() != null ? request.getParameters() : List.of());
+                    result.setOverallResult(request.getOverallResult());
+                    result.setInterpretation(request.getInterpretation());
+                    result.setTechnicalNotes(request.getTechnicalNotes());
+                    result.setReportUrl(request.getReportUrl());
+                    result.setSampleCollectedAt(request.getSampleCollectedAt());
+                    result.setResultGeneratedAt(request.getResultGeneratedAt());
+                    result.setLabTechnicianId(request.getLabTechnicianId());
+                    result.setPathologistId(request.getPathologistId());
+                    result.setCritical(request.isCritical() || "CRITICAL".equals(request.getOverallResult()));
+                    result.setVerified(false);
+
+                    return result;
+                })
+                .collect(Collectors.toList());
+
+        List<LabResult> savedResults = labResultRepository.saveAll(results);
+        log.info("Created {} lab results successfully", savedResults.size());
+
+        return savedResults.stream()
+                .map(this::mapToResultResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = {"patientResults", "doctorResults"}, allEntries = true)
+    public LabResultResponse verifyResult(String resultId, String pathologistId) {
+        log.info("Verifying lab result: {} by pathologist: {}", resultId, pathologistId);
+
+        LabResult result = labResultRepository.findById(resultId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lab Result", resultId));
+
+        result.setPathologistId(pathologistId);
+        result.setVerified(true);
+
+        LabResult verifiedResult = labResultRepository.save(result);
+
+        updateOrderStatusIfAllTestsCompleted(result.getOrderId());
+
+        log.info("Lab result verified successfully: {}", resultId);
+        return mapToResultResponse(verifiedResult);
+    }
+
+    @Override
+    public Page<LabResultResponse> getPendingResults(int page, int size) {
+        log.info("Fetching pending results - page: {}, size: {}", page, size);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<LabResult> resultsPage = labResultRepository.findByIsVerifiedFalse(pageable);
+
+        return resultsPage.map(this::mapToResultResponse);
+    }
+
+    @Override
+    @Transactional
+    public void notifyCriticalResult(String resultId) {
+        log.info("Sending critical result notification for: {}", resultId);
+
+        LabResult result = labResultRepository.findById(resultId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lab Result", resultId));
+
+        if (!result.isCritical()) {
+            throw new ServiceUnavailable("Result is not marked as critical");
+        }
+
+        result.setPatientNotified(true);
+        result.setDoctorNotified(true);
+        labResultRepository.save(result);
+
+        log.info("Critical result notification sent for: {}", resultId);
+    }
 
     @Override
     @Cacheable(value = "patientResults", key = "#patientId + '_' + #page + '_' + #size")

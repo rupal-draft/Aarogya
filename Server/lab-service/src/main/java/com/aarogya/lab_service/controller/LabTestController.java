@@ -2,10 +2,13 @@ package com.aarogya.lab_service.controller;
 
 import com.aarogya.lab_service.advices.ApiError;
 import com.aarogya.lab_service.advices.ApiResponse;
+import com.aarogya.lab_service.dto.request.CreateLabTestRequest;
+import com.aarogya.lab_service.dto.request.UpdateLabTestRequest;
 import com.aarogya.lab_service.dto.response.LabTestResponse;
 import com.aarogya.lab_service.service.LabTestService;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
@@ -103,6 +106,51 @@ public class LabTestController {
         return ResponseEntity.ok(ApiResponse.success("Lab test retrieved successfully", test));
     }
 
+    @PostMapping
+    @RateLimiter(name = "labTestController", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<LabTestResponse>> createTest(
+            @Valid @RequestBody CreateLabTestRequest request) {
+
+        log.info("POST /api/v1/lab/tests - Creating lab test: {}", request.getTestCode());
+
+        LabTestResponse test = labTestService.createTest(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Lab test created successfully", test));
+    }
+
+    @PostMapping("/bulk")
+    @RateLimiter(name = "labTestController", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<List<LabTestResponse>>> createTestsBulk(
+            @Valid @RequestBody List<CreateLabTestRequest> requests) {
+
+        log.info("POST /api/v1/lab/tests/bulk - Creating {} lab tests", requests.size());
+
+        List<LabTestResponse> tests = labTestService.createTestsBulk(requests);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Lab tests created successfully", tests));
+    }
+
+    @PutMapping("/{testId}")
+    @RateLimiter(name = "labTestController", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<LabTestResponse>> updateTest(
+            @PathVariable @NotBlank String testId,
+            @Valid @RequestBody UpdateLabTestRequest request) {
+
+        log.info("PUT /api/v1/lab/tests/{}", testId);
+
+        LabTestResponse test = labTestService.updateTest(testId, request);
+        return ResponseEntity.ok(ApiResponse.success("Lab test updated successfully", test));
+    }
+
+    @DeleteMapping("/{testId}")
+    @RateLimiter(name = "labTestController", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<String>> deactivateTest(@PathVariable @NotBlank String testId) {
+        log.info("DELETE /api/v1/lab/tests/{}", testId);
+
+        labTestService.deactivateTest(testId);
+        return ResponseEntity.ok(ApiResponse.success("Lab test deactivated successfully", "Test deactivated"));
+    }
+
     public ResponseEntity<ApiResponse<?>> rateLimitFallback(Exception ex) {
         log.warn("Rate limit exceeded for LabTestController: {}", ex.getMessage());
 
@@ -113,6 +161,6 @@ public class LabTestController {
                 .build();
 
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(ApiResponse.error("Too many requests. Please try again later.", error));
+                .body(ApiResponse.error(error));
     }
 }
