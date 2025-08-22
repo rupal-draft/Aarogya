@@ -94,8 +94,8 @@ const PatientLabOrders: React.FC<PatientLabOrdersProps> = () => {
     const matchesStatus =
       filterStatus === "all" || order.status === filterStatus;
     const matchesSearch =
-      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.orderedTests.some((test) =>
+      order.orderNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.orderedTests?.some((test) =>
         test.testName.toLowerCase().includes(searchQuery.toLowerCase())
       );
     return matchesStatus && matchesSearch;
@@ -105,8 +105,8 @@ const PatientLabOrders: React.FC<PatientLabOrdersProps> = () => {
     const matchesStatus =
       filterStatus === "all" || result.overallResult === filterStatus;
     const matchesSearch =
-      result.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      result.testName.toLowerCase().includes(searchQuery.toLowerCase());
+      result.orderNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      result.testName?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -122,7 +122,7 @@ const PatientLabOrders: React.FC<PatientLabOrdersProps> = () => {
         {/* Background Image */}
         <div className="absolute inset-0">
           <img
-            src="/medical-lab-dashboard-patient.png"
+            src="https://images.pexels.com/photos/3825573/pexels-photo-3825573.jpeg"
             alt="Lab Dashboard"
             className="w-full h-full object-cover opacity-20"
           />
@@ -236,9 +236,9 @@ const PatientLabOrders: React.FC<PatientLabOrdersProps> = () => {
               >
                 <div className="relative mb-4">
                   <img
-                    src="/placeholder-3op11.png"
+                    src="https://images.pexels.com/photos/356040/pexels-photo-356040.jpeg"
                     alt="Total Orders"
-                    className="w-16 h-16 mx-auto rounded-full object-cover"
+                    className="w-24 h-24 mx-auto rounded-full object-cover"
                   />
                   <motion.div
                     animate={{ rotate: 360 }}
@@ -266,9 +266,9 @@ const PatientLabOrders: React.FC<PatientLabOrdersProps> = () => {
               >
                 <div className="relative mb-4">
                   <img
-                    src="/lab-results-available.png"
+                    src="https://images.pexels.com/photos/3912481/pexels-photo-3912481.jpeg"
                     alt="Results Available"
-                    className="w-16 h-16 mx-auto rounded-full object-cover"
+                    className="w-24 h-24 mx-auto rounded-full object-cover"
                   />
                   <motion.div
                     animate={{ rotate: 360 }}
@@ -296,9 +296,9 @@ const PatientLabOrders: React.FC<PatientLabOrdersProps> = () => {
               >
                 <div className="relative mb-4">
                   <img
-                    src="/pending-lab-tests.png"
+                    src="https://images.pexels.com/photos/3735709/pexels-photo-3735709.jpeg"
                     alt="Pending Tests"
-                    className="w-16 h-16 mx-auto rounded-full object-cover"
+                    className="w-24 h-24 mx-auto rounded-full object-cover"
                   />
                   <motion.div
                     animate={{ rotate: 360 }}
@@ -466,15 +466,6 @@ const PatientLabOrders: React.FC<PatientLabOrdersProps> = () => {
                     className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden cursor-pointer group"
                     onClick={() => setSelectedOrder(order)}
                   >
-                    {/* Background Image */}
-                    <div className="absolute inset-0">
-                      <img
-                        src={`/placeholder-k29hm.png?height=300&width=400&query=lab+order+${order.status.toLowerCase()}`}
-                        alt={`Order ${order.orderNumber}`}
-                        className="w-full h-full object-cover opacity-5 group-hover:opacity-10 transition-opacity duration-300"
-                      />
-                    </div>
-
                     {/* Floating Sparkles */}
                     {[...Array(3)].map((_, i) => (
                       <motion.div
@@ -611,7 +602,7 @@ const PatientLabOrders: React.FC<PatientLabOrdersProps> = () => {
                     {/* Background Image */}
                     <div className="absolute inset-0">
                       <img
-                        src={`/lab-result.png?height=300&width=400&query=lab+result+${result.overallResult.toLowerCase()}`}
+                        src="https://images.pexels.com/photos/3735715/pexels-photo-3735715.jpeg"
                         alt={`Result ${result.testName}`}
                         className="w-full h-full object-cover opacity-5 group-hover:opacity-10 transition-opacity duration-300"
                       />
@@ -658,7 +649,7 @@ const PatientLabOrders: React.FC<PatientLabOrdersProps> = () => {
                                 {result.testName}
                               </h3>
                               <p className="text-white/80 text-sm">
-                                #{result.orderNumber}
+                                {result.orderNumber}
                               </p>
                             </div>
                           </div>

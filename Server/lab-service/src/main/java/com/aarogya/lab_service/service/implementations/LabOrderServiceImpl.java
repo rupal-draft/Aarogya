@@ -7,6 +7,7 @@ import com.aarogya.lab_service.dto.grpc.PatientResponseDTO;
 import com.aarogya.lab_service.dto.request.CreateLabOrderRequest;
 import com.aarogya.lab_service.dto.response.LabOrderResponse;
 import com.aarogya.lab_service.enums.OrderStatus;
+import com.aarogya.lab_service.enums.PaymentStatus;
 import com.aarogya.lab_service.enums.TestStatus;
 import com.aarogya.lab_service.exceptions.*;
 import com.aarogya.lab_service.models.LabOrder;
@@ -137,30 +138,37 @@ public class LabOrderServiceImpl implements LabOrderService {
                         .testCode(test.getTestCode())
                         .testName(test.getTestName())
                         .price(test.getPrice())
+                        .status(TestStatus.ORDERED)
                         .build()
                 )
                 .collect(Collectors.toList());
 
+        // Calculate total amount
         BigDecimal totalAmount = tests.stream()
                 .map(LabTest::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         LabOrder labOrder = LabOrder.builder()
+                .orderNumber(generateOrderNumber())
                 .patientId(patientId)
                 .doctorId(request.getDoctorId())
                 .orderedTests(orderedTests)
                 .totalAmount(totalAmount)
+                .status(OrderStatus.PENDING_PAYMENT)
+                .paymentStatus(PaymentStatus.PENDING)
                 .scheduledDateTime(request.getScheduledDateTime())
                 .location(request.getLocation())
+                .specialInstructions(request.getSpecialInstructions())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
-
-        labOrder.setSpecialInstructions(request.getSpecialInstructions());
 
         LabOrder savedOrder = labOrderRepository.save(labOrder);
         log.info("Lab order created successfully with ID: {}", savedOrder.getId());
 
         return mapToOrderResponse(savedOrder);
     }
+
 
     @Override
     @Cacheable(value = "patientOrders", key = "#patientId + '_' + #page + '_' + #size")
@@ -323,6 +331,21 @@ public class LabOrderServiceImpl implements LabOrderService {
             response.setDoctorName(doctorResponseDTO.getFirstName() + " " + doctorResponseDTO.getLastName());
         }
 
+        if (response.getOrderNumber() == null) response.setOrderNumber("ORD-" + order.getId());
+        if (response.getStatus() == null) response.setStatus(OrderStatus.PENDING_PAYMENT);
+        if (response.getPaymentStatus() == null) response.setPaymentStatus(PaymentStatus.PENDING);
+
+        if (response.getOrderedTests() != null) {
+            response.getOrderedTests().forEach(test -> {
+                if (test.getStatus() == null) test.setStatus(TestStatus.ORDERED);
+            });
+        }
+
         return response;
+    }
+
+    private String generateOrderNumber() {
+        long count = labOrderRepository.count() + 1;
+        return String.format("LAB-%s-%05d", LocalDate.now().getYear(), count);
     }
 }

@@ -76,38 +76,11 @@ const LabManagement: React.FC = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Quick Navigation */}
-      {currentStep !== "search" && (
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-8 left-8 z-40"
-        >
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={
-              currentStep === "booking"
-                ? handleBackToSearch
-                : handleBackToDashboard
-            }
-            className="bg-white shadow-2xl rounded-full p-4 flex items-center space-x-3 border border-gray-200 hover:shadow-3xl transition-all duration-300"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-            <span className="font-semibold text-gray-700">
-              {currentStep === "booking"
-                ? "Back to Tests"
-                : "Back to Dashboard"}
-            </span>
-          </motion.button>
-        </motion.div>
-      )}
-
       {/* Quick Actions */}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        className="fixed bottom-8 right-8 z-40 space-y-3"
+        className="fixed bottom-8 left-8 z-40 space-y-3"
       >
         <motion.button
           whileHover={{ scale: 1.05 }}

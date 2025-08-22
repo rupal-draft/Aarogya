@@ -116,7 +116,7 @@ const LabOrderForm: React.FC<LabOrderFormProps> = ({
         {/* Background Image */}
         <div className="absolute inset-0">
           <img
-            src="/placeholder-kwutl.png"
+            src="https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg"
             alt="Lab Booking"
             className="w-full h-full object-cover opacity-20"
           />

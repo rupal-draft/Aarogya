@@ -74,7 +74,7 @@ const LabTestCard: React.FC<LabTestCardProps> = ({
       {/* Background Image */}
       <div className="absolute inset-0 rounded-2xl overflow-hidden">
         <img
-          src={`/placeholder-2udyb.png?height=300&width=400&query=medical+lab+test+${test.category.toLowerCase()}`}
+          src={`https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg`}
           alt={test.testName}
           className="w-full h-full object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-300"
         />

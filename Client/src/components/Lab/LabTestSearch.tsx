@@ -36,40 +36,33 @@ const LabTestSearch: React.FC<LabTestSearchProps> = ({
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  useEffect(() => {
     if (searchQuery) {
       handleSearch();
     } else if (selectedCategory === "all") {
       loadAllTests();
+      loadAllCategories();
     } else {
       loadTestsByCategory();
     }
   }, [searchQuery, selectedCategory]);
-
-  const loadInitialData = async () => {
-    try {
-      setLoading(true);
-      const [testsData, categoriesData] = await Promise.all([
-        labTestService.getAllTestsList(),
-        labTestService.getCategories(),
-      ]);
-      setTests(testsData);
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error("Error loading lab tests:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loadAllTests = async () => {
     try {
       setLoading(true);
       const testsData = await labTestService.getAllTestsList();
       setTests(testsData);
+    } catch (error) {
+      console.error("Error loading tests:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAllCategories = async () => {
+    try {
+      setLoading(true);
+      const categories = await labTestService.getCategories();
+      setCategories(categories);
     } catch (error) {
       console.error("Error loading tests:", error);
     } finally {
@@ -145,7 +138,7 @@ const LabTestSearch: React.FC<LabTestSearchProps> = ({
         {/* Background Image */}
         <div className="absolute inset-0">
           <img
-            src="/modern-medical-lab.png"
+            src="https://images.pexels.com/photos/3938023/pexels-photo-3938023.jpeg"
             alt="Lab Background"
             className="w-full h-full object-cover opacity-20"
           />
@@ -259,9 +252,9 @@ const LabTestSearch: React.FC<LabTestSearchProps> = ({
               >
                 <div className="relative mb-4">
                   <img
-                    src="/placeholder-jfxao.png"
+                    src="https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg"
                     alt="Tests Available"
-                    className="w-16 h-16 mx-auto rounded-full object-cover"
+                    className="w-24 h-24 mx-auto rounded-full object-cover"
                   />
                   <motion.div
                     animate={{ rotate: 360 }}
@@ -289,9 +282,9 @@ const LabTestSearch: React.FC<LabTestSearchProps> = ({
               >
                 <div className="relative mb-4">
                   <img
-                    src="/medical-laboratory-accuracy.png"
+                    src="https://images.pexels.com/photos/1366944/pexels-photo-1366944.jpeg"
                     alt="Accuracy"
-                    className="w-16 h-16 mx-auto rounded-full object-cover"
+                    className="w-24 h-24 mx-auto rounded-full object-cover"
                   />
                   <motion.div
                     animate={{ rotate: 360 }}
@@ -319,9 +312,9 @@ const LabTestSearch: React.FC<LabTestSearchProps> = ({
               >
                 <div className="relative mb-4">
                   <img
-                    src="/placeholder-5l4nx.png"
+                    src="https://images.pexels.com/photos/954585/pexels-photo-954585.jpeg"
                     alt="Fast Results"
-                    className="w-16 h-16 mx-auto rounded-full object-cover"
+                    className="w-24 h-24 mx-auto rounded-full object-cover"
                   />
                   <motion.div
                     animate={{ rotate: 360 }}

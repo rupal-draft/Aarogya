@@ -58,7 +58,7 @@ public class LabOrder {
         private String testCode;
         private String testName;
         private BigDecimal price;
-        private TestStatus status;
+        private TestStatus status = TestStatus.ORDERED;
         private LocalDateTime sampleCollectedAt;
         private LocalDateTime resultExpectedAt;
     }
