@@ -39,6 +39,10 @@ public class UpdateMedicationRequest {
 
     private String sideEffects;
 
+    private String instructions;
+
+    private String reason;
+
     private Boolean reminderEnabled;
 
     public void setMedicationName(String medicationName) {

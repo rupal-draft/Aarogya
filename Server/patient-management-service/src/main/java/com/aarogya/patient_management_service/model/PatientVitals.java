@@ -8,10 +8,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -30,22 +30,17 @@ public class PatientVitals {
 
     private String appointmentId;
 
-    private String bloodPressure;
+    private Integer bloodPressureSystolic;
+    private Integer bloodPressureDiastolic;
 
     private Integer heartRate;
-
-    private BigDecimal temperature;
-
+    private Double temperature;
     private Integer respiratoryRate;
-
     private Integer oxygenSaturation;
-
-    private BigDecimal weight;
-
-    private BigDecimal height;
-
-    private BigDecimal bmi;
-
+    private Double weight;
+    private Double height;
+    private Double bmi;
+    private String healthStatus;
     private String notes;
 
     private String recordedBy;
@@ -55,6 +50,11 @@ public class PatientVitals {
     private String recordedByType = "SELF";
 
     @NotNull(message = "Recorded date is required")
-    @CreatedDate
     private LocalDateTime recordedAt;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

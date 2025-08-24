@@ -4,23 +4,21 @@ import com.aarogya.patient_management_service.model.PatientAllergy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PatientAllergyRepository extends MongoRepository<PatientAllergy, String> {
 
     Page<PatientAllergy> findByPatientIdOrderByDiagnosedDateDesc(String patientId, Pageable pageable);
 
-    List<PatientAllergy> findByPatientIdAndIsActiveTrue(String patientId);
+    List<PatientAllergy> findByPatientIdAndSeverityIn(String patientId, List<String> severities);
 
-    @Query("{'patientId': ?0, 'severity': ?1}")
-    List<PatientAllergy> findByPatientIdAndSeverity(String patientId, String severity);
+    Optional<PatientAllergy> findByIdAndPatientId(String id, String patientId);
 
-    @Query("{'patientId': ?0, 'allergyType': ?1}")
-    List<PatientAllergy> findByPatientIdAndAllergyType(String patientId, String allergyType);
+    boolean existsByIdAndPatientId(String id, String patientId);
 
-    long countByPatientIdAndSeverityIn(String patientId, List<String> severities);
+    List<PatientAllergy> findByPatientIdAndActiveTrue(String patientId);
 }

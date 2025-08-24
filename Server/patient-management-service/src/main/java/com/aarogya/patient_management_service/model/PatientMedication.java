@@ -12,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -32,11 +33,15 @@ public class PatientMedication {
     @NotBlank(message = "Medication name is required")
     private String medicationName;
 
-    @NotBlank(message = "Dosage is required")
-    private String dosage;
+    @NotNull(message = "Dosage is required")
+    private BigDecimal dosage;
+
+    private String dosageUnit;
 
     @NotBlank(message = "Frequency is required")
     private String frequency;
+
+    private String route;
 
     @NotNull(message = "Start date is required")
     private LocalDate startDate;
@@ -47,16 +52,17 @@ public class PatientMedication {
 
     @Indexed
     @Builder.Default
-    private String status = "Active";
+    private String status = "ACTIVE";
 
+    private String reason;
+    private String instructions;
+    private String sideEffects;
     private String notes;
-
-    @Indexed
     private String medicationType;
-
     private String purpose;
 
-    private boolean reminderEnabled;
+    @Builder.Default
+    private Boolean reminderEnabled = false;
 
     @CreatedDate
     private LocalDateTime createdAt;

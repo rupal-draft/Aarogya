@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -21,6 +22,10 @@ public class UpdateAllergyRequest {
     private String reaction;
 
     private String notes;
+
+    private String allergyType;
+
+    private List<String> symptoms;
 
     private LocalDate diagnosedDate;
 

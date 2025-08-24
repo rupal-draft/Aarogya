@@ -2,6 +2,7 @@ package com.aarogya.patient_management_service.model;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -33,20 +35,29 @@ public class PatientAllergy {
     private String allergen;
 
     @Indexed
+    @NotBlank(message = "Allergy type is required")
+    private String allergyType;
+
+    @Indexed
     @NotBlank(message = "Severity is required")
+    @Pattern(regexp = "MILD|MODERATE|SEVERE|CRITICAL", message = "Severity must be MILD, MODERATE, SEVERE, or CRITICAL")
     private String severity;
 
+    private List<String> symptoms;
+
     private String reaction;
+
+    private String notes;
+
+    private String emergencyAction;
 
     @NotNull(message = "Diagnosed date is required")
     private LocalDate diagnosedDate;
 
-    @Indexed
-    private String allergyType;
+    private String diagnosedBy;
 
-    private boolean isActive;
-
-    private String emergencyAction;
+    @Builder.Default
+    private Boolean isActive = true;
 
     @CreatedDate
     private LocalDateTime createdAt;

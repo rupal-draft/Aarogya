@@ -59,6 +59,10 @@ public class DiseaseHistory {
 
     private String notes;
 
+    private String description;
+
+    private String treatment;
+
     @Builder.Default
     private boolean isChronic = false;
 
