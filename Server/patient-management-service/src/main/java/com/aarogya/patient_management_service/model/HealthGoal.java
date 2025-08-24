@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -25,6 +26,7 @@ public class HealthGoal {
     @Id
     private String id;
 
+    @Indexed
     @NotBlank(message = "Patient ID is required")
     private String patientId;
 
@@ -43,6 +45,7 @@ public class HealthGoal {
     @NotNull(message = "Target date is required")
     private LocalDate targetDate;
 
+    @Indexed
     @Builder.Default
     private String status = "ACTIVE";
 

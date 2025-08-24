@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -23,12 +24,15 @@ public class SymptomTracker {
     @Id
     private String id;
 
+    @Indexed
     @NotBlank(message = "Patient ID is required")
     private String patientId;
 
+    @Indexed
     @NotBlank(message = "Symptom name is required")
     private String symptomName;
 
+    @Indexed
     @NotNull(message = "Severity is required")
     private Integer severity;
 

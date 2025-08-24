@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
@@ -25,20 +26,23 @@ public class DiseaseHistory {
     @Id
     private String id;
 
+    @Indexed
     @NotBlank(message = "Patient ID is required")
     private String patientId;
 
+    @Indexed
     @NotBlank(message = "Disease name is required")
     private String diseaseName;
 
     @NotBlank(message = "Disease code is required")
-    private String diseaseCode; // ICD-10 code
+    private String diseaseCode;
 
     @NotNull(message = "Diagnosis date is required")
     private LocalDate diagnosisDate;
 
     private LocalDate recoveryDate;
 
+    @Indexed
     @Builder.Default
     private String status = "Active";
 

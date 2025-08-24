@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
@@ -24,12 +25,14 @@ public class PatientAllergy {
     @Id
     private String id;
 
+    @Indexed
     @NotBlank(message = "Patient ID is required")
     private String patientId;
 
     @NotBlank(message = "Allergen is required")
     private String allergen;
 
+    @Indexed
     @NotBlank(message = "Severity is required")
     private String severity;
 
@@ -38,6 +41,7 @@ public class PatientAllergy {
     @NotNull(message = "Diagnosed date is required")
     private LocalDate diagnosedDate;
 
+    @Indexed
     private String allergyType;
 
     private boolean isActive;
