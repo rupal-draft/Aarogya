@@ -32,3 +32,60 @@ logging:
     com.aarogya.appointment_service: INFO
     org.springframework.data.mongodb: INFO
 
+resilience4j:
+  ratelimiter:
+    instances:
+      medicationsRateLimiter:
+        limitForPeriod: 120
+        limitRefreshPeriod: 60s
+        timeoutDuration: 500ms
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 60
+      vitalsRateLimiter:
+        limitForPeriod: 150
+        limitRefreshPeriod: 60s
+        timeoutDuration: 500ms
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 75
+      symptomsRateLimiter:
+        limitForPeriod: 180
+        limitRefreshPeriod: 60s
+        timeoutDuration: 500ms
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 90
+      medicalHistoryRateLimiter:
+        limitForPeriod: 120
+        limitRefreshPeriod: 60s
+        timeoutDuration: 500ms
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 60
+      allergiesRateLimiter:
+        limitForPeriod: 100
+        limitRefreshPeriod: 60s
+        timeoutDuration: 500ms
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 50
+      healthGoalsRateLimiter:
+        limitForPeriod: 150
+        limitRefreshPeriod: 60s
+        timeoutDuration: 500ms
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 75
+      emergencyContactsRateLimiter:
+        limitForPeriod: 100
+        limitRefreshPeriod: 60s
+        timeoutDuration: 500ms
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 50
+      doctorNotesRateLimiter:
+        limitForPeriod: 200
+        limitRefreshPeriod: 60s
+        timeoutDuration: 500ms
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 100
+      diseaseHistoryRateLimiter:
+        limitForPeriod: 150
+        limitRefreshPeriod: 60s
+        timeoutDuration: 500ms
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 100
