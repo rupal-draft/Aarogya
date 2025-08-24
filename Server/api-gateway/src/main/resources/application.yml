@@ -92,3 +92,11 @@ spring:
           filters:
             - StripPrefix=2
             - name: AuthenticationFilter
+
+        - id: patient-management-service
+          uri: lb://PATIENT-MANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/v1/patient/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter
