@@ -36,9 +36,13 @@ public class EmergencyContact {
     @NotBlank(message = "Phone number is required")
     private String phoneNumber;
 
+    private String secondaryPhone;
+
     private String email;
 
     private String address;
+
+    private String notes;
 
     @Builder.Default
     private boolean isPrimary = false;

@@ -4,23 +4,26 @@ import com.aarogya.patient_management_service.model.DoctorNote;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
-import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-@Repository
 public interface DoctorNoteRepository extends MongoRepository<DoctorNote, String> {
-
-    Page<DoctorNote> findByPatientIdAndIsPrivateFalseOrderByCreatedAtDesc(String patientId, Pageable pageable);
 
     Page<DoctorNote> findByPatientIdOrderByCreatedAtDesc(String patientId, Pageable pageable);
 
-    @Query("{'patientId': ?0, 'noteType': ?1, 'isPrivate': false}")
-    List<DoctorNote> findByPatientIdAndNoteType(String patientId, String noteType);
+    Optional<DoctorNote> findByIdAndPatientId(String id, String patientId);
 
-    @Query("{'patientId': ?0, 'priority': {$in: ?1}, 'isPrivate': false}")
-    List<DoctorNote> findByPatientIdAndPriorityIn(String patientId, List<String> priorities);
+    Page<DoctorNote> findByPatientIdAndNoteTypeOrderByCreatedAtDesc(String patientId, String noteType, Pageable pageable);
 
-    long countByPatientIdAndIsPrivateFalse(String patientId);
+    Page<DoctorNote> findByPatientIdAndPriorityOrderByCreatedAtDesc(String patientId, String priority, Pageable pageable);
+
+    Page<DoctorNote> findByPatientIdAndIsPrivateFalseOrderByCreatedAtDesc(String patientId, Pageable pageable);
+
+    Page<DoctorNote> findByPatientIdAndCategoryOrderByCreatedAtDesc(String patientId, String category, Pageable pageable);
+
+    Page<DoctorNote> findByPatientIdAndIsUrgentTrueOrderByCreatedAtDesc(String patientId, Pageable pageable);
+
+    List<DoctorNote> findByPatientIdAndCreatedAtAfter(String patientId, LocalDateTime date);
 }

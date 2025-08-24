@@ -33,12 +33,15 @@ public class HealthGoal {
     @NotBlank(message = "Goal type is required")
     private String goalType;
 
+    private String title;
+
     @NotBlank(message = "Goal description is required")
     private String description;
 
     private BigDecimal targetValue;
 
-    private BigDecimal currentValue;
+    @Builder.Default
+    private BigDecimal currentValue = BigDecimal.ZERO;
 
     private String unit;
 
@@ -48,6 +51,8 @@ public class HealthGoal {
     @Indexed
     @Builder.Default
     private String status = "ACTIVE";
+
+    private String priority;
 
     private String notes;
 

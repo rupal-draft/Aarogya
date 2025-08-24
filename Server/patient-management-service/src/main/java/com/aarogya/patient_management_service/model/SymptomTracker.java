@@ -1,5 +1,7 @@
 package com.aarogya.patient_management_service.model;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -8,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -32,8 +35,12 @@ public class SymptomTracker {
     @NotBlank(message = "Symptom name is required")
     private String symptomName;
 
+    private String category;
+
     @Indexed
     @NotNull(message = "Severity is required")
+    @Min(value = 1, message = "Severity must be between 1 and 10")
+    @Max(value = 10, message = "Severity must be between 1 and 10")
     private Integer severity;
 
     private String description;
@@ -48,6 +55,12 @@ public class SymptomTracker {
 
     private String notes;
 
-    @CreatedDate
+    @Indexed
     private LocalDateTime recordedAt;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

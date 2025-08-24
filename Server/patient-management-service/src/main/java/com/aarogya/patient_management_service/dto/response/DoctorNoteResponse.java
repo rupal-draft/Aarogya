@@ -23,6 +23,7 @@ public class DoctorNoteResponse {
     private String category;
     private boolean isPrivate;
     private boolean isUrgent;
+    private String priority;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
