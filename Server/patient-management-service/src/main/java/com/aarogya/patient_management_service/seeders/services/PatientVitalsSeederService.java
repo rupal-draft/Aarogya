@@ -1,7 +1,8 @@
-package com.aarogya.patient_management_service.seeders;
+package com.aarogya.patient_management_service.seeders.services;
 
 import com.aarogya.patient_management_service.model.PatientVitals;
 import com.aarogya.patient_management_service.repository.PatientVitalsRepository;
+import com.aarogya.patient_management_service.seeders.SeederService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,15 +12,16 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PatientVitalsSeederService {
+public class PatientVitalsSeederService implements SeederService {
 
     private final PatientVitalsRepository patientVitalsRepository;
 
-    public void seedVitals() {
+    @Override
+    public void seed(String patientId) {
         patientVitalsRepository.deleteAll();
 
         PatientVitals vitals = PatientVitals.builder()
-                .patientId("68a80e1b0474d478779e5c6c")
+                .patientId(patientId)
                 .appointmentId("APPT1001")
                 .bloodPressureSystolic(120)
                 .bloodPressureDiastolic(80)

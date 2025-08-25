@@ -1,27 +1,27 @@
-package com.aarogya.patient_management_service.seeders;
+package com.aarogya.patient_management_service.seeders.services;
 
 import com.aarogya.patient_management_service.model.EmergencyContact;
 import com.aarogya.patient_management_service.repository.EmergencyContactRepository;
+import com.aarogya.patient_management_service.seeders.SeederService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class EmergencyContactSeederService {
+public class EmergencyContactSeederService implements SeederService {
 
     private final EmergencyContactRepository emergencyContactRepository;
 
-    private static final String PATIENT_ID = "68a80e1b0474d478779e5c6c";
-
-    public List<EmergencyContact> seedEmergencyContacts() {
+    @Override
+    public void seed(String PATIENT_ID) {
         if (emergencyContactRepository.count() > 0) {
-            return emergencyContactRepository.findAll();
+            emergencyContactRepository.findAll();
+            return;
         }
 
         List<EmergencyContact> contacts = new ArrayList<>();
@@ -88,7 +88,7 @@ public class EmergencyContactSeederService {
                 .isActive(true)
                 .build());
 
-        return emergencyContactRepository.saveAll(contacts);
+        emergencyContactRepository.saveAll(contacts);
     }
 }
 

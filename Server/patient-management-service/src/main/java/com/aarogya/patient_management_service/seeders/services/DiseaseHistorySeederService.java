@@ -1,7 +1,8 @@
-package com.aarogya.patient_management_service.seeders;
+package com.aarogya.patient_management_service.seeders.services;
 
 import com.aarogya.patient_management_service.model.DiseaseHistory;
 import com.aarogya.patient_management_service.repository.DiseaseHistoryRepository;
+import com.aarogya.patient_management_service.seeders.SeederService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,15 +15,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class DiseaseHistorySeederService {
+public class DiseaseHistorySeederService implements SeederService {
 
     private final DiseaseHistoryRepository diseaseHistoryRepository;
 
-    private static final String PATIENT_ID = "68a80e1b0474d478779e5c6c";
-
-    public List<DiseaseHistory> seedDiseaseHistory() {
+    @Override
+    public void seed(String PATIENT_ID) {
         if (diseaseHistoryRepository.count() > 0) {
-            return diseaseHistoryRepository.findAll();
+            diseaseHistoryRepository.findAll();
+            return;
         }
 
         List<DiseaseHistory> histories = new ArrayList<>();
@@ -150,7 +151,7 @@ public class DiseaseHistorySeederService {
                         .build()
         ));
 
-        return diseaseHistoryRepository.saveAll(histories);
+        diseaseHistoryRepository.saveAll(histories);
     }
 }
 

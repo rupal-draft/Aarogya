@@ -1,7 +1,8 @@
-package com.aarogya.patient_management_service.seeders;
+package com.aarogya.patient_management_service.seeders.services;
 
 import com.aarogya.patient_management_service.model.DoctorNote;
 import com.aarogya.patient_management_service.repository.DoctorNoteRepository;
+import com.aarogya.patient_management_service.seeders.SeederService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,16 +14,17 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class DoctorNoteSeederService {
+public class DoctorNoteSeederService implements SeederService {
 
     private final DoctorNoteRepository doctorNoteRepository;
 
-    private static final String PATIENT_ID = "68a80e1b0474d478779e5c6c";
     private static final String DOCTOR_ID = "68a810b60474d478779e5c6d";
 
-    public List<DoctorNote> seedDoctorNotes() {
+    @Override
+    public void seed(String PATIENT_ID) {
         if (doctorNoteRepository.count() > 0) {
-            return doctorNoteRepository.findAll(); // don’t reseed if already present
+            doctorNoteRepository.findAll();
+            return;
         }
 
         List<DoctorNote> notes = new ArrayList<>();
@@ -125,7 +127,7 @@ public class DoctorNoteSeederService {
                         .category("Hematology").priority("High").isPrivate(false).isUrgent(false).build()
         ));
 
-        return doctorNoteRepository.saveAll(notes);
+        doctorNoteRepository.saveAll(notes);
     }
 }
 

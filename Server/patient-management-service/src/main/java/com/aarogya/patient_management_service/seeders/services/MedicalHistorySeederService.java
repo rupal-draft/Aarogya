@@ -1,7 +1,8 @@
-package com.aarogya.patient_management_service.seeders;
+package com.aarogya.patient_management_service.seeders.services;
 
 import com.aarogya.patient_management_service.model.MedicalHistory;
 import com.aarogya.patient_management_service.repository.MedicalHistoryRepository;
+import com.aarogya.patient_management_service.seeders.SeederService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,15 +15,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class MedicalHistorySeederService {
+public class MedicalHistorySeederService implements SeederService {
 
     private final MedicalHistoryRepository medicalHistoryRepository;
 
-    private static final String PATIENT_ID = "68a80e1b0474d478779e5c6c";
-
-    public List<MedicalHistory> seedMedicalHistory() {
+    @Override
+    public void seed(String PATIENT_ID) {
         if (medicalHistoryRepository.count() > 0) {
-            return medicalHistoryRepository.findAll();
+            medicalHistoryRepository.findAll();
+            return;
         }
 
         List<MedicalHistory> histories = new ArrayList<>();
@@ -104,6 +105,6 @@ public class MedicalHistorySeederService {
                         .category("Renal").notes("Regular nephrologist follow-up").isActive(true).build()
         ));
 
-        return medicalHistoryRepository.saveAll(histories);
+        medicalHistoryRepository.saveAll(histories);
     }
 }

@@ -1,9 +1,10 @@
-package com.aarogya.patient_management_service.seeders;
+package com.aarogya.patient_management_service.seeders.services;
 
 
 
 import com.aarogya.patient_management_service.model.SymptomTracker;
 import com.aarogya.patient_management_service.repository.SymptomTrackerRepository;
+import com.aarogya.patient_management_service.seeders.SeederService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,14 +16,14 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class SymptomTrackerSeederService {
+public class SymptomTrackerSeederService implements SeederService {
 
     private final SymptomTrackerRepository symptomTrackerRepository;
 
-    public void seedSymptoms() {
+    @Override
+    public void seed(String patientId) {
         symptomTrackerRepository.deleteAll();
 
-        String patientId = "68a80e1b0474d478779e5c6c";
 
         SymptomTracker headache = SymptomTracker.builder()
                 .patientId(patientId)

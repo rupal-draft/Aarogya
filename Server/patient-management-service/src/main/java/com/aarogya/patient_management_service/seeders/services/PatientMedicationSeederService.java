@@ -1,7 +1,8 @@
-package com.aarogya.patient_management_service.seeders;
+package com.aarogya.patient_management_service.seeders.services;
 
 import com.aarogya.patient_management_service.model.PatientMedication;
 import com.aarogya.patient_management_service.repository.PatientMedicationRepository;
+import com.aarogya.patient_management_service.seeders.SeederService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,16 +15,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PatientMedicationSeederService {
+public class PatientMedicationSeederService implements SeederService {
 
     private final PatientMedicationRepository medicationRepository;
 
-    public String seedPatientMedications() {
+    @Override
+    public void seed(String patientId) {
         if (medicationRepository.count() > 0) {
-            return "Patient Medications already seeded!";
+            return;
         }
-
-        String patientId = "68a80e1b0474d478779e5c6c";
 
         List<PatientMedication> medications = Arrays.asList(
                 PatientMedication.builder()
@@ -109,6 +109,5 @@ public class PatientMedicationSeederService {
         );
 
         medicationRepository.saveAll(medications);
-        return "5 Patient Medications seeded successfully!";
     }
 }

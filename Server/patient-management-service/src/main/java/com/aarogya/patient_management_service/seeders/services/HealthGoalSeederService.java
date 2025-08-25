@@ -1,7 +1,8 @@
-package com.aarogya.patient_management_service.seeders;
+package com.aarogya.patient_management_service.seeders.services;
 
 import com.aarogya.patient_management_service.model.HealthGoal;
 import com.aarogya.patient_management_service.repository.HealthGoalRepository;
+import com.aarogya.patient_management_service.seeders.SeederService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,15 +15,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class HealthGoalSeederService {
+public class HealthGoalSeederService implements SeederService {
 
     private final HealthGoalRepository healthGoalRepository;
 
-    private static final String PATIENT_ID = "68a80e1b0474d478779e5c6c";
-
-    public List<HealthGoal> seedHealthGoals() {
+    @Override
+    public void seed(String PATIENT_ID) {
         if (healthGoalRepository.count() > 0) {
-            return healthGoalRepository.findAll(); // don’t reseed if already present
+            healthGoalRepository.findAll();
+            return; // don’t reseed if already present
         }
 
         List<HealthGoal> goals = new ArrayList<>();
@@ -139,7 +140,7 @@ public class HealthGoalSeederService {
                 .notes("Carry a water bottle at work")
                 .build());
 
-        return healthGoalRepository.saveAll(goals);
+        healthGoalRepository.saveAll(goals);
     }
 }
 

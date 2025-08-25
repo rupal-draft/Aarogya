@@ -1,7 +1,8 @@
-package com.aarogya.patient_management_service.seeders;
+package com.aarogya.patient_management_service.seeders.services;
 
 import com.aarogya.patient_management_service.model.PatientAllergy;
 import com.aarogya.patient_management_service.repository.PatientAllergyRepository;
+import com.aarogya.patient_management_service.seeders.SeederService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,16 +14,16 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PatientAllergySeederService {
+public class PatientAllergySeederService implements SeederService {
 
     private final PatientAllergyRepository patientAllergyRepository;
 
-    public List<PatientAllergy> seedPatientAllergies() {
+    @Override
+    public void seed(String patientId) {
         if (patientAllergyRepository.count() > 0) {
-            return patientAllergyRepository.findAll();
+            patientAllergyRepository.findAll();
+            return;
         }
-
-        String patientId = "68a80e1b0474d478779e5c6c";
 
         List<PatientAllergy> allergies = Arrays.asList(
                 PatientAllergy.builder()
@@ -91,6 +92,6 @@ public class PatientAllergySeederService {
                         .build()
         );
 
-        return patientAllergyRepository.saveAll(allergies);
+        patientAllergyRepository.saveAll(allergies);
     }
 }
