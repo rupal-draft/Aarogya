@@ -21,4 +21,6 @@ public interface MedicalHistoryRepository extends MongoRepository<MedicalHistory
     Optional<MedicalHistory> findByIdAndPatientId(String id, String patientId);
 
     boolean existsByIdAndPatientId(String id, String patientId);
+
+    List<MedicalHistory> findByPatientId(String patientId);
 }

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +45,7 @@ public class HealthAnalyticsResponse {
     public static class MedicationAnalytics {
         private int totalMedications;
         private int activeMedications;
-        private double adherenceRate;
+        private BigDecimal adherenceRate;
         private int missedDoses;
         private List<String> upcomingRefills;
         private List<String> expiringSoon;

@@ -30,4 +30,6 @@ public interface HealthGoalRepository extends MongoRepository<HealthGoal, String
 
     @Query("{'patientId': ?0, 'targetDate': {$lte: ?2}, 'status': {$ne: 'COMPLETED'}}")
     Page<HealthGoal> findOverdueGoals(String patientId, LocalDate currentDate, Pageable pageable);
+
+    List<HealthGoal> findByPatientId(String patientId);
 }

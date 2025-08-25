@@ -22,4 +22,6 @@ public interface PatientMedicationRepository extends MongoRepository<PatientMedi
     boolean existsByIdAndPatientId(String id, String patientId);
 
     List<PatientMedication> findByPatientIdAndStatusAndEndDateAfter(String patientId, String status, LocalDate date);
+
+    List<PatientMedication> findByPatientId(String patientId);
 }

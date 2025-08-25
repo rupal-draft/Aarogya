@@ -20,5 +20,5 @@ public interface PatientAllergyRepository extends MongoRepository<PatientAllergy
 
     boolean existsByIdAndPatientId(String id, String patientId);
 
-    List<PatientAllergy> findByPatientIdAndActiveTrue(String patientId);
+    List<PatientAllergy> findByPatientIdAndIsActiveTrue(String patientId);
 }

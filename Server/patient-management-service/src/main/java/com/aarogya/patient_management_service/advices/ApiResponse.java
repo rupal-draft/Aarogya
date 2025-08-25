@@ -2,50 +2,39 @@ package com.aarogya.patient_management_service.advices;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ApiResponse<T> {
     private boolean success;
     private String message;
     private T data;
     private ApiError error;
-    private LocalDateTime timestamp;
 
-    public ApiResponse() {
-        this.timestamp = LocalDateTime.now();
-    }
-
-    public ApiResponse(boolean success, String message, T data) {
-        this();
-        this.success = success;
-        this.message = message;
-        this.data = data;
-    }
-
-    public ApiResponse(boolean success, String message, T data, ApiError error) {
-        this(success, message, data);
-        this.error = error;
-    }
+    @Builder.Default
+    private LocalDateTime timestamp = LocalDateTime.now();
 
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, "Success", data);
+        return new ApiResponse<>(true, "Success", data, null, LocalDateTime.now());
     }
 
     public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<>(true, message, data);
+        return new ApiResponse<>(true, message, data, null, LocalDateTime.now());
     }
 
     public static <T> ApiResponse<T> error(String message) {
-        return new ApiResponse<>(false, message, null);
+        return new ApiResponse<>(false, message, null, null, LocalDateTime.now());
     }
 
     public static <T> ApiResponse<T> error(ApiError error) {
-        return new ApiResponse<>(false, error.getMessage(), null, error);
+        return new ApiResponse<>(false, error.getMessage(), null, error, LocalDateTime.now());
     }
 }
+

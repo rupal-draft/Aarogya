@@ -24,4 +24,6 @@ public interface PatientVitalsRepository extends MongoRepository<PatientVitals, 
     boolean existsByIdAndPatientId(String id, String patientId);
 
     List<PatientVitals> findByPatientId(String patientId);
+
+    List<PatientVitals> findTop5ByPatientIdOrderByRecordedAtDesc(String patientId);
 }

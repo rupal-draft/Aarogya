@@ -21,4 +21,6 @@ public interface DiseaseHistoryRepository extends MongoRepository<DiseaseHistory
     Optional<DiseaseHistory> findByIdAndPatientId(String id, String patientId);
 
     boolean existsByIdAndPatientId(String diseaseId, String patientId);
+
+    List<DiseaseHistory> findByPatientId(String patientId);
 }

@@ -26,4 +26,6 @@ public interface DoctorNoteRepository extends MongoRepository<DoctorNote, String
     Page<DoctorNote> findByPatientIdAndIsUrgentTrueOrderByCreatedAtDesc(String patientId, Pageable pageable);
 
     List<DoctorNote> findByPatientIdAndCreatedAtAfter(String patientId, LocalDateTime date);
+
+    List<DoctorNote> findTop5ByPatientIdOrderByCreatedAtDesc(String patientId);
 }

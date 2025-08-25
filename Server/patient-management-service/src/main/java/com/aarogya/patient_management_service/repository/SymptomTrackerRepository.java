@@ -42,6 +42,8 @@ public interface SymptomTrackerRepository extends MongoRepository<SymptomTracker
     })
     List<SymptomSummary> getSymptomSummary(String patientId);
 
+    List<SymptomTracker> findTop10ByPatientIdOrderByRecordedAtDesc(String patientId);
+
     interface SymptomSummary {
         String getSymptomName();
         Long getCount();

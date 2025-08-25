@@ -19,4 +19,6 @@ public interface EmergencyContactRepository extends MongoRepository<EmergencyCon
     boolean existsByPatientIdAndContactNameAndIsActiveTrue(String patientId, String contactName);
 
     int countByPatientIdAndIsActiveTrue(String patientId);
+
+    List<EmergencyContact> findByPatientIdAndIsActiveTrue(String patientId);
 }

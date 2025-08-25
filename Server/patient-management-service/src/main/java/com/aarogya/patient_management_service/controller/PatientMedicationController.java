@@ -93,7 +93,7 @@ public class PatientMedicationController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{medicationId")
+    @DeleteMapping("/{medicationId}")
     @RateLimiter(name = "medicationsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<ApiResponse<String>> deleteMedication(@PathVariable String medicationId) {
         String patientId = UserContextHolder.getUserDetails().getUserId();

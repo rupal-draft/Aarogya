@@ -44,6 +44,11 @@ public class CompletePatientProfileResponse {
     // Profile Statistics
     private ProfileStatistics statistics;
 
+    private SymptomStatsResponse symptomStatsResponse;
+
+    private VitalsStatsResponse vitalsStats;
+    private HealthGoalStatsResponse goalStats;
+
     @Data
     @Builder
     @NoArgsConstructor
