@@ -14,6 +14,7 @@ import AppointmentBooking from "./pages/Appointments/AppointmentBooking";
 import Assistant from "./pages/AiAssistant";
 import LabManagement from "./pages/Lab/LabManagement";
 import PatientDashboard from "./pages/Dashboard/PatientDashboard";
+import HealthcareDashboard from "./pages/Dashboard/TestDashboard";
 
 function App() {
   return (
@@ -38,7 +39,8 @@ function App() {
           <Route path="/appointments" element={<AppointmentBooking />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/lab" element={<LabManagement />} />
-          <Route path="/profile" element={<PatientDashboard />} />
+          {/* <Route path="/profile" element={<PatientDashboard />} /> */}
+          <Route path="/profile" element={<HealthcareDashboard />} />
         </Route>
       </Routes>
     </Router>

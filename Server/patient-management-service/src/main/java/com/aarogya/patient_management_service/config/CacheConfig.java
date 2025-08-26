@@ -15,10 +15,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager(
-                "patientDashboard",
-                "completePatientProfile"
-        );
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
 
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .maximumSize(1000)
