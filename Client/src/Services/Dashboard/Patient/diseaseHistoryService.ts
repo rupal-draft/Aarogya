@@ -1,6 +1,5 @@
 import type {
   ApiResponse,
-  PageResponse,
   DiseaseHistoryResponse,
   CreateDiseaseHistoryRequest,
   UpdateDiseaseHistoryRequest,
@@ -21,61 +20,6 @@ export class DiseaseHistoryService {
       return response.data.data;
     } catch (error) {
       console.error("Error creating disease history:", error);
-      throw error;
-    }
-  }
-
-  async getDiseaseHistory(
-    page = 0,
-    size = 10
-  ): Promise<PageResponse<DiseaseHistoryResponse>> {
-    try {
-      const response = await api.get<
-        ApiResponse<PageResponse<DiseaseHistoryResponse>>
-      >(this.basePath, {
-        params: { page, size },
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching disease history:", error);
-      throw error;
-    }
-  }
-
-  async getActiveDiseases(): Promise<DiseaseHistoryResponse[]> {
-    try {
-      const response = await api.get<ApiResponse<DiseaseHistoryResponse[]>>(
-        `${this.basePath}/active`
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching active diseases:", error);
-      throw error;
-    }
-  }
-
-  async getChronicDiseases(): Promise<DiseaseHistoryResponse[]> {
-    try {
-      const response = await api.get<ApiResponse<DiseaseHistoryResponse[]>>(
-        `${this.basePath}/chronic`
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching chronic diseases:", error);
-      throw error;
-    }
-  }
-
-  async getDiseaseHistoryById(
-    diseaseId: string
-  ): Promise<DiseaseHistoryResponse> {
-    try {
-      const response = await api.get<ApiResponse<DiseaseHistoryResponse>>(
-        `${this.basePath}/${diseaseId}`
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error(`Error fetching disease ${diseaseId}:`, error);
       throw error;
     }
   }

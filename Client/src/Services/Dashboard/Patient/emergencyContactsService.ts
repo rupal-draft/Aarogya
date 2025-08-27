@@ -9,44 +9,6 @@ import { api } from "../../../utils/dashboardApi";
 export class EmergencyContactsService {
   private readonly basePath = "/emergency-contacts";
 
-  async getPatientEmergencyContacts(): Promise<EmergencyContactResponse[]> {
-    try {
-      const response = await api.get<ApiResponse<EmergencyContactResponse[]>>(
-        this.basePath
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching emergency contacts:", error);
-      throw error;
-    }
-  }
-
-  async getEmergencyContact(
-    contactId: string
-  ): Promise<EmergencyContactResponse> {
-    try {
-      const response = await api.get<ApiResponse<EmergencyContactResponse>>(
-        `${this.basePath}/${contactId}`
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error(`Error fetching emergency contact ${contactId}:`, error);
-      throw error;
-    }
-  }
-
-  async getPrimaryContact(): Promise<EmergencyContactResponse> {
-    try {
-      const response = await api.get<ApiResponse<EmergencyContactResponse>>(
-        `${this.basePath}/primary`
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching primary contact:", error);
-      throw error;
-    }
-  }
-
   async createEmergencyContact(
     request: CreateEmergencyContactRequest
   ): Promise<EmergencyContactResponse> {

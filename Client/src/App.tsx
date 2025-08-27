@@ -14,7 +14,7 @@ import AppointmentBooking from "./pages/Appointments/AppointmentBooking";
 import Assistant from "./pages/AiAssistant";
 import LabManagement from "./pages/Lab/LabManagement";
 import PatientDashboard from "./pages/Dashboard/PatientDashboard";
-import HealthcareDashboard from "./pages/Dashboard/TestDashboard";
+import HealthcareDashboard from "./pages/Dashboard/PatientDashboard";
 
 function App() {
   return (

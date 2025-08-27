@@ -1,10 +1,8 @@
 import type {
   ApiResponse,
   CreateVitalsRequest,
-  PageResponse,
   PatientVitalsResponse,
   UpdateVitalsRequest,
-  VitalsStatsResponse,
 } from "../../../types/dashboard";
 import { api } from "../../../utils/dashboardApi";
 
@@ -25,81 +23,6 @@ export class VitalsService {
       throw error;
     }
   }
-
-  async getPatientVitals(
-    page = 0,
-    size = 10
-  ): Promise<PageResponse<PatientVitalsResponse>> {
-    try {
-      const response = await api.get<
-        ApiResponse<PageResponse<PatientVitalsResponse>>
-      >(this.basePath, {
-        params: { page, size },
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching patient vitals:", error);
-      throw error;
-    }
-  }
-
-  async getLatestVitals(): Promise<PatientVitalsResponse> {
-    try {
-      const response = await api.get<ApiResponse<PatientVitalsResponse>>(
-        `${this.basePath}/latest`
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching latest vitals:", error);
-      throw error;
-    }
-  }
-
-  async getVitalsStats(days: number): Promise<VitalsStatsResponse> {
-    try {
-      const response = await api.get<ApiResponse<VitalsStatsResponse>>(
-        `${this.basePath}/stats`,
-        {
-          params: { days },
-        }
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching vitals stats:", error);
-      throw error;
-    }
-  }
-
-  async getVitalsTrends(
-    startDate: string,
-    endDate: string
-  ): Promise<PatientVitalsResponse[]> {
-    try {
-      const response = await api.get<ApiResponse<PatientVitalsResponse[]>>(
-        `${this.basePath}/trends`,
-        {
-          params: { startDate, endDate },
-        }
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching vitals trends:", error);
-      throw error;
-    }
-  }
-
-  async getVitalsById(vitalsId: string): Promise<PatientVitalsResponse> {
-    try {
-      const response = await api.get<ApiResponse<PatientVitalsResponse>>(
-        `${this.basePath}/${vitalsId}`
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error(`Error fetching vitals ${vitalsId}:`, error);
-      throw error;
-    }
-  }
-
   async updateVitals(
     vitalsId: string,
     request: UpdateVitalsRequest

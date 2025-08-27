@@ -25,47 +25,6 @@ export class AllergiesService {
     }
   }
 
-  async getPatientAllergies(
-    page = 0,
-    size = 10
-  ): Promise<PageResponse<PatientAllergyResponse>> {
-    try {
-      const response = await api.get<
-        ApiResponse<PageResponse<PatientAllergyResponse>>
-      >(this.basePath, {
-        params: { page, size },
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching patient allergies:", error);
-      throw error;
-    }
-  }
-
-  async getCriticalAllergies(): Promise<PatientAllergyResponse[]> {
-    try {
-      const response = await api.get<ApiResponse<PatientAllergyResponse[]>>(
-        `${this.basePath}/critical`
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching critical allergies:", error);
-      throw error;
-    }
-  }
-
-  async getAllergyById(allergyId: string): Promise<PatientAllergyResponse> {
-    try {
-      const response = await api.get<ApiResponse<PatientAllergyResponse>>(
-        `${this.basePath}/${allergyId}`
-      );
-      return response.data.data;
-    } catch (error) {
-      console.error(`Error fetching allergy ${allergyId}:`, error);
-      throw error;
-    }
-  }
-
   async updateAllergy(
     allergyId: string,
     request: UpdateAllergyRequest
