@@ -1,27 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import ChatInterface from "../../components/Assistant/ChatInterface"
-import MedicalHistory from "../../components/History/MedicalHistory"
-import Dashboard from "../../components/Dashboard/AssistantDashboard"
-import Button from "../../common/Ui/Button"
+import { useState } from "react";
+import ChatInterface from "../../components/Assistant/ChatInterface";
+import MedicalHistory from "../../components/History/MedicalHistory";
+import Dashboard from "../../components/Assistant/AssistantDashboard";
+import Button from "../../common/Ui/Button";
 
-
-type View = "dashboard" | "chat" | "history"
+type View = "dashboard" | "chat" | "history";
 
 function Assistant() {
-  const [currentView, setCurrentView] = useState<View>("dashboard")
+  const [currentView, setCurrentView] = useState<View>("dashboard");
 
   const renderView = () => {
     switch (currentView) {
       case "chat":
-        return <ChatInterface />
+        return <ChatInterface />;
       case "history":
-        return <MedicalHistory />
+        return <MedicalHistory />;
       default:
-        return <Dashboard onStartChat={() => setCurrentView("chat")} onViewHistory={() => setCurrentView("history")} />
+        return (
+          <Dashboard
+            onStartChat={() => setCurrentView("chat")}
+            onViewHistory={() => setCurrentView("history")}
+          />
+        );
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -76,7 +80,7 @@ function Assistant() {
         )}
       </main>
     </div>
-  )
+  );
 }
 
-export default Assistant
+export default Assistant;

@@ -662,3 +662,119 @@ export interface GoalProgress {
   status: string;
   targetDate: string;
 }
+
+export interface PatientDashboardData {
+  success: boolean;
+  message: string;
+  data: {
+    dashboard: {
+      latestVitals: {
+        bloodPressureSystolic: number;
+        bloodPressureDiastolic: number;
+        heartRate: number;
+        temperature: number;
+        oxygenSaturation: number;
+        respiratoryRate: number;
+        weight: number;
+        height: number;
+        bmi: number;
+        recordedAt: string;
+      };
+      activeMedicalConditions: Array<{
+        conditionName: string;
+        severity: string;
+        diagnosedDate: string;
+        status: string;
+        description: string;
+      }>;
+      criticalAllergies: Array<{
+        allergen: string;
+        severity: string;
+        reaction: string;
+        diagnosedDate: string;
+      }>;
+      activeMedications: Array<{
+        medicationName: string;
+        dosage: string;
+        frequency: string;
+        startDate: string;
+        prescribedBy: string;
+        instructions: string;
+      }>;
+      activeGoals: Array<{
+        goalType: string;
+        targetValue: number;
+        currentValue: number;
+        unit: string;
+        targetDate: string;
+        progress: number;
+        status: string;
+      }>;
+      recentDoctorNotes: Array<{
+        noteDate: string;
+        doctorName: string;
+        noteType: string;
+        content: string;
+        followUpRequired: boolean;
+      }>;
+      healthSummary: {
+        overallStatus: string;
+        riskFactors: string[];
+        recommendations: string[];
+      };
+    };
+    healthOverview: {
+      overallHealthStatus: string;
+      healthScore: number;
+      lastUpdated: string;
+    };
+    emergencyContacts: Array<{
+      name: string;
+      relationship: string;
+      phoneNumber: string;
+      email: string;
+      address: string;
+      isPrimary: boolean;
+    }>;
+    recentVitals: Array<{
+      bloodPressureSystolic: number;
+      bloodPressureDiastolic: number;
+      heartRate: number;
+      bodyTemperature: number;
+      oxygenSaturation: number;
+      respiratoryRate: number;
+      recordedAt: string;
+    }>;
+    allergies: Array<{
+      allergen: string;
+      severity: string;
+      reaction: string;
+      diagnosedDate: string;
+    }>;
+    medications: Array<{
+      medicationName: string;
+      dosage: string;
+      frequency: string;
+      startDate: string;
+      prescribedBy: string;
+      instructions: string;
+    }>;
+    healthGoals: Array<{
+      goalType: string;
+      targetValue: number;
+      currentValue: number;
+      unit: string;
+      targetDate: string;
+      progress: number;
+      status: string;
+    }>;
+    doctorNotes: Array<{
+      noteDate: string;
+      doctorName: string;
+      noteType: string;
+      content: string;
+      followUpRequired: boolean;
+    }>;
+  };
+  timestamp: string;
+}

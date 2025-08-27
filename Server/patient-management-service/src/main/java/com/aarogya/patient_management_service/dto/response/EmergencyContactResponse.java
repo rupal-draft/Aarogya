@@ -15,9 +15,9 @@ public class EmergencyContactResponse {
 
     private String id;
     private String patientId;
-    private String fullName;
+    private String contactName;
     private String relationship;
-    private String primaryPhone;
+    private String phoneNumber;
     private String secondaryPhone;
     private String email;
     private String address;
@@ -32,7 +32,7 @@ public class EmergencyContactResponse {
     private boolean hasCompleteInfo;
 
     public String getFullName() {
-        return fullName != null ? fullName : "Unknown Contact";
+        return contactName != null ? contactName : "Unknown Contact";
     }
 
     public String getRelationship() {
@@ -40,9 +40,8 @@ public class EmergencyContactResponse {
     }
 
     public String getPrimaryPhone() {
-        return primaryPhone != null ? primaryPhone : "";
+        return phoneNumber != null ? phoneNumber : "";
     }
-
     public String getSecondaryPhone() {
         return secondaryPhone != null ? secondaryPhone : "";
     }

@@ -19,6 +19,8 @@ public class PatientVitalsResponse {
     private Integer bloodPressureDiastolic;
     private Integer heartRate;
     private Double temperature;
+    private Integer respiratoryRate;
+    private Integer oxygenSaturation;
     private Double weight;
     private Double height;
     private Double bmi;
