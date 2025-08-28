@@ -101,8 +101,6 @@ public class PatientProfileDashboardServiceImpl implements PatientProfileDashboa
                     .medicalHistory(mapToMedicalHistoryResponse(medicalHistory))
                     .allergies(mapToPatientAllergyResponse(allergies))
                     .medications(mapToPatientMedicationResponse(medications))
-                    .recentVitals(mapToPatientVitalsResponse(recentVitals))
-                    .recentSymptoms(mapToSymptomTrackerResponse(recentSymptoms))
                     .healthGoals(mapToHealthGoalResponse(healthGoals))
                     .emergencyContacts(mapToEmergencyContactResponse(emergencyContacts))
                     .doctorNotes(mapToDoctorNoteResponse(doctorNotes))
@@ -263,9 +261,9 @@ public class PatientProfileDashboardServiceImpl implements PatientProfileDashboa
     }
 
     private SymptomStatsResponse buildSymptomStats(String patientId, List<SymptomTracker> symptoms) {
-        // Implementation for symptom statistics
+        List<SymptomTrackerRepository.SymptomSummary> summaries = symptomTrackerRepository.getSymptomSummary(patientId);
         return SymptomStatsResponse.builder()
-                .symptomSummaries(Collections.emptyList()) // Would be populated from repository
+                .symptomSummaries(summaries) // Would be populated from repository
                 .recentSymptoms(mapToSymptomTrackerResponse(symptoms))
                 .totalSymptoms(symptoms.size())
                 .generatedAt(LocalDateTime.now())

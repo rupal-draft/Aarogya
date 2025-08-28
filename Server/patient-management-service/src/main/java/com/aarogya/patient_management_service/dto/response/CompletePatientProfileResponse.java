@@ -25,11 +25,6 @@ public class CompletePatientProfileResponse {
     private List<PatientAllergyResponse> allergies;
     private List<PatientMedicationResponse> medications;
 
-    // Vitals and Tracking
-    private List<PatientVitalsResponse> recentVitals;
-    private List<SymptomTrackerResponse> recentSymptoms;
-
-    // Goals and Progress
     private List<HealthGoalResponse> healthGoals;
 
     // Emergency and Support

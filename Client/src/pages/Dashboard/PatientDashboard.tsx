@@ -12,6 +12,11 @@ import LoadingSpinner from "../../common/Spinners/LoadingSpinner";
 import ErrorState from "../../common/Error/ErrorState";
 import TabNavigation from "../../components/Dashboard/TabNavigation";
 import DiseaseHistoryTab from "../../components/Dashboard/DiseaseHistoryTab";
+import AllergiesTab from "../../components/Dashboard/AllergiesTab";
+import MedicationsTab from "../../components/Dashboard/MedicationTab";
+import VitalsTab from "../../components/Dashboard/VitalsTab";
+import AnalyticsTab from "../../components/Dashboard/AnalyticsTab";
+import SymptomsTab from "../../components/Dashboard/SymptomsTab";
 
 export const AnimatedCounter = ({ value }: { value: number }) => {
   const [count, setCount] = useState(0);
@@ -49,6 +54,32 @@ const TabContent = ({
       />
     );
   }
+
+  if (activeTab === "allergies") {
+    return <AllergiesTab data={data.data.allergies} />;
+  }
+
+  if (activeTab === "medications") {
+    return <MedicationsTab data={data.data.medications} />;
+  }
+
+  if (activeTab === "vitals") {
+    return <VitalsTab data={data.data.vitalsStats} />;
+  }
+
+  if (activeTab === "analytics") {
+    const mergedData = {
+      ...data.data.statistics,
+      ...data.data.analytics,
+    };
+
+    return <AnalyticsTab data={mergedData} />;
+  }
+
+  if (activeTab === "symptoms") {
+    return <SymptomsTab data={data.data.symptomStatsResponse} />;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -172,7 +203,7 @@ export default function PatientDashboard() {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        {/* <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} /> */}
+        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
         <AnimatePresence mode="wait">
           <motion.div

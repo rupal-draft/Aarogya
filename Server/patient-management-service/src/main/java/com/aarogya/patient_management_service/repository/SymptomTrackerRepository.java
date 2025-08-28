@@ -38,9 +38,11 @@ public interface SymptomTrackerRepository extends MongoRepository<SymptomTracker
     @Aggregation(pipeline = {
             "{'$match': {'patientId': ?0}}",
             "{'$group': {'_id': '$symptomName', 'count': {'$sum': 1}, 'avgSeverity': {'$avg': '$severity'}}}",
+            "{'$project': {'symptomName': '$_id', 'count': 1, 'avgSeverity': 1, '_id': 0}}",
             "{'$sort': {'count': -1}}"
     })
     List<SymptomSummary> getSymptomSummary(String patientId);
+
 
     List<SymptomTracker> findTop10ByPatientIdOrderByRecordedAtDesc(String patientId);
 
