@@ -10,7 +10,7 @@ import {
   AlertCircle,
   Activity,
 } from "lucide-react";
-import GlassCard from "../../common/Cards/GlassCard";
+import GlassCard from "../../../../common/Cards/GlassCard";
 import axios from "axios";
 
 interface Disease {

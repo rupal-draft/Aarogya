@@ -1,4 +1,4 @@
-import { DashboardTabs } from "../../Data/tabs";
+import { DashboardTabs } from "../../../../Data/tabs";
 import { motion } from "framer-motion";
 
 const TabNavigation = ({

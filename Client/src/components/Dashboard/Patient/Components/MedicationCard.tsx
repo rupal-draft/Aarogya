@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Pill } from "lucide-react";
-import GlassCard from "../../common/Cards/GlassCard";
+import GlassCard from "../../../../common/Cards/GlassCard";
 
 const MedicationCard = ({ medication }: { medication: any }) => (
   <motion.div

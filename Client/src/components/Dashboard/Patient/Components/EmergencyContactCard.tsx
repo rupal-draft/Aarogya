@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Users, Phone, Mail, MapPin } from "lucide-react";
-import GlassCard from "../../common/Cards/GlassCard";
+import GlassCard from "../../../../common/Cards/GlassCard";
 
 const EmergencyContactCard = ({ contact }: { contact: any }) => (
   <motion.div

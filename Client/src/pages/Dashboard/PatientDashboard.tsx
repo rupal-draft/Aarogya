@@ -4,19 +4,23 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
-import DashboardOverview from "../../components/Dashboard/Overview";
+import DashboardOverview from "../../components/Dashboard/Patient/Tabs/Overview";
 import GlassCard from "../../common/Cards/GlassCard";
 import { DashboardTabs } from "../../Data/tabs";
 import type { PatientDashboardData } from "../../types/dashboard";
 import LoadingSpinner from "../../common/Spinners/LoadingSpinner";
 import ErrorState from "../../common/Error/ErrorState";
-import TabNavigation from "../../components/Dashboard/TabNavigation";
-import DiseaseHistoryTab from "../../components/Dashboard/DiseaseHistoryTab";
-import AllergiesTab from "../../components/Dashboard/AllergiesTab";
-import MedicationsTab from "../../components/Dashboard/MedicationTab";
-import VitalsTab from "../../components/Dashboard/VitalsTab";
-import AnalyticsTab from "../../components/Dashboard/AnalyticsTab";
-import SymptomsTab from "../../components/Dashboard/SymptomsTab";
+import TabNavigation from "../../components/Dashboard/Patient/Components/TabNavigation";
+import DiseaseHistoryTab from "../../components/Dashboard/Patient/Tabs/DiseaseHistoryTab";
+import AllergiesTab from "../../components/Dashboard/Patient/Tabs/AllergiesTab";
+import MedicationsTab from "../../components/Dashboard/Patient/Tabs/MedicationTab";
+import AnalyticsTab from "../../components/Dashboard/Patient/Tabs/AnalyticsTab";
+import SymptomsTab from "../../components/Dashboard/Patient/Tabs/SymptomsTab";
+import HealthGoalTab from "../../components/Dashboard/Patient/Tabs/HealthGoalTab";
+import MedicalHistoryTab from "../../components/Dashboard/Patient/Tabs/MedicalHistoryTab";
+import DoctorNotesTab from "../../components/Dashboard/Patient/Tabs/DoctorNotesTab";
+import EmergencyContactsTab from "../../components/Dashboard/Patient/Tabs/EmergancyContactsTab";
+import VitalsTab from "../../components/Dashboard/Patient/Tabs/VitalsTab";
 
 export const AnimatedCounter = ({ value }: { value: number }) => {
   const [count, setCount] = useState(0);
@@ -78,6 +82,27 @@ const TabContent = ({
 
   if (activeTab === "symptoms") {
     return <SymptomsTab data={data.data.symptomStatsResponse} />;
+  }
+
+  if (activeTab === "goals") {
+    return (
+      <HealthGoalTab
+        goalStats={data.data.goalStats}
+        goalsData={data.data.healthGoals}
+      />
+    );
+  }
+
+  if (activeTab === "history") {
+    return <MedicalHistoryTab conditionsData={data.data.medicalHistory} />;
+  }
+
+  if (activeTab === "notes") {
+    return <DoctorNotesTab notesData={data.data.doctorNotes} />;
+  }
+
+  if (activeTab === "contacts") {
+    return <EmergencyContactsTab contactsData={data.data.emergencyContacts} />;
   }
 
   return (

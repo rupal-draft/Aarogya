@@ -22,16 +22,16 @@ import {
   Brain,
   Eye,
 } from "lucide-react";
-import VitalCard from "./VitalCard";
-import AllergyCard from "./AllergyCard";
-import MedicalConditionCard from "./MedicalConditionCard";
-import MedicationCard from "./MedicationCard";
-import GoalCard from "./GoalCard";
-import EmergencyContactCard from "./EmergencyContactCard";
-import DoctorNoteCard from "./DoctorNoteCard";
-import type { PatientDashboardData } from "../../types/dashboard";
-import GlassCard from "../../common/Cards/GlassCard";
-import { AnimatedCounter } from "../../pages/Dashboard/PatientDashboard";
+import VitalCard from "../Components/VitalCard";
+import AllergyCard from "../Components/AllergyCard";
+import MedicalConditionCard from "../Components/MedicalConditionCard";
+import MedicationCard from "../Components/MedicationCard";
+import GoalCard from "../Components/GoalCard";
+import EmergencyContactCard from "../Components/EmergencyContactCard";
+import DoctorNoteCard from "../Components/DoctorNoteCard";
+import type { PatientDashboardData } from "../../../../types/dashboard";
+import GlassCard from "../../../../common/Cards/GlassCard";
+import { AnimatedCounter } from "../../../../pages/Dashboard/PatientDashboard";
 
 type DashboardOverviewProps = {
   data: PatientDashboardData;

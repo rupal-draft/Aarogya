@@ -1,4 +1,4 @@
-import GlassCard from "../../common/Cards/GlassCard";
+import GlassCard from "../../../../common/Cards/GlassCard";
 import { motion } from "framer-motion";
 
 const MedicalConditionCard = ({ condition }: { condition: any }) => (

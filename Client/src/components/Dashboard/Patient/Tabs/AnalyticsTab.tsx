@@ -17,9 +17,9 @@ import {
   Clock,
   CheckCircle,
 } from "lucide-react";
-import { Card } from "../../common/Ui/Card2";
-import Button from "../../common/Ui/Button";
-import { Badge } from "../../common/Ui/Badge2";
+import { Card } from "../../../../common/Ui/Card2";
+import Button from "../../../../common/Ui/Button";
+import { Badge } from "../../../../common/Ui/Badge2";
 
 interface AnalyticsTabProps {
   data: any;

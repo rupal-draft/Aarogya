@@ -14,9 +14,9 @@ import {
   Zap,
   HeartPulse,
 } from "lucide-react";
-import Button from "../../common/Ui/Button";
-import { Card } from "../../common/Ui/Card2";
-import { Badge } from "../../common/Ui/Badge2";
+import Button from "./../../../../common/Ui/Button";
+import { Card } from "./../../../../common/Ui/Card2";
+import { Badge } from "./../../../../common/Ui/Badge2";
 
 interface VitalsTabProps {
   data: any[];

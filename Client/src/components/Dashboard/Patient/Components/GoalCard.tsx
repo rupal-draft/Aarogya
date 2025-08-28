@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Target } from "lucide-react";
-import GlassCard from "../../common/Cards/GlassCard";
+import GlassCard from "../../../../common/Cards/GlassCard";
 
 const GoalCard = ({ goal }: { goal: any }) => (
   <motion.div

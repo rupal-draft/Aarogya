@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Edit, Trash2, Pill, Clock } from "lucide-react";
-import Button from "../../common/Ui/Button";
-import { Card } from "../../common/Ui/Card2";
-import { Badge } from "../../common/Ui/Badge2";
+import Button from "../../../../common/Ui/Button";
+import { Card } from "../../../../common/Ui/Card2";
+import { Badge } from "../../../../common/Ui/Badge2";
 
 interface MedicationsTabProps {
   data: any[];

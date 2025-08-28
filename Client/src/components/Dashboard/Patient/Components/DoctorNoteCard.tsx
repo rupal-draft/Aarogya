@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { FileText, Calendar } from "lucide-react";
-import GlassCard from "../../common/Cards/GlassCard";
+import GlassCard from "../../../../common/Cards/GlassCard";
 
 const DoctorNoteCard = ({ note }: { note: any }) => (
   <motion.div
