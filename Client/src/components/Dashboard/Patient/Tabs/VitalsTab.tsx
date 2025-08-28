@@ -193,43 +193,37 @@ export default function VitalsTab({ data }: VitalsTabProps) {
             }}
           >
             <motion.div
-              className="text-5xl font-black bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-3 relative"
+              className="text-5xl font-black bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-3 relative [background-size:200%_200%]"
+              style={{
+                WebkitTextStroke: "1px rgba(255,255,255,0.8)", // clean outline for readability
+              }}
               animate={{
                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
                 textShadow: [
-                  "0 0 0px rgba(139, 92, 246, 0)",
-                  "0 0 20px rgba(139, 92, 246, 0.4)",
-                  "0 0 0px rgba(139, 92, 246, 0)",
+                  "0 0 6px rgba(139,92,246,0.6)", // subtle, not overpowering
+                  "0 0 12px rgba(139,92,246,0.8)",
+                  "0 0 6px rgba(139,92,246,0.6)",
                 ],
               }}
               transition={{
                 backgroundPosition: {
                   duration: 4,
-                  repeat: Number.POSITIVE_INFINITY,
+                  repeat: Infinity,
                   ease: "linear",
                 },
-                textShadow: {
-                  duration: 2,
-                  repeat: Number.POSITIVE_INFINITY,
-                },
+                textShadow: { duration: 2, repeat: Infinity },
               }}
             >
               {data.current}
               <motion.div
                 className="absolute -top-2 -right-2"
-                animate={{
-                  scale: [0, 1, 0],
-                  rotate: [0, 180, 360],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Number.POSITIVE_INFINITY,
-                  delay: 1,
-                }}
+                animate={{ scale: [0, 1, 0], rotate: [0, 180, 360] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 1 }}
               >
                 <Zap className="w-4 h-4 text-yellow-400" />
               </motion.div>
             </motion.div>
+
             <motion.p
               className="text-sm text-muted-foreground font-semibold tracking-wide"
               animate={{
