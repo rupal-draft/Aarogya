@@ -1,6 +1,6 @@
 package com.aarogya.prescription_service.model;
 
-import com.aarogya.prescription_service.model.enums.PrescriptionStatus;
+import com.aarogya.prescription_service.enums.PrescriptionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,18 +8,21 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "prescriptions")
+@CompoundIndex(def = "{'appointmentId': 1, 'patientId': 1, 'doctorId': 1}")
 public class Prescription {
-
     @Id
     private String id;
 
@@ -27,30 +30,15 @@ public class Prescription {
     private String appointmentId;
 
     @Indexed
-    private String doctorId;
-
-    @Indexed
     private String patientId;
 
+    @Indexed
+    private String doctorId;
+
+    private List<PrescribedMedicine> medicines;
     private String diagnosis;
     private String notes;
-    private PrescriptionStatus status = PrescriptionStatus.ACTIVE;
-
-    private LocalDateTime validFrom;
-    private LocalDateTime validUntil;
-
-    private String followUpInstructions;
-    private LocalDateTime nextFollowUp;
-
-    private String emergencyContact;
-    private String emergencyInstructions;
-
-    private String prescriptionNumber;
-    private boolean isElectronic;
-    private String insuranceInfo;
-
-    private String digitalSignature;
-    private boolean isVerified;
+    private PrescriptionStatus status;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -58,13 +46,7 @@ public class Prescription {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    private String patientFirstName;
-    private String patientLastName;
-    private String patientAge;
-    private String patientGender;
-
-    private String doctorFirstName;
-    private String doctorLastName;
-    private String doctorSpecialization;
-    private String doctorLicenseNumber;
+    @Version
+    private Long version;
 }
+

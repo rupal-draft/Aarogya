@@ -1,4 +1,4 @@
-package com.aarogya.prescription_service.model.enums;
+package com.aarogya.prescription_service.enums;
 
 public enum PrescriptionStatus {
     ACTIVE,

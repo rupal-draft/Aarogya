@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/Aarogya.iml" filepath="$PROJECT_DIR$/.idea/Aarogya.iml" />
       <module fileurl="file://$PROJECT_DIR$/auth-service/auth-service.iml" filepath="$PROJECT_DIR$/auth-service/auth-service.iml" />
       <module fileurl="file://$PROJECT_DIR$/lab-service/lab-service.iml" filepath="$PROJECT_DIR$/lab-service/lab-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/prescription-service/prescription-service.iml" filepath="$PROJECT_DIR$/prescription-service/prescription-service.iml" />
     </modules>
   </component>
 </project>
