@@ -19,4 +19,6 @@ public interface MedicineInteractionRepository extends MongoRepository<MedicineI
 
     @Query("{'$or': [{'drug1': {'$in': ?0}}, {'drug2': {'$in': ?0}}]}")
     List<MedicineInteraction> findInteractionsForDrugs(List<String> drugNames);
+
+    List<MedicineInteraction> findByDrug1(String name);
 }

@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -48,5 +49,19 @@ public class Prescription {
 
     @Version
     private Long version;
+
+    public void addMedicine(PrescribedMedicine medicine) {
+        if (this.medicines == null) {
+            this.medicines = new ArrayList<>();
+        }
+        this.medicines.add(medicine);
+    }
+
+    public boolean removeMedicine(String medicineId) {
+        if (this.medicines != null) {
+            return this.medicines.removeIf(med -> med.getMedicineId().equals(medicineId));
+        }
+        return false;
+    }
 }
 

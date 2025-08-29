@@ -1,25 +1,30 @@
 package com.aarogya.prescription_service.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-import java.util.Map;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PrescribedMedicineResponse {
+public class AddMedicineRequest {
+    @NotBlank(message = "Medicine ID is required")
     private String medicineId;
-    private String medicineName;
+
+    @NotBlank(message = "Dosage is required")
     private String dosage;
+
+    @NotBlank(message = "Frequency is required")
     private String frequency;
+
+    @Min(value = 1, message = "Duration must be at least 1 day")
     private Integer duration;
+
     private String instructions;
-    private Boolean isSubstitute;
+    private Boolean isSubstitute = false;
     private String originalMedicineId;
-    private Map<String, String> potentialInteractions;
 }
