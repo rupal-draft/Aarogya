@@ -78,6 +78,25 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
         }
     }
 
+    @Override
+    public void getAppointmentsByIds(Appointment.GetAppointmentsByIdsRequest request,
+                                     StreamObserver<Appointment.GetAppointmentsByIdsResponse> responseObserver) {
+        List<AppointmentResponseDto> appts = appointmentService.findByIds(request.getAppointmentIdsList());
+
+        List<Appointment.AppointmentResponseDto> grpcAppts = appts.stream()
+                .map(appt -> modelMapper.map(appt, Appointment.AppointmentResponseDto.class))
+                .toList();
+
+
+        Appointment.GetAppointmentsByIdsResponse response = Appointment.GetAppointmentsByIdsResponse.newBuilder()
+                .addAllAppointments(grpcAppts)
+                .build();
+
+        responseObserver.onNext(response);
+        log.info("Sent {} appointments", grpcAppts.size());
+        responseObserver.onCompleted();
+    }
+
     private void handleAppointmentRequest(Appointment.AppointmentPageRequest request,
                                           StreamObserver<Appointment.AppointmentPageResponse> responseObserver,
                                           boolean isPatient) {

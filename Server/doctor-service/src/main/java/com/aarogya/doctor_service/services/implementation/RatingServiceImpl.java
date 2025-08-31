@@ -1,25 +1,33 @@
 package com.aarogya.doctor_service.services.implementation;
 
+import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.clients.AppointmentGrpcClient;
 import com.aarogya.doctor_service.clients.UserGrpcClient;
+import com.aarogya.doctor_service.dto.grpc.AppointmentDto;
 import com.aarogya.doctor_service.dto.grpc.PatientResponseDTO;
 import com.aarogya.doctor_service.dto.request.CreateRatingRequest;
+import com.aarogya.doctor_service.dto.request.HelpfulVoteRequest;
 import com.aarogya.doctor_service.dto.request.RatingFilterRequest;
 import com.aarogya.doctor_service.dto.response.RatingResponse;
+import com.aarogya.doctor_service.dto.response.RatingStatsResponse;
 import com.aarogya.doctor_service.dto.response.RatingSummaryResponse;
 import com.aarogya.doctor_service.enums.RatingSortBy;
 import com.aarogya.doctor_service.enums.RatingTag;
 import com.aarogya.doctor_service.enums.ReportReason;
 import com.aarogya.doctor_service.exceptions.BadRequestException;
+import com.aarogya.doctor_service.exceptions.ResourceNotFoundException;
 import com.aarogya.doctor_service.models.DoctorRating;
 import com.aarogya.doctor_service.models.DoctorRatingSummary;
 import com.aarogya.doctor_service.models.HelpfulVote;
 import com.aarogya.doctor_service.repositories.DoctorRatingRepository;
 import com.aarogya.doctor_service.repositories.DoctorRatingSummaryRepository;
 import com.aarogya.doctor_service.repositories.HelpfulVoteRepository;
-import com.aarogya.doctor_service.repositories.RatingReportRepository;
+import com.aarogya.doctor_service.services.RatingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +36,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,12 +46,11 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class RatingServiceImpl {
+public class RatingServiceImpl implements RatingService {
 
     private final DoctorRatingRepository ratingRepository;
     private final DoctorRatingSummaryRepository summaryRepository;
     private final HelpfulVoteRepository helpfulVoteRepository;
-    private final RatingReportRepository reportRepository;
     private final UserGrpcClient userGrpcClient;
     private final AppointmentGrpcClient appointmentServiceClient;
     private final MongoTemplate mongoTemplate;
@@ -49,6 +58,160 @@ public class RatingServiceImpl {
     private static final String RATING_CACHE = "doctorRatings";
     private static final String SUMMARY_CACHE = "ratingSummary";
 
+    @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = RATING_CACHE, key = "#request.doctorId"),
+            @CacheEvict(value = SUMMARY_CACHE, key = "#request.doctorId")
+    })
+    public RatingResponse createRating(CreateRatingRequest request) {
+        String patientId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Creating rating for doctor {} by patient {}", request.getDoctorId(), patientId);
+
+        validateRatingRequest(request);
+
+        Optional<DoctorRating> existingRating = ratingRepository.findByDoctorIdAndPatientId(
+                request.getDoctorId(), patientId);
+
+        if (existingRating.isPresent()) {
+            throw new BadRequestException("You have already rated this doctor");
+        }
+
+        String patientName = getPatientName(patientId);
+
+        DoctorRating rating = buildRating(request, patientId, patientName);
+        DoctorRating savedRating = ratingRepository.save(rating);
+
+        updateRatingSummary(request.getDoctorId());
+
+        log.info("Rating created successfully with ID: {}", savedRating.getId());
+        return convertToResponse(savedRating, patientId);
+    }
+
+    @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = RATING_CACHE, key = "#result.doctorId"),
+            @CacheEvict(value = SUMMARY_CACHE, key = "#result.doctorId")
+    })
+    public RatingResponse updateRating(String ratingId, CreateRatingRequest request) {
+        String patientId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Updating rating {} by patient {}", ratingId, patientId);
+
+        DoctorRating existingRating = ratingRepository.findById(ratingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Rating not found with id: " + ratingId));
+
+        validateRatingOwnership(existingRating, patientId);
+        validateRatingRequest(request);
+
+        updateRatingFields(existingRating, request);
+        DoctorRating updatedRating = ratingRepository.save(existingRating);
+
+        updateRatingSummary(existingRating.getDoctorId());
+
+        log.info("Rating updated successfully with ID: {}", ratingId);
+        return convertToResponse(updatedRating, patientId);
+    }
+
+    @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = RATING_CACHE, key = "#result?.doctorId"),
+            @CacheEvict(value = SUMMARY_CACHE, key = "#result?.doctorId")
+    })
+    public void deleteRating(String ratingId) {
+        String patientId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Deleting rating {} by patient {}", ratingId, patientId);
+
+        DoctorRating rating = ratingRepository.findById(ratingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Rating not found with id: " + ratingId));
+
+        validateRatingOwnership(rating, patientId);
+
+        rating.setIsActive(false);
+        ratingRepository.save(rating);
+
+        updateRatingSummary(rating.getDoctorId());
+
+        log.info("Rating deleted successfully with ID: {}", ratingId);
+    }
+
+    @Override
+    @Cacheable(value = RATING_CACHE, key = "#ratingId")
+    public RatingResponse getRating(String ratingId) {
+        log.debug("Fetching rating with ID: {}", ratingId);
+
+        DoctorRating rating = ratingRepository.findById(ratingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Rating not found with id: " + ratingId));
+
+        String currentUserId = UserContextHolder.getUserDetails().getUserId();
+        return convertToResponse(rating, currentUserId);
+    }
+
+    @Override
+    @Cacheable(value = RATING_CACHE, key = "#doctorId + '_' + #filter.toString() + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
+    public Page<RatingResponse> getDoctorRatings(String doctorId, RatingFilterRequest filter, Pageable pageable) {
+        log.debug("Fetching ratings for doctor: {} with filter: {}", doctorId, filter);
+
+        Page<DoctorRating> ratingsPage = applyFilters(doctorId, filter, pageable);
+        String currentUserId = UserContextHolder.getUserDetails().getUserId();
+
+        return ratingsPage.map(rating -> convertToResponse(rating, currentUserId));
+    }
+
+    @Override
+    @Cacheable(value = SUMMARY_CACHE, key = "#doctorId")
+    public RatingSummaryResponse getRatingSummary(String doctorId) {
+        log.debug("Fetching rating summary for doctor: {}", doctorId);
+
+        DoctorRatingSummary summary = summaryRepository.findByDoctorId(doctorId)
+                .orElseGet(() -> createDefaultSummary(doctorId));
+
+        return convertToSummaryResponse(summary);
+    }
+
+    @Override
+    public RatingStatsResponse getRatingStats(String doctorId) {
+        log.debug("Fetching rating stats for doctor: {}", doctorId);
+
+        List<DoctorRating> ratings = ratingRepository.findByDoctorIdAndIsActiveTrue(doctorId);
+
+        Map<String, AppointmentDto> appointmentMap = appointmentServiceClient
+                .findByIds(ratings.stream()
+                        .map(DoctorRating::getAppointmentId)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()));
+
+        return RatingStatsResponse.builder()
+                .totalRatings(ratings.size())
+                .ratingsThisMonth(countRatingsThisMonth(ratings))
+                .ratingsThisWeek(countRatingsThisWeek(ratings))
+                .helpfulVotesReceived(countHelpfulVotes(ratings))
+                .averageResponseTime(calculateAverageResponseTime(ratings, appointmentMap))
+                .patientSatisfactionScore(calculateSatisfactionScore(ratings))
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public RatingResponse voteHelpful(HelpfulVoteRequest request) {
+        String patientId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Patient {} voting helpful for rating {}", patientId, request.getRatingId());
+
+        DoctorRating rating = ratingRepository.findById(request.getRatingId())
+                .orElseThrow(() -> new ResourceNotFoundException("Rating not found with id: " + request.getRatingId()));
+
+        if (request.getIsHelpful()) {
+            addHelpfulVote(request.getRatingId(), patientId);
+        } else {
+            removeHelpfulVote(request.getRatingId(), patientId);
+        }
+
+        DoctorRating updatedRating = ratingRepository.findById(request.getRatingId())
+                .orElseThrow(() -> new ResourceNotFoundException("Rating not found after update"));
+
+        return convertToResponse(updatedRating, patientId);
+    }
 
     // Private helper methods
     private void validateRatingRequest(CreateRatingRequest request) {
@@ -189,7 +352,7 @@ public class RatingServiceImpl {
             }
 
             if (filter.getTags() != null && !filter.getTags().isEmpty()) {
-                 query.addCriteria(Criteria.where("tags").all(filter.getTags()));
+                query.addCriteria(Criteria.where("tags").all(filter.getTags()));
             }
 
             if (Boolean.TRUE.equals(filter.getHasReview())) {
@@ -412,10 +575,39 @@ public class RatingServiceImpl {
                 .sum();
     }
 
-    private Integer calculateAverageResponseTime(List<DoctorRating> ratings) {
-        // Placeholder implementation - would need appointment data
-        return 24; // hours
+    private Integer calculateAverageResponseTime(List<DoctorRating> ratings, Map<String, AppointmentDto> appointmentMap) {
+        if (ratings == null || ratings.isEmpty()) {
+            return 0;
+        }
+
+        long totalMinutes = 0;
+        int count = 0;
+
+        for (DoctorRating rating : ratings) {
+            if (rating.getAppointmentId() != null) {
+                AppointmentDto appointment = appointmentMap.get(rating.getAppointmentId());
+
+                if (appointment != null && appointment.getCreatedAt() != null && appointment.getStartTime() != null && appointment.getAppointmentDate() != null) {
+                    LocalDateTime appointmentStart = LocalDateTime.of(
+                            appointment.getAppointmentDate(),
+                            appointment.getStartTime()
+                    );
+
+                    Duration duration = Duration.between(appointment.getCreatedAt(), appointmentStart);
+
+                    if (!duration.isNegative()) {
+                        totalMinutes += duration.toMinutes();
+                        count++;
+                    }
+                }
+            }
+        }
+        if (count == 0) {
+            return 0;
+        }
+        return (int) Math.round((double) totalMinutes / count / 60);
     }
+
 
     private Double calculateSatisfactionScore(List<DoctorRating> ratings) {
         if (ratings.isEmpty()) return 0.0;

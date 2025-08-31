@@ -184,7 +184,7 @@ public class UserGrpcClient {
 
         switch (code) {
             case NOT_FOUND:
-                throw new ResourceNotFound(description != null ? description : "Requested blog not found");
+                throw new ResourceNotFoundException(description != null ? description : "Requested blog not found");
             case INVALID_ARGUMENT:
                 throw new BadRequestException(description != null ? description : "Invalid blog request parameters");
             case PERMISSION_DENIED:

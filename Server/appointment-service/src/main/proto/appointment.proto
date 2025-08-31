@@ -101,9 +101,18 @@ message AppointmentListResponse {
     repeated AppointmentResponseDto appointments = 1;
 }
 
+message GetAppointmentsByIdsRequest {
+  repeated string appointmentIds = 1;
+}
+
+message GetAppointmentsByIdsResponse {
+  repeated AppointmentResponseDto appointments = 1;
+}
+
 service AppointmentService {
     rpc GetAppointmentDetails(AppointmentIdRequest) returns (AppointmentResponseDto);
     rpc GetPatientAppointments(AppointmentPageRequest) returns (AppointmentPageResponse);
     rpc GetDoctorAppointments(AppointmentPageRequest) returns (AppointmentPageResponse);
     rpc GetDoctorAppointmentsByDate(AppointmentListRequest) returns (AppointmentListResponse);
+    rpc GetAppointmentsByIds (GetAppointmentsByIdsRequest) returns (GetAppointmentsByIdsResponse);
 }

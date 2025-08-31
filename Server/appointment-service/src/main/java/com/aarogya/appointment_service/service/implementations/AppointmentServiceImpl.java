@@ -279,6 +279,14 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Cacheable(value = APPOINTMENT_CACHE, key = "T(java.util.StringJoiner).new(',').addAll(#ids.stream().sorted().toList()).toString()")
+    public List<AppointmentResponseDto> findByIds(List<String> ids) {
+        return appointmentRepository.findAllById(ids).stream()
+                .map(appt -> modelMapper.map(appt, AppointmentResponseDto.class))
+                .toList();
+    }
+
     private Appointment buildAppointmentFromRequest(AppointmentRequestDto requestDto, String patientId) {
         Appointment appointment = modelMapper.map(requestDto, Appointment.class);
         appointment.setPatientId(patientId);

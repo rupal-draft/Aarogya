@@ -33,4 +33,6 @@ public interface AppointmentService {
     List<AppointmentResponseDto> getDoctorAppointmentsBetweenDates(String doctorId, LocalDate startDate, LocalDate endDate);
 
     List<AppointmentResponseDto> getPatientAppointmentsBetweenDates(String patientId, LocalDate startDate, LocalDate endDate);
+
+    List<AppointmentResponseDto> findByIds(List<String> ids);
 }

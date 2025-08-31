@@ -2,7 +2,7 @@ package com.aarogya.doctor_service.clients;
 
 import appointment.Appointment;
 import appointment.AppointmentServiceGrpc;
-import com.aarogya.doctor_service.dto.appointments.AppointmentDto;
+import com.aarogya.doctor_service.dto.grpc.AppointmentDto;
 import com.aarogya.doctor_service.exceptions.*;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
@@ -22,7 +22,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -86,24 +88,38 @@ public class AppointmentGrpcClient {
                     .map(this::mapToAppointmentDTO)
                     .toList();
         } catch (StatusRuntimeException e) {
-            handleGrpcException(e, "Failed to get appointments by date");
+            handleGrpcException(e);
             return null;
         }
     }
+
+    @Cacheable(value = "appointmentsByIds", key = "T(java.util.StringJoiner).new(',').addAll(#ids.stream().sorted().toList()).toString()")
+    public Map<String, AppointmentDto> findByIds(List<String> ids) {
+        Appointment.GetAppointmentsByIdsRequest request = Appointment.GetAppointmentsByIdsRequest.newBuilder()
+                .addAllAppointmentIds(ids)
+                .build();
+
+        Appointment.GetAppointmentsByIdsResponse response = appointmentServiceBlockingStub.getAppointmentsByIds(request);
+
+        return response.getAppointmentsList().stream()
+                .collect(Collectors.toMap(Appointment.AppointmentResponseDto::getId,
+                        this::mapToAppointmentDTO));
+    }
+
 
     private AppointmentDto mapToAppointmentDTO(Appointment.AppointmentResponseDto response) {
         return modelMapper.map(response, AppointmentDto.class);
     }
 
-    private void handleGrpcException(StatusRuntimeException e, String context) {
+    private void handleGrpcException(StatusRuntimeException e) {
         Status.Code code = e.getStatus().getCode();
         String description = e.getStatus().getDescription();
 
-        log.error("gRPC error [{}] {}: {}", code, context, description, e);
+        log.error("gRPC error [{}] {}: {}", code, "Failed to get appointments by date", description, e);
 
         switch (code) {
             case NOT_FOUND:
-                throw new ResourceNotFound(description != null ? description : "Requested blog not found");
+                throw new ResourceNotFoundException(description != null ? description : "Requested blog not found");
             case INVALID_ARGUMENT:
                 throw new BadRequestException(description != null ? description : "Invalid blog request parameters");
             case PERMISSION_DENIED:
