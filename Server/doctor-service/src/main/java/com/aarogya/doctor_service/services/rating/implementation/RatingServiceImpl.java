@@ -1,28 +1,27 @@
-package com.aarogya.doctor_service.services.implementation;
+package com.aarogya.doctor_service.services.rating.implementation;
 
 import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.clients.AppointmentGrpcClient;
 import com.aarogya.doctor_service.clients.UserGrpcClient;
 import com.aarogya.doctor_service.dto.grpc.AppointmentDto;
 import com.aarogya.doctor_service.dto.grpc.PatientResponseDTO;
-import com.aarogya.doctor_service.dto.request.CreateRatingRequest;
-import com.aarogya.doctor_service.dto.request.HelpfulVoteRequest;
-import com.aarogya.doctor_service.dto.request.RatingFilterRequest;
-import com.aarogya.doctor_service.dto.response.RatingResponse;
-import com.aarogya.doctor_service.dto.response.RatingStatsResponse;
-import com.aarogya.doctor_service.dto.response.RatingSummaryResponse;
-import com.aarogya.doctor_service.enums.RatingSortBy;
-import com.aarogya.doctor_service.enums.RatingTag;
-import com.aarogya.doctor_service.enums.ReportReason;
+import com.aarogya.doctor_service.dto.rating.request.CreateRatingRequest;
+import com.aarogya.doctor_service.dto.rating.request.HelpfulVoteRequest;
+import com.aarogya.doctor_service.dto.rating.request.RatingFilterRequest;
+import com.aarogya.doctor_service.dto.rating.response.RatingResponse;
+import com.aarogya.doctor_service.dto.rating.response.RatingStatsResponse;
+import com.aarogya.doctor_service.dto.rating.response.RatingSummaryResponse;
+import com.aarogya.doctor_service.enums.rating.RatingSortBy;
+import com.aarogya.doctor_service.enums.rating.RatingTag;
 import com.aarogya.doctor_service.exceptions.BadRequestException;
 import com.aarogya.doctor_service.exceptions.ResourceNotFoundException;
-import com.aarogya.doctor_service.models.DoctorRating;
-import com.aarogya.doctor_service.models.DoctorRatingSummary;
-import com.aarogya.doctor_service.models.HelpfulVote;
-import com.aarogya.doctor_service.repositories.DoctorRatingRepository;
-import com.aarogya.doctor_service.repositories.DoctorRatingSummaryRepository;
-import com.aarogya.doctor_service.repositories.HelpfulVoteRepository;
-import com.aarogya.doctor_service.services.RatingService;
+import com.aarogya.doctor_service.models.rating.DoctorRating;
+import com.aarogya.doctor_service.models.rating.DoctorRatingSummary;
+import com.aarogya.doctor_service.models.rating.HelpfulVote;
+import com.aarogya.doctor_service.repositories.rating.DoctorRatingRepository;
+import com.aarogya.doctor_service.repositories.rating.DoctorRatingSummaryRepository;
+import com.aarogya.doctor_service.repositories.rating.HelpfulVoteRepository;
+import com.aarogya.doctor_service.services.rating.RatingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -246,13 +245,6 @@ public class RatingServiceImpl implements RatingService {
         }
     }
 
-    private void validateReportReason(String reason) {
-        try {
-            ReportReason.valueOf(reason);
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid report reason: " + reason);
-        }
-    }
 
     private String getPatientName(String patientId) {
         PatientResponseDTO patientResponseDTO = userGrpcClient.getPatient(patientId);

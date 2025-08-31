@@ -1,12 +1,12 @@
 package com.aarogya.doctor_service.controller;
 
-import com.aarogya.doctor_service.dto.request.CreateRatingRequest;
-import com.aarogya.doctor_service.dto.request.HelpfulVoteRequest;
-import com.aarogya.doctor_service.dto.request.RatingFilterRequest;
-import com.aarogya.doctor_service.dto.response.RatingResponse;
-import com.aarogya.doctor_service.dto.response.RatingStatsResponse;
-import com.aarogya.doctor_service.dto.response.RatingSummaryResponse;
-import com.aarogya.doctor_service.services.RatingService;
+import com.aarogya.doctor_service.dto.rating.request.CreateRatingRequest;
+import com.aarogya.doctor_service.dto.rating.request.HelpfulVoteRequest;
+import com.aarogya.doctor_service.dto.rating.request.RatingFilterRequest;
+import com.aarogya.doctor_service.dto.rating.response.RatingResponse;
+import com.aarogya.doctor_service.dto.rating.response.RatingStatsResponse;
+import com.aarogya.doctor_service.dto.rating.response.RatingSummaryResponse;
+import com.aarogya.doctor_service.services.rating.RatingService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;

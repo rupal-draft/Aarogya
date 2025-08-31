@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.models;
+package com.aarogya.doctor_service.models.rating;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

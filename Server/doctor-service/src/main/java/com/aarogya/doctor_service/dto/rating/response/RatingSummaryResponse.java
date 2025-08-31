@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.dto.response;
+package com.aarogya.doctor_service.dto.rating.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

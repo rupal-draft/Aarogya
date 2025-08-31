@@ -1,11 +1,11 @@
-package com.aarogya.doctor_service.services;
+package com.aarogya.doctor_service.services.rating;
 
-import com.aarogya.doctor_service.dto.request.CreateRatingRequest;
-import com.aarogya.doctor_service.dto.request.HelpfulVoteRequest;
-import com.aarogya.doctor_service.dto.request.RatingFilterRequest;
-import com.aarogya.doctor_service.dto.response.RatingResponse;
-import com.aarogya.doctor_service.dto.response.RatingStatsResponse;
-import com.aarogya.doctor_service.dto.response.RatingSummaryResponse;
+import com.aarogya.doctor_service.dto.rating.request.CreateRatingRequest;
+import com.aarogya.doctor_service.dto.rating.request.HelpfulVoteRequest;
+import com.aarogya.doctor_service.dto.rating.request.RatingFilterRequest;
+import com.aarogya.doctor_service.dto.rating.response.RatingResponse;
+import com.aarogya.doctor_service.dto.rating.response.RatingStatsResponse;
+import com.aarogya.doctor_service.dto.rating.response.RatingSummaryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

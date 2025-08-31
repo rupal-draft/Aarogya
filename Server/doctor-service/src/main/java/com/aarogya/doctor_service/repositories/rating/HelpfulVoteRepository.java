@@ -1,6 +1,6 @@
-package com.aarogya.doctor_service.repositories;
+package com.aarogya.doctor_service.repositories.rating;
 
-import com.aarogya.doctor_service.models.HelpfulVote;
+import com.aarogya.doctor_service.models.rating.HelpfulVote;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

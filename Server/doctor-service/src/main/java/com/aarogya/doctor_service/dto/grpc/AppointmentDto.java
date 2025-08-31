@@ -1,7 +1,7 @@
 package com.aarogya.doctor_service.dto.grpc;
 
-import com.aarogya.doctor_service.enums.AppointmentStatus;
-import com.aarogya.doctor_service.enums.AppointmentType;
+import com.aarogya.doctor_service.enums.grpc.AppointmentStatus;
+import com.aarogya.doctor_service.enums.grpc.AppointmentType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

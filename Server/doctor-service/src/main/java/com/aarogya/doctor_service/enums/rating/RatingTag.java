@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.enums;
+package com.aarogya.doctor_service.enums.rating;
 
 public enum RatingTag {
     EXCELLENT_DIAGNOSIS,

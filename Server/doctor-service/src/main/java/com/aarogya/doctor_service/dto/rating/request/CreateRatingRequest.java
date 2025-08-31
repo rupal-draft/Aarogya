@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.dto.request;
+package com.aarogya.doctor_service.dto.rating.request;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
-package com.aarogya.doctor_service.repositories;
+package com.aarogya.doctor_service.repositories.rating;
 
-import com.aarogya.doctor_service.models.DoctorRating;
+import com.aarogya.doctor_service.models.rating.DoctorRating;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
