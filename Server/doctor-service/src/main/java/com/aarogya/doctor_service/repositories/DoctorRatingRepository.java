@@ -1,8 +1,10 @@
 package com.aarogya.doctor_service.repositories;
 
 import com.aarogya.doctor_service.models.DoctorRating;
-import org.springframework.data.mongodb.repository.Aggregation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,19 +13,27 @@ import java.util.Optional;
 @Repository
 public interface DoctorRatingRepository extends MongoRepository<DoctorRating, String> {
 
-    List<DoctorRating> findByDoctorId(String doctorId);
+    Optional<DoctorRating> findByDoctorIdAndPatientId(String doctorId, String patientId);
 
-    Optional<DoctorRating> findByDoctorIdAndPatientIdAndAppointmentId(String doctorId, String patientId, String appointmentId);
+    Page<DoctorRating> findByDoctorId(String doctorId, Pageable pageable);
 
-    @Aggregation(pipeline = {
-            "{ $match: { doctorId: ?0 } }",
-            "{ $group: { _id: null, avgRating: { $avg: '$rating' }, count: { $sum: 1 }, fiveStarCount: { $sum: { $cond: [ { $eq: ['$rating', 5] }, 1, 0 ] } } } }"
-    })
-    RatingStats getRatingStatsByDoctorId(String doctorId);
+    Page<DoctorRating> findByDoctorIdAndRatingBetween(String doctorId, Integer minRating, Integer maxRating, Pageable pageable);
 
-    interface RatingStats {
-        Double getAvgRating();
-        Integer getCount();
-        Integer getFiveStarCount();
-    }
+    @Query("{'doctorId': ?0, 'tags': { $in: ?1 }}")
+    Page<DoctorRating> findByDoctorIdAndTagsIn(String doctorId, List<String> tags, Pageable pageable);
+
+    @Query("{'doctorId': ?0, 'wouldRecommend': ?1}")
+    Page<DoctorRating> findByDoctorIdAndWouldRecommend(String doctorId, Boolean wouldRecommend, Pageable pageable);
+
+    List<DoctorRating> findByDoctorIdAndIsActiveTrue(String doctorId);
+
+    Integer countByDoctorId(String doctorId);
+
+    Integer countByDoctorIdAndRating(String doctorId, Integer rating);
+
+    @Query(value = "{'doctorId': ?0}", count = true)
+    Long countByDoctorIdWithReview(String doctorId);
+
+    @Query(value = "{'doctorId': ?0, 'wouldRecommend': true}", count = true)
+    Long countByDoctorIdAndWouldRecommendTrue(String doctorId);
 }

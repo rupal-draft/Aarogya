@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/prescriptions")
+@RequestMapping("/core")
 @Slf4j
 @RequiredArgsConstructor
 @Validated
