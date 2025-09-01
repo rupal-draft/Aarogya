@@ -1,7 +1,6 @@
 package com.aarogya.doctor_service.services.availability.implementation;
 
 import com.aarogya.doctor_service.auth.UserContextHolder;
-import com.aarogya.doctor_service.clients.AppointmentGrpcClient;
 import com.aarogya.doctor_service.dto.availability.request.*;
 import com.aarogya.doctor_service.dto.availability.response.*;
 import com.aarogya.doctor_service.enums.availability.AvailabilityStatus;
@@ -40,7 +39,6 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     private final RecurringUnavailabilityRepository recurringUnavailabilityRepository;
     private final SpecialAvailabilityRepository specialAvailabilityRepository;
     private final AvailabilityOverrideRepository overrideRepository;
-    private final AppointmentGrpcClient appointmentServiceClient;
 
     private static final String AVAILABILITY_CACHE = "doctorAvailability";
     private static final String SCHEDULE_CACHE = "doctorSchedule";
