@@ -1,5 +1,6 @@
 package com.aarogya.doctor_service.services.availability.implementation;
 
+import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.clients.AppointmentGrpcClient;
 import com.aarogya.doctor_service.dto.availability.request.*;
 import com.aarogya.doctor_service.dto.availability.response.*;
@@ -7,15 +8,21 @@ import com.aarogya.doctor_service.enums.availability.AvailabilityStatus;
 import com.aarogya.doctor_service.enums.availability.OverrideType;
 import com.aarogya.doctor_service.enums.availability.RecurrenceType;
 import com.aarogya.doctor_service.exceptions.BadRequestException;
+import com.aarogya.doctor_service.exceptions.ResourceNotFoundException;
 import com.aarogya.doctor_service.models.availability.*;
 import com.aarogya.doctor_service.repositories.availability.*;
 import com.aarogya.doctor_service.services.availability.AvailabilityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.aarogya.doctor_service.enums.availability.DayOfWeek;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -39,73 +46,306 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     private static final String SCHEDULE_CACHE = "doctorSchedule";
 
     @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = AVAILABILITY_CACHE, key = "#request.date.toString()"),
+            @CacheEvict(value = AVAILABILITY_CACHE, key = "'range_' + #request.date.toString()")
+    })
     public AvailabilityResponse setAvailability(AvailabilityRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Setting availability for doctor {} on date {}", doctorId, request.getDate());
+
+        validateAvailabilityRequest(request);
+
+        Optional<DoctorAvailability> existingAvailability = availabilityRepository.findByDoctorIdAndDate(doctorId, request.getDate());
+
+        DoctorAvailability availability;
+        if (existingAvailability.isPresent()) {
+            availability = existingAvailability.get();
+            updateAvailabilityFields(availability, request);
+        } else {
+            availability = buildAvailability(doctorId, request);
+        }
+
+        DoctorAvailability savedAvailability = availabilityRepository.save(availability);
+        log.info("Availability set successfully for date {}", request.getDate());
+
+        return convertToResponse(savedAvailability);
     }
 
     @Override
+    @Cacheable(value = AVAILABILITY_CACHE, key = "#date.toString()")
     public AvailabilityResponse getAvailability(LocalDate date) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching availability for doctor {} on date {}", doctorId, date);
+
+        DoctorAvailability availability = availabilityRepository.findByDoctorIdAndDate(doctorId, date)
+                .orElseGet(() -> generateAvailabilityForDate(doctorId, date));
+
+        return convertToResponse(availability);
     }
 
     @Override
+    @Cacheable(value = AVAILABILITY_CACHE, key = "'range_' + #request.startDate.toString() + '_' + #request.endDate.toString()")
     public AvailabilityRangeResponse getAvailabilityRange(AvailabilityRangeRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching availability range for doctor {} from {} to {}", doctorId, request.getStartDate(), request.getEndDate());
+
+        validateDateRange(request.getStartDate(), request.getEndDate());
+
+        List<DoctorAvailability> availabilities = new ArrayList<>();
+        Map<LocalDate, AvailabilityStatus> summary = new LinkedHashMap<>();
+
+        LocalDate currentDate = request.getStartDate();
+        while (!currentDate.isAfter(request.getEndDate())) {
+            final LocalDate loopDate = currentDate;
+
+            DoctorAvailability availability = availabilityRepository.findByDoctorIdAndDate(doctorId, loopDate)
+                    .orElseGet(() -> generateAvailabilityForDate(doctorId, loopDate));
+
+            if (Boolean.TRUE.equals(request.getIncludeSlots())) {
+                availabilities.add(availability);
+            }
+
+            summary.put(loopDate, calculateAvailabilityStatus(availability));
+            currentDate = currentDate.plusDays(1);
+        }
+
+
+        long availableDays = summary.values().stream().filter(status -> status == AvailabilityStatus.AVAILABLE).count();
+        long unavailableDays = summary.values().stream().filter(status -> status == AvailabilityStatus.UNAVAILABLE).count();
+
+        return AvailabilityRangeResponse.builder()
+                .doctorId(doctorId)
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .availabilities(availabilities.stream().map(this::convertToResponse).collect(Collectors.toList()))
+                .availabilitySummary(summary)
+                .totalAvailableDays((int) availableDays)
+                .totalUnavailableDays((int) unavailableDays)
+                .build();
     }
 
     @Override
+    @Cacheable(value = SCHEDULE_CACHE, key = "'schedule'")
     public ScheduleResponse getSchedule() {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching schedule for doctor {}", doctorId);
+
+        AvailabilitySchedule schedule = scheduleRepository.findByDoctorId(doctorId)
+                .orElseGet(() -> createDefaultSchedule(doctorId));
+
+        return convertToScheduleResponse(schedule);
     }
 
     @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = SCHEDULE_CACHE, key = "'schedule'"),
+            @CacheEvict(value = AVAILABILITY_CACHE, allEntries = true)
+    })
     public ScheduleResponse updateSchedule(ScheduleRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Updating schedule for doctor {}", doctorId);
+
+        validateScheduleRequest(request);
+
+        AvailabilitySchedule schedule = scheduleRepository.findByDoctorId(doctorId)
+                .orElseGet(() -> createDefaultSchedule(doctorId));
+
+        updateScheduleFields(schedule, request);
+        AvailabilitySchedule savedSchedule = scheduleRepository.save(schedule);
+
+        regenerateFutureAvailabilities(doctorId);
+
+        log.info("Schedule updated successfully for doctor {}", doctorId);
+        return convertToScheduleResponse(savedSchedule);
     }
 
     @Override
+    @Transactional
     public RecurringUnavailability createRecurringUnavailability(RecurringUnavailabilityRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Creating recurring unavailability for doctor {}", doctorId);
+
+        validateRecurringUnavailabilityRequest(request);
+
+        RecurringUnavailability unavailability = buildRecurringUnavailability(doctorId, request);
+        RecurringUnavailability savedUnavailability = recurringUnavailabilityRepository.save(unavailability);
+
+        regenerateFutureAvailabilities(doctorId);
+
+        log.info("Recurring unavailability created successfully with ID: {}", savedUnavailability.getId());
+        return savedUnavailability;
     }
 
     @Override
     public List<RecurringUnavailability> getRecurringUnavailabilities() {
-        return List.of();
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching recurring unavailability for doctor {}", doctorId);
+
+        return recurringUnavailabilityRepository.findByDoctorIdAndIsActiveTrue(doctorId);
     }
 
     @Override
+    @Transactional
     public void deleteRecurringUnavailability(String id) {
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Deleting recurring unavailability {} for doctor {}", id, doctorId);
 
+        RecurringUnavailability unavailability = recurringUnavailabilityRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Recurring unavailability not found with id: " + id));
+
+        recurringUnavailabilityRepository.delete(unavailability);
+        regenerateFutureAvailabilities(doctorId);
+        log.info("Recurring unavailability deleted successfully: {}", id);
     }
 
     @Override
+    @Transactional
     public SpecialAvailability createSpecialAvailability(SpecialAvailabilityRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Creating special availability for doctor {} on date {}", doctorId, request.getDate());
+
+        validateSpecialAvailabilityRequest(request);
+
+        Optional<SpecialAvailability> existingSpecial = specialAvailabilityRepository.findByDoctorIdAndDate(doctorId, request.getDate());
+        if (existingSpecial.isPresent()) {
+            throw new BadRequestException("Special availability already exists for date: " + request.getDate());
+        }
+
+        SpecialAvailability specialAvailability = buildSpecialAvailability(doctorId, request);
+        SpecialAvailability savedSpecial = specialAvailabilityRepository.save(specialAvailability);
+
+        updateDailyAvailabilityWithSpecial(doctorId, request.getDate(), savedSpecial);
+
+        log.info("Special availability created successfully with ID: {}", savedSpecial.getId());
+        return savedSpecial;
     }
 
     @Override
     public List<SpecialAvailability> getSpecialAvailabilities() {
-        return List.of();
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching special availabilities for doctor {}", doctorId);
+
+        return specialAvailabilityRepository.findByDoctorIdAndIsActiveTrue(doctorId);
     }
 
     @Override
+    @Transactional
     public AvailabilityOverride createOverride(AvailabilityOverrideRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Creating availability override for doctor {} on date {}", doctorId, request.getDate());
+
+        validateOverrideRequest(request);
+
+        Optional<AvailabilityOverride> existingOverride = overrideRepository.findByDoctorIdAndDate(doctorId, request.getDate());
+        if (existingOverride.isPresent()) {
+            throw new BadRequestException("Override already exists for date: " + request.getDate());
+        }
+
+        AvailabilityOverride override = buildOverride(doctorId, request);
+        AvailabilityOverride savedOverride = overrideRepository.save(override);
+
+        updateDailyAvailabilityWithOverride(doctorId, request.getDate(), savedOverride);
+
+        log.info("Availability override created successfully with ID: {}", savedOverride.getId());
+        return savedOverride;
     }
 
     @Override
     public SlotAvailabilityResponse checkSlotAvailability(SlotAvailabilityRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Checking slot availability for doctor {} on {} from {} to {}",
+                doctorId, request.getDate(), request.getStartTime(), request.getEndTime());
+
+        DoctorAvailability availability = availabilityRepository.findByDoctorIdAndDate(doctorId, request.getDate())
+                .orElseGet(() -> generateAvailabilityForDate(doctorId, request.getDate()));
+
+        if (Boolean.FALSE.equals(availability.getIsAvailable())) {
+            return SlotAvailabilityResponse.builder()
+                    .isAvailable(false)
+                    .availableSlots(0)
+                    .bookedSlots(0)
+                    .reasonIfUnavailable(availability.getReasonForUnavailability())
+                    .nextAvailableSlot(findNextAvailableSlot(doctorId, request.getDate()))
+                    .build();
+        }
+
+        Optional<TimeSlot> matchingSlot = availability.getTimeSlots().stream()
+                .filter(TimeSlot::getIsAvailable)
+                .filter(slot -> !request.getStartTime().isBefore(slot.getStartTime()))
+                .filter(slot -> !request.getEndTime().isAfter(slot.getEndTime()))
+                .findFirst();
+
+        if (matchingSlot.isPresent()) {
+            TimeSlot slot = matchingSlot.get();
+            return SlotAvailabilityResponse.builder()
+                    .isAvailable(slot.getAvailableSlots() > 0)
+                    .availableSlots(slot.getAvailableSlots())
+                    .bookedSlots(slot.getBookedCount())
+                    .reasonIfUnavailable(slot.getAvailableSlots() == 0 ? "Fully booked" : null)
+                    .nextAvailableSlot(slot.getAvailableSlots() == 0 ? findNextAvailableSlotInDay(availability) : null)
+                    .build();
+        }
+
+        return SlotAvailabilityResponse.builder()
+                .isAvailable(false)
+                .availableSlots(0)
+                .bookedSlots(0)
+                .reasonIfUnavailable("No matching time slot available")
+                .nextAvailableSlot(findNextAvailableSlot(doctorId, request.getDate()))
+                .build();
     }
 
     @Override
+    @Transactional
     public void generateAvailabilities(LocalDate startDate, LocalDate endDate) {
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Generating availabilities for doctor {} from {} to {}", doctorId, startDate, endDate);
 
+        validateDateRange(startDate, endDate);
+
+        LocalDate currentDate = startDate;
+        while (!currentDate.isAfter(endDate)) {
+            generateAvailabilityForDate(doctorId, currentDate);
+            currentDate = currentDate.plusDays(1);
+        }
+
+        log.info("Availabilities generated successfully from {} to {}", startDate, endDate);
     }
 
     @Override
+    @Transactional
     public void updateSlotBooking(String appointmentId, LocalDate date, LocalTime startTime, int delta) {
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Updating slot booking for doctor {} on {} at {}", doctorId, date, startTime);
 
+        DoctorAvailability availability = availabilityRepository.findByDoctorIdAndDate(doctorId, date)
+                .orElseThrow(() -> new ResourceNotFoundException("Availability not found for date: " + date));
+
+        availability.getTimeSlots().stream()
+                .filter(slot -> !startTime.isBefore(slot.getStartTime()) && !startTime.isAfter(slot.getEndTime().minusMinutes(1)))
+                .findFirst()
+                .ifPresent(slot -> {
+                    int newBookedCount = slot.getBookedCount() + delta;
+                    if (newBookedCount < 0) {
+                        throw new BadRequestException("Booked count cannot be negative");
+                    }
+                    if (newBookedCount > slot.getAvailableSlots() + slot.getBookedCount()) {
+                        throw new BadRequestException("Booked count exceeds available slots");
+                    }
+
+                    slot.setBookedCount(newBookedCount);
+                    slot.setAvailableSlots(slot.getAvailableSlots() - delta);
+
+                    if (slot.getAvailableSlots() <= 0) {
+                        slot.setIsAvailable(false);
+                    }
+                });
+
+        availabilityRepository.save(availability);
+        log.debug("Slot booking updated successfully");
     }
 
     @Scheduled(cron = "0 0 0 * * ?") // Run daily at midnight
@@ -416,7 +656,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         DailySchedule dailySchedule = schedule.getWeeklySchedule().get(dayOfWeek.name());
 
         if (dailySchedule == null || Boolean.FALSE.equals(dailySchedule.getIsAvailable()) || isRecurringUnavailable) {
-            return createUnavailableDay(doctorId, date, "Not available as per schedule");
+            return createUnavailableDay(doctorId, date);
         }
 
         if (special != null) {
@@ -429,12 +669,12 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         return createAvailabilityFromDailySchedule(doctorId, date, dailySchedule);
     }
 
-    private DoctorAvailability createUnavailableDay(String doctorId, LocalDate date, String reason) {
+    private DoctorAvailability createUnavailableDay(String doctorId, LocalDate date) {
         return DoctorAvailability.builder()
                 .doctorId(doctorId)
                 .date(date)
                 .isAvailable(false)
-                .reasonForUnavailability(reason)
+                .reasonForUnavailability("Not available as per schedule")
                 .timeSlots(List.of())
                 .slotDurationMinutes(30)
                 .maxPatientsPerSlot(1)
@@ -853,14 +1093,50 @@ public class AvailabilityServiceImpl implements AvailabilityService {
                 break;
 
             case EXTENDED_HOURS:
+                if (!availability.getTimeSlots().isEmpty()) {
+                    List<TimeSlot> extendedSlots = new ArrayList<>(availability.getTimeSlots());
+                    LocalTime firstStart = extendedSlots.getFirst().getStartTime();
+                    LocalTime lastEnd = extendedSlots.getLast().getEndTime();
+
+                    LocalTime newStart = firstStart.minusHours(1);
+                    while (newStart.isBefore(firstStart)) {
+                        LocalTime slotEnd = newStart.plusMinutes(availability.getSlotDurationMinutes());
+                        if (!slotEnd.isAfter(firstStart)) {
+                            extendedSlots.addFirst(new TimeSlot(newStart, slotEnd));
+                            newStart = slotEnd;
+                        } else break;
+                    }
+                    LocalTime newEnd = lastEnd;
+                    LocalTime limitEnd = lastEnd.plusHours(1);
+                    while (newEnd.isBefore(limitEnd)) {
+                        LocalTime slotEnd = newEnd.plusMinutes(availability.getSlotDurationMinutes());
+                        extendedSlots.add(new TimeSlot(newEnd, slotEnd));
+                        newEnd = slotEnd;
+                    }
+
+                    availability.setTimeSlots(extendedSlots);
+                }
+                break;
+
             case CUSTOM_SLOTS:
-                // Implementation would apply custom time slots
+                List<TimeSlot> customSlots = new ArrayList<>();
+                for (TimeRange range : override.getAffectedTimeRanges()) {
+                    LocalTime current = range.getStartTime();
+                    while (current.isBefore(range.getEndTime())) {
+                        LocalTime slotEnd = current.plusMinutes(availability.getSlotDurationMinutes());
+                        if (slotEnd.isAfter(range.getEndTime())) break;
+                        customSlots.add(new TimeSlot(current, slotEnd));
+                        current = slotEnd;
+                    }
+                }
+                availability.setTimeSlots(customSlots);
                 break;
         }
 
         availability.setUpdatedAt(LocalDateTime.now());
         availabilityRepository.save(availability);
     }
+
 
     private LocalDateTime findNextAvailableSlot(String doctorId, LocalDate afterDate) {
         List<DoctorAvailability> futureAvailabilities = availabilityRepository
