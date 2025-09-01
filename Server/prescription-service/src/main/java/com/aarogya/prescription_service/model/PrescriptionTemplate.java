@@ -74,6 +74,8 @@ public class PrescriptionTemplate {
     @CreatedDate
     private LocalDateTime createdAt;
 
+    private String categoryId;
+
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
