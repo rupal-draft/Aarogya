@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ForumThreadRepository extends MongoRepository<ForumThread, String> {
+public interface ForumThreadRepository extends MongoRepository<ForumThread, String>, ThreadRepositoryCustom {
 
     Page<ForumThread> findByIsActiveTrue(Pageable pageable);
 
@@ -35,4 +35,8 @@ public interface ForumThreadRepository extends MongoRepository<ForumThread, Stri
     Integer countByAuthorIdAndIsActiveTrue(String authorId);
 
     Integer countByTagsContainingAndIsActiveTrue(String tag);
+
+    boolean existsByIdAndIsActiveTrue(String threadId);
+
+    Integer countByIsActiveTrue();
 }

@@ -27,4 +27,6 @@ public interface ForumReplyRepository extends MongoRepository<ForumReply, String
     Optional<ForumReply> findByThreadIdAndIsSolutionTrue(String threadId);
 
     List<ForumReply> findByAuthorIdAndIsActiveTrueOrderByCreatedAtDesc(String authorId, Pageable pageable);
+
+    Integer countByIsActiveTrue();
 }
