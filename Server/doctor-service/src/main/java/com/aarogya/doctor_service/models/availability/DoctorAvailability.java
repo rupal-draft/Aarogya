@@ -16,7 +16,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 @Data
@@ -68,25 +67,3 @@ public class DoctorAvailability {
     private Long version;
 }
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class TimeSlot {
-    @NotNull
-    private LocalTime startTime;
-
-    @NotNull
-    private LocalTime endTime;
-
-    @Builder.Default
-    private Integer bookedCount = 0;
-
-    @Builder.Default
-    private Integer availableSlots = 1;
-
-    @Builder.Default
-    private Boolean isAvailable = true;
-
-    private String reasonForUnavailability;
-}

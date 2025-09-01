@@ -1,6 +1,5 @@
 package com.aarogya.doctor_service.models.availability;
 
-import com.aarogya.doctor_service.enums.availability.RecurrenceType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -13,10 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder
@@ -55,27 +51,3 @@ public class RecurringUnavailability {
     private LocalDateTime updatedAt;
 }
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class RecurrencePattern {
-    @NotNull
-    private RecurrenceType type; // DAILY, WEEKLY, MONTHLY, YEARLY
-
-    private Integer interval;
-
-    private List<DayOfWeek> daysOfWeek;
-
-    private Integer dayOfMonth;
-
-    private Integer month;
-
-    @NotNull
-    private LocalDate startDate;
-
-    private LocalDate endDate;
-
-    @Builder.Default
-    private Integer occurrenceCount = null;
-}

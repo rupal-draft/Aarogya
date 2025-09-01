@@ -16,7 +16,6 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -75,36 +74,3 @@ public class AvailabilitySchedule {
     private Long version;
 }
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class DailySchedule {
-    @NotNull
-    @Builder.Default
-    private Boolean isAvailable = true;
-
-    private String reasonForUnavailability;
-
-    @NotNull
-    @Builder.Default
-    private List<TimeRange> availableSlots = List.of();
-
-    @Builder.Default
-    private Integer slotDurationMinutes = 30;
-
-    @Builder.Default
-    private Integer maxPatientsPerSlot = 1;
-}
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class TimeRange {
-    @NotNull
-    private LocalTime startTime;
-
-    @NotNull
-    private LocalTime endTime;
-}
