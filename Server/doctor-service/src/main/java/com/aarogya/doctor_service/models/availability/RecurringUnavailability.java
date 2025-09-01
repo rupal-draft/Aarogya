@@ -1,6 +1,6 @@
-package com.aarogya.doctor_service.models.avaibility;
+package com.aarogya.doctor_service.models.availability;
 
-import com.aarogya.doctor_service.enums.avaibility.RecurrenceType;
+import com.aarogya.doctor_service.enums.availability.RecurrenceType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.enums.avaibility;
+package com.aarogya.doctor_service.enums.availability;
 
 public enum AvailabilityStatus {
     AVAILABLE,
