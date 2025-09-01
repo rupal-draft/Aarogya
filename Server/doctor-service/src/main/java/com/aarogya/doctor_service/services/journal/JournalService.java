@@ -10,7 +10,7 @@ import java.util.Map;
 
 public interface JournalService {
     JournalEntryResponse createEntry(CreateJournalEntryRequest request);
-    JournalEntryResponse getEntry(String entryId);
+    JournalEntryResponse getDecryptedEntry(DecryptRequest request);
     Page<JournalEntrySummaryResponse> getEntries(JournalFilterRequest filter, Pageable pageable);
     JournalEntryResponse updateEntry(String entryId, UpdateJournalEntryRequest request);
     void deleteEntry(String entryId);
@@ -28,6 +28,4 @@ public interface JournalService {
     JournalStatsResponse getJournalStats();
     List<JournalEntrySummaryResponse> getRecentEntries(int limit);
     SearchSuggestionResponse getSearchSuggestions();
-    String exportEntries(ExportRequest request);
-    void processScheduledReminders();
 }

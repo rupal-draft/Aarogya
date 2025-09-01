@@ -61,7 +61,6 @@ public class EncryptionService {
         try {
             byte[] decoded = Base64.getDecoder().decode(encryptedContent);
 
-            // extract salt, iv, and ciphertext
             byte[] salt = new byte[16];
             byte[] iv = new byte[16];
             byte[] ciphertext = new byte[decoded.length - 32];

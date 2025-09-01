@@ -1,5 +1,6 @@
 package com.aarogya.doctor_service.services.journal.implementation;
 
+import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.clients.UserGrpcClient;
 import com.aarogya.doctor_service.dto.grpc.PatientResponseDTO;
 import com.aarogya.doctor_service.dto.journal.request.*;
@@ -15,20 +16,19 @@ import com.aarogya.doctor_service.utility.EncryptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,108 +51,483 @@ public class JournalServiceImpl implements JournalService {
     private static final String STATS_CACHE = "journalStats";
 
     @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = JOURNAL_CACHE, allEntries = true),
+            @CacheEvict(value = STATS_CACHE, allEntries = true)
+    })
     public JournalEntryResponse createEntry(CreateJournalEntryRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Creating journal entry for doctor: {}", doctorId);
+
+        validateEntryRequest(request);
+
+        String patientName = null;
+        if (request.getPatientId() != null) {
+            patientName = getPatientName(request.getPatientId());
+        }
+
+        boolean isEncrypted = Boolean.TRUE.equals(request.getIsEncrypted());
+        String encryptedContent = request.getContent();
+        String encryptionKeyHash = null;
+
+        if (isEncrypted && request.getEncryptionKey() != null) {
+            encryptedContent = encryptionService.encrypt(request.getContent(), request.getEncryptionKey());
+            encryptionKeyHash = encryptionService.hashKey(request.getEncryptionKey());
+        }
+
+        JournalEntry entry = buildJournalEntry(request, doctorId, patientName, encryptedContent,
+                isEncrypted, encryptionKeyHash);
+
+        JournalEntry savedEntry = entryRepository.save(entry);
+
+        saveEntryVersion(savedEntry, "Initial version", 1);
+
+        updateAnalytics(doctorId, 1, 0, savedEntry.getWordCount());
+
+        log.info("Journal entry created successfully with ID: {}", savedEntry.getId());
+        return convertToEntryResponse(savedEntry, doctorId);
     }
 
     @Override
-    public JournalEntryResponse getEntry(String entryId) {
-        return null;
+    @Cacheable(
+            value = JOURNAL_CACHE,
+            key = "'decrypted_' + #request.entryId + '_' + T(java.util.Objects).hash(#request.encryptionKey)"
+    )
+    public JournalEntryResponse getDecryptedEntry(DecryptRequest request) {
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching encrypted journal entry: {}", request.getEntryId());
+
+        JournalEntry entry = entryRepository.findById(request.getEntryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Journal entry not found with id: " + request.getEntryId()));
+
+        validateEntryAccess(entry, doctorId);
+
+        if (!Boolean.TRUE.equals(entry.getIsEncrypted())) {
+            return convertToEntryResponse(entry, doctorId);
+        }
+
+        String providedHash = encryptionService.hashKey(request.getEncryptionKey());
+        if (!providedHash.equals(entry.getEncryptionKeyHash())) {
+            throw new BadRequestException("Invalid encryption key");
+        }
+
+        String decryptedContent = encryptionService.decrypt(entry.getContent(), request.getEncryptionKey());
+        entry.setContent(decryptedContent);
+
+        return convertToEntryResponse(entry, doctorId);
     }
 
     @Override
+    @Cacheable(value = JOURNAL_CACHE, key = "#filter.toString() + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     public Page<JournalEntrySummaryResponse> getEntries(JournalFilterRequest filter, Pageable pageable) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching journal entries with filter: {}", filter);
+
+        Page<JournalEntry> entriesPage = applyJournalFilters(doctorId, filter, pageable);
+
+        return entriesPage.map(entry -> convertToEntrySummaryResponse(entry, doctorId));
     }
 
     @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = JOURNAL_CACHE, key = "#entryId"),
+            @CacheEvict(value = JOURNAL_CACHE, allEntries = true),
+            @CacheEvict(value = STATS_CACHE, allEntries = true)
+    })
     public JournalEntryResponse updateEntry(String entryId, UpdateJournalEntryRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Updating journal entry: {}", entryId);
+
+        JournalEntry entry = entryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Journal entry not found with id: " + entryId));
+
+        validateEntryAccess(entry, doctorId);
+
+        String patientName = entry.getPatientName();
+        if (request.getPatientId() != null && !request.getPatientId().equals(entry.getPatientId())) {
+            patientName = getPatientName(request.getPatientId());
+        }
+
+        int newVersion = entry.getVersion() + 1;
+        saveEntryVersion(entry, request.getChangeSummary(), newVersion);
+
+        updateEntryFields(entry, request, patientName, newVersion);
+        JournalEntry updatedEntry = entryRepository.save(entry);
+
+        updateAnalytics(doctorId, 0, 1, 0);
+
+        log.info("Journal entry updated successfully: {}", entryId);
+        return convertToEntryResponse(updatedEntry, doctorId);
     }
 
     @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = JOURNAL_CACHE, key = "#entryId"),
+            @CacheEvict(value = JOURNAL_CACHE, allEntries = true),
+            @CacheEvict(value = STATS_CACHE, allEntries = true)
+    })
     public void deleteEntry(String entryId) {
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Deleting journal entry: {}", entryId);
 
+        JournalEntry entry = entryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Journal entry not found with id: " + entryId));
+
+        validateEntryAccess(entry, doctorId);
+
+        entry.setIsActive(false);
+        entryRepository.save(entry);
+
+        bookmarkRepository.deleteByDoctorIdAndEntryId(doctorId, entryId);
+        reminderRepository.deleteByDoctorIdAndEntryId(doctorId, entryId);
+
+        log.info("Journal entry deleted successfully: {}", entryId);
     }
 
     @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = JOURNAL_CACHE, key = "#entryId"),
+            @CacheEvict(value = JOURNAL_CACHE, allEntries = true),
+            @CacheEvict(value = STATS_CACHE, allEntries = true)
+    })
     public void restoreEntry(String entryId) {
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Restoring journal entry: {}", entryId);
 
+        JournalEntry entry = entryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Journal entry not found with id: " + entryId));
+
+        validateEntryAccess(entry, doctorId);
+
+        entry.setIsActive(true);
+        entryRepository.save(entry);
+
+        log.info("Journal entry restored successfully: {}", entryId);
     }
 
     @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = JOURNAL_CACHE, key = "#request.entryId")
+    })
     public JournalEntryResponse bookmarkEntry(BookmarkEntryRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Updating bookmark for entry: {}", request.getEntryId());
+
+        JournalEntry entry = entryRepository.findById(request.getEntryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Journal entry not found with id: " + request.getEntryId()));
+
+        validateEntryAccess(entry, doctorId);
+
+        if (Boolean.TRUE.equals(request.getIsBookmarked())) {
+            if (!bookmarkRepository.existsByDoctorIdAndEntryId(doctorId, request.getEntryId())) {
+                JournalBookmark bookmark = JournalBookmark.builder()
+                        .doctorId(doctorId)
+                        .entryId(request.getEntryId())
+                        .bookmarkedAt(LocalDateTime.now())
+                        .build();
+                bookmarkRepository.save(bookmark);
+            }
+        } else {
+            bookmarkRepository.deleteByDoctorIdAndEntryId(doctorId, request.getEntryId());
+        }
+
+        entry.setIsBookmarked(request.getIsBookmarked());
+        JournalEntry updatedEntry = entryRepository.save(entry);
+
+        return convertToEntryResponse(updatedEntry, doctorId);
     }
 
     @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = JOURNAL_CACHE, key = "#request.entryId")
+    })
     public JournalEntryResponse pinEntry(PinEntryRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Updating pin for entry: {}", request.getEntryId());
+
+        JournalEntry entry = entryRepository.findById(request.getEntryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Journal entry not found with id: " + request.getEntryId()));
+
+        validateEntryAccess(entry, doctorId);
+
+        entry.setIsPinned(request.getIsPinned());
+        JournalEntry updatedEntry = entryRepository.save(entry);
+
+        return convertToEntryResponse(updatedEntry, doctorId);
     }
 
     @Override
     public List<EntryVersionResponse> getEntryVersions(String entryId) {
-        return List.of();
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching versions for entry: {}", entryId);
+
+        JournalEntry entry = entryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Journal entry not found with id: " + entryId));
+
+        validateEntryAccess(entry, doctorId);
+
+        List<JournalEntryVersion> versions = versionRepository.findByEntryIdOrderByVersionDesc(entryId);
+
+        return versions.stream()
+                .map(this::convertToVersionResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = JOURNAL_CACHE, key = "#entryId"),
+            @CacheEvict(value = JOURNAL_CACHE, allEntries = true)
+    })
     public JournalEntryResponse revertToVersion(String entryId, Integer version) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Reverting entry {} to version {}", entryId, version);
+
+        JournalEntry entry = entryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Journal entry not found with id: " + entryId));
+
+        validateEntryAccess(entry, doctorId);
+
+        JournalEntryVersion targetVersion = versionRepository.findByEntryIdAndVersion(entryId, version)
+                .orElseThrow(() -> new ResourceNotFoundException("Version not found"));
+
+        int newVersion = entry.getVersion() + 1;
+        saveEntryVersion(entry, "Reverted to version " + version, newVersion);
+
+        entry.setTitle(targetVersion.getTitle());
+        entry.setContent(targetVersion.getContent());
+        entry.setTags(targetVersion.getTags());
+        entry.setVersion(newVersion);
+        entry.setUpdatedAt(LocalDateTime.now());
+
+        JournalEntry revertedEntry = entryRepository.save(entry);
+
+        log.info("Entry reverted successfully to version: {}", version);
+        return convertToEntryResponse(revertedEntry, doctorId);
     }
 
     @Override
+    @Transactional
     public ReminderResponse createReminder(CreateReminderRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Creating reminder for entry: {}", request.getEntryId());
+
+        JournalEntry entry = entryRepository.findById(request.getEntryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Journal entry not found with id: " + request.getEntryId()));
+
+        validateEntryAccess(entry, doctorId);
+
+        reminderRepository.deleteByDoctorIdAndEntryId(doctorId, request.getEntryId());
+
+        JournalReminder reminder = JournalReminder.builder()
+                .doctorId(doctorId)
+                .entryId(request.getEntryId())
+                .title(request.getTitle())
+                .reminderDate(request.getReminderDate())
+                .notes(request.getNotes())
+                .isActive(true)
+                .isRecurring(Boolean.TRUE.equals(request.getIsRecurring()))
+                .recurrencePattern(request.getRecurrencePattern())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        JournalReminder savedReminder = reminderRepository.save(reminder);
+
+        entry.setReminderDate(request.getReminderDate());
+        entryRepository.save(entry);
+
+        return convertToReminderResponse(savedReminder);
     }
 
     @Override
     public List<ReminderResponse> getUpcomingReminders() {
-        return List.of();
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching upcoming reminders for doctor: {}", doctorId);
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime tomorrow = now.plusDays(1);
+
+        List<JournalReminder> reminders = reminderRepository.findByDoctorIdAndReminderDateBetweenAndIsActiveTrue(
+                doctorId, now, tomorrow);
+
+        return reminders.stream()
+                .map(this::convertToReminderResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional
     public void deleteReminder(String reminderId) {
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Deleting reminder: {}", reminderId);
 
+        JournalReminder reminder = reminderRepository.findById(reminderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reminder not found with id: " + reminderId));
+
+        if (!reminder.getDoctorId().equals(doctorId)) {
+            throw new BadRequestException("Cannot delete another doctor's reminder");
+        }
+
+        entryRepository.findById(reminder.getEntryId()).ifPresent(entry -> {
+            entry.setReminderDate(null);
+            entryRepository.save(entry);
+        });
+
+        reminderRepository.delete(reminder);
     }
 
     @Override
+    @Transactional
     public TemplateResponse createTemplate(CreateTemplateRequest request) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Creating journal template for doctor: {}", doctorId);
+
+        validateTemplateRequest(request);
+
+        if (templateRepository.findByDoctorIdAndNameAndIsActiveTrue(doctorId, request.getName()).isPresent()) {
+            throw new BadRequestException("Template with this name already exists");
+        }
+
+        JournalTemplate template = buildJournalTemplate(request, doctorId);
+        JournalTemplate savedTemplate = templateRepository.save(template);
+
+        return convertToTemplateResponse(savedTemplate);
     }
 
     @Override
     public List<TemplateResponse> getTemplates() {
-        return List.of();
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching templates for doctor: {}", doctorId);
+
+        List<JournalTemplate> templates = templateRepository.findByDoctorIdOrIsSystemTrueAndIsActiveTrue(doctorId);
+
+        return templates.stream()
+                .map(this::convertToTemplateResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional
     public JournalEntryResponse createFromTemplate(String templateId, Map<String, String> variables) {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.info("Creating entry from template: {}", templateId);
+
+        JournalTemplate template = templateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+
+        if (!template.getDoctorId().equals(doctorId) && !Boolean.TRUE.equals(template.getIsSystem())) {
+            throw new BadRequestException("Cannot access another doctor's template");
+        }
+
+        String title = applyTemplateVariables(template.getTitleTemplate(), variables);
+        String content = applyTemplateVariables(template.getContentTemplate(), variables);
+
+        CreateJournalEntryRequest request = CreateJournalEntryRequest.builder()
+                .title(title)
+                .content(content)
+                .tags(template.getDefaultTags())
+                .type(template.getDefaultType() != null ? template.getDefaultType().name() : null)
+                .build();
+
+        return createEntry(request);
     }
 
     @Override
+    @Cacheable(value = STATS_CACHE, key = "'stats'")
     public JournalStatsResponse getJournalStats() {
-        return null;
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching journal statistics for doctor: {}", doctorId);
+
+        Integer totalEntries = entryRepository.countByDoctorIdAndIsActiveTrue(doctorId);
+        Integer patientNotes = entryRepository.countByDoctorIdAndPatientIdNotNullAndIsActiveTrue(doctorId);
+        Integer bookmarked = entryRepository.countByDoctorIdAndIsBookmarkedTrueAndIsActiveTrue(doctorId);
+        Integer pinned = entryRepository.countByDoctorIdAndIsPinnedTrueAndIsActiveTrue(doctorId);
+
+        Integer totalWords = entryRepository.findByDoctorIdAndIsActiveTrue(doctorId, Pageable.unpaged())
+                .getContent()
+                .stream()
+                .mapToInt(JournalEntry::getWordCount)
+                .sum();
+
+        Map<String, Integer> tagStats = calculateTagStatistics(doctorId);
+
+        Map<String, Integer> typeStats = calculateTypeStatistics(doctorId);
+
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        int entriesThisWeek = entryRepository.findByDoctorIdAndIsActiveTrue(doctorId, Pageable.unpaged())
+                .getContent()
+                .stream()
+                .filter(entry -> entry.getCreatedAt().isAfter(oneWeekAgo))
+                .mapToInt(entry -> 1)
+                .sum();
+
+        Optional<JournalEntry> lastEntry = entryRepository.findByDoctorIdAndIsActiveTrue(doctorId, PageRequest.of(0, 1))
+                .getContent()
+                .stream()
+                .findFirst();
+
+        return JournalStatsResponse.builder()
+                .totalEntries(totalEntries)
+                .activeEntries(totalEntries)
+                .bookmarkedEntries(bookmarked)
+                .pinnedEntries(pinned)
+                .totalWords(totalWords)
+                .patientNotes(patientNotes)
+                .personalNotes(totalEntries - patientNotes)
+                .tagStatistics(tagStats)
+                .typeStatistics(typeStats)
+                .lastEntryDate(lastEntry.map(JournalEntry::getCreatedAt).orElse(null))
+                .entriesThisWeek(entriesThisWeek)
+                .entriesThisMonth(entriesThisWeek * 4)
+                .build();
     }
 
     @Override
     public List<JournalEntrySummaryResponse> getRecentEntries(int limit) {
-        return List.of();
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching recent journal entries for doctor: {}", doctorId);
+
+        Page<JournalEntry> entries = entryRepository.findByDoctorIdAndIsActiveTrue(
+                doctorId, PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "updatedAt")));
+
+        return entries.getContent()
+                .stream()
+                .map(entry -> convertToEntrySummaryResponse(entry, doctorId))
+                .collect(Collectors.toList());
     }
 
     @Override
     public SearchSuggestionResponse getSearchSuggestions() {
-        return null;
-    }
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching search suggestions for doctor: {}", doctorId);
 
-    @Override
-    public String exportEntries(ExportRequest request) {
-        return "";
-    }
+        List<String> tags = entryRepository.findTagsByDoctorId(doctorId)
+                .stream()
+                .flatMap(entry -> entry.getTags().stream())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
 
-    @Override
-    public void processScheduledReminders() {
+        List<String> patients = new ArrayList<>();
 
+        List<String> titles = entryRepository.findByDoctorIdAndIsActiveTrue(doctorId, PageRequest.of(0, 10))
+                .getContent()
+                .stream()
+                .map(JournalEntry::getTitle)
+                .collect(Collectors.toList());
+
+        return SearchSuggestionResponse.builder()
+                .tagSuggestions(tags)
+                .patientSuggestions(patients)
+                .titleSuggestions(titles)
+                .build();
     }
 
     private void validateEntryRequest(CreateJournalEntryRequest request) {
