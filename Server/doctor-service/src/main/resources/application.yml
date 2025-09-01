@@ -5,6 +5,9 @@ spring:
     mongodb:
       uri: ${MONGO_URI}
       database: ${MONGO_DATABASE}
+  cache:
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=10m,recordStats
 
 server:
   port: ${DOCTOR_SERVICE_PORT}
