@@ -25,8 +25,9 @@ deploy:
 
 logging:
   level:
-    com.aarogya.appointment_service: INFO
+    com.aarogya.payment_service: DEBUG
     org.springframework.data.mongodb: INFO
+    com.razorpay: INFO
 
 razorpay:
   key:

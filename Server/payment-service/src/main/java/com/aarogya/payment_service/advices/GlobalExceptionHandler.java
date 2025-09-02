@@ -38,6 +38,16 @@ public class GlobalExceptionHandler {
         return buildErrorResponseEntity(apiError);
     }
 
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<ApiResponse<?>> handlePaymentException(PaymentException ex) {
+        logger.error("Payment error: {}", ex.getMessage());
+        ApiError error = new ApiError.ApiErrorBuilder()
+                .setMessage(ex.getLocalizedMessage())
+                .setStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                .build();
+        return buildErrorResponseEntity(error);
+    }
+
     @ExceptionHandler(ServiceUnavailable.class)
     public ResponseEntity<ApiResponse<?>> handleServiceUnavailableException(ServiceUnavailable exception) {
         logger.error("Service unavailable: {}", exception.getMessage());
