@@ -133,7 +133,7 @@ public class UserGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
             List<PatientResponse> grpcPatients = patients
                     .stream()
                     .map(this::mapToPatientResponse)
-                    .collect(Collectors.toUnmodifiableList());
+                    .toList();
 
             PatientListResponse response = PatientListResponse.newBuilder()
                     .addAllPatients(grpcPatients)
@@ -159,6 +159,10 @@ public class UserGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
                 .setAddress(doctor.getAddress())
                 .setImageUrl(doctor.getImageUrl())
                 .setCreatedAt(Timestamps.fromMillis(doctor.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()))
+                .setConsultationFee(doctor.getConsultationFee() != null
+                        ? Math.round(doctor.getConsultationFee() * 100)
+                        : 0L)
+                .setCurrency(doctor.getCurrency() != null ? doctor.getCurrency() : "INR")
                 .build();
     }
 

@@ -42,4 +42,9 @@ public class DoctorRequestDTO {
 
     private String address;
     private String imageUrl;
+
+    @Min(0)
+    private Double consultationFee;
+
+    private String currency;
 }

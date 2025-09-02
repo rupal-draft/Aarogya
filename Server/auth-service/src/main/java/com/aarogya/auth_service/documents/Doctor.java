@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -54,6 +55,11 @@ public class Doctor {
     private String phone;
 
     private String address;
+
+    @Min(0)
+    private Double consultationFee;
+
+    private String currency;
 
     private String imageUrl;
 
