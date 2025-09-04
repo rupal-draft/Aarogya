@@ -1,6 +1,6 @@
 package com.aarogya.appointment_service.dto.response;
 
-import com.aarogya.appointment_service.models.enums.FollowUpStatus;
+import com.aarogya.appointment_service.enums.FollowUpStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -6,6 +6,8 @@ import com.aarogya.payment_service.dto.request.WebhookRequest;
 import com.aarogya.payment_service.dto.response.AppointmentPaymentDetailsResponse;
 import com.aarogya.payment_service.dto.response.AppointmentPaymentResponse;
 import com.aarogya.payment_service.enums.PaymentStatus;
+import com.aarogya.payment_service.events.appointment.AppointmentApproveEvent;
+import com.aarogya.payment_service.events.appointment.AppointmentRejectEvent;
 import com.aarogya.payment_service.exceptions.BadRequestException;
 import com.aarogya.payment_service.exceptions.PaymentException;
 import com.aarogya.payment_service.exceptions.ResourceNotFound;
@@ -20,6 +22,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.kafka.KafkaException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,9 +37,14 @@ public class AppointmentPaymentServiceImpl implements AppointmentPaymentService 
 
     private final AppointmentPaymentRepository paymentRepository;
     private final RazorpayClient razorpayClient;
+    private final KafkaTemplate<String, AppointmentApproveEvent> appointmentApproveEventKafkaTemplate;
+    private final KafkaTemplate<String, AppointmentRejectEvent> appointmentRejectEventKafkaTemplate;
 
     @Value("${razorpay.webhook.secret}")
     private String webhookSecret;
+
+    @Value("${razorpay.key.secret}")
+    private String razorpayKeySecret;
 
     @Value("${deploy.env:local}")
     private String activeProfile;
@@ -104,20 +113,21 @@ public class AppointmentPaymentServiceImpl implements AppointmentPaymentService 
 
     @Override
     @Transactional
-    public void processWebhook(WebhookRequest webhookRequest) {
+    public void processWebhook(WebhookRequest webhookRequest, String signature) {
         log.info("Processing Razorpay webhook event: {}", webhookRequest.getEvent());
 
         try {
-            if (!"local".equals(activeProfile)) {
-                String actualSignature = webhookRequest.getHeaders().get("x-razorpay-signature");
+            if (!"local".equalsIgnoreCase(activeProfile)) {
                 String webhookBody = webhookRequest.getPayload().toString();
 
-                boolean isValid = Utils.verifyWebhookSignature(webhookBody, actualSignature, webhookSecret);
+                boolean isValid = Utils.verifyWebhookSignature(webhookBody, signature, webhookSecret);
 
                 if (!isValid) {
                     log.error("Invalid webhook signature received");
                     throw new BadRequestException("Invalid webhook signature");
                 }
+            } else {
+                log.warn("Skipping webhook signature validation in local environment");
             }
 
             Map<String, Object> payload = webhookRequest.getPayload();
@@ -131,6 +141,13 @@ public class AppointmentPaymentServiceImpl implements AppointmentPaymentService 
 
             AppointmentPayment payment = paymentRepository.findByRazorpayOrderId(razorpayOrderId)
                     .orElseThrow(() -> new ResourceNotFound("Payment not found for order: " + razorpayOrderId));
+
+            if (PaymentStatus.SUCCESS.name().equals(payment.getStatus()) ||
+                    PaymentStatus.FAILED.name().equals(payment.getStatus())) {
+                log.info("Skipping webhook for order {} since payment is already processed with status {}",
+                        razorpayOrderId, payment.getStatus());
+                return;
+            }
 
             payment.setRazorpayPaymentId(razorpayPaymentId);
             payment.setWebhookPayload(webhookRequest.getPayload());
@@ -149,6 +166,7 @@ public class AppointmentPaymentServiceImpl implements AppointmentPaymentService 
         }
     }
 
+
     @Override
     public boolean verifyPaymentSignature(VerifyPaymentRequest request) {
         try {
@@ -157,11 +175,47 @@ public class AppointmentPaymentServiceImpl implements AppointmentPaymentService 
             attributes.put("razorpay_payment_id", request.getRazorpayPaymentId());
             attributes.put("razorpay_signature", request.getRazorpaySignature());
 
-            return Utils.verifyPaymentSignature(attributes, System.getenv("RAZORPAY_KEY_SECRET"));
+            return Utils.verifyPaymentSignature(attributes, razorpayKeySecret);
         } catch (RazorpayException e) {
             log.error("Failed to verify payment signature", e);
             return false;
         }
+    }
+
+    @Override
+    @Transactional
+    public boolean confirmPaymentWithoutWebhook(VerifyPaymentRequest request) {
+        log.info("Confirming payment manually for order: {}", request.getRazorpayOrderId());
+
+        boolean valid = verifyPaymentSignature(request);
+        if (!valid) {
+            throw new BadRequestException("Invalid payment signature");
+        }
+
+        AppointmentPayment payment = paymentRepository.findByRazorpayOrderId(request.getRazorpayOrderId())
+                .orElseThrow(() -> new ResourceNotFound("Payment not found for order: " + request.getRazorpayOrderId()));
+
+        if (PaymentStatus.SUCCESS.name().equals(payment.getStatus())) {
+            log.info("Payment for order {} is already marked as SUCCESS, skipping duplicate confirmation.",
+                    request.getRazorpayOrderId());
+            return false;
+        } else if (PaymentStatus.FAILED.name().equals(payment.getStatus())) {
+            log.warn("Payment for order {} is already marked as FAILED, skipping manual confirmation.",
+                    request.getRazorpayOrderId());
+            return false;
+        }
+
+        payment.setStatus(PaymentStatus.SUCCESS.name());
+        payment.setRazorpayPaymentId(request.getRazorpayPaymentId());
+        payment.setPaidAt(LocalDateTime.now());
+        paymentRepository.save(payment);
+
+        AppointmentApproveEvent approveEvent =
+                new AppointmentApproveEvent(payment.getAppointmentId(), payment.getId());
+        appointmentApproveEventKafkaTemplate.send("appointment-approve", payment.getAppointmentId(), approveEvent);
+
+        log.info("Payment confirmed manually for order {}", request.getRazorpayOrderId());
+        return true;
     }
 
     @Override
@@ -178,14 +232,13 @@ public class AppointmentPaymentServiceImpl implements AppointmentPaymentService 
         payment.setWebhookPayload(webhookData);
         paymentRepository.save(payment);
 
-        // Placeholder for gRPC call to Appointment Service
-//        try {
-//            appointmentServiceClient.confirmAppointment(payment.getAppointmentId(), payment.getId());
-//            log.info("Appointment {} confirmed via gRPC", payment.getAppointmentId());
-//        } catch (Exception e) {
-//            log.error("Failed to confirm appointment via gRPC: {}", payment.getAppointmentId(), e);
-//            // Implement retry logic or dead letter queue
-//        }
+        AppointmentApproveEvent appointmentApproveEvent = new AppointmentApproveEvent(payment.getAppointmentId(), payment.getId());
+        try {
+            appointmentApproveEventKafkaTemplate.send("appointment-approve", payment.getAppointmentId(), appointmentApproveEvent);
+            log.info("Appointment {} confirmed via kafka", payment.getAppointmentId());
+        } catch (KafkaException e) {
+            log.error("Failed to confirm appointment via gRPC: {}", payment.getAppointmentId(), e);
+        }
     }
 
     @Override
@@ -201,13 +254,13 @@ public class AppointmentPaymentServiceImpl implements AppointmentPaymentService 
         payment.setWebhookPayload(webhookData);
         paymentRepository.save(payment);
 
-        // Placeholder for gRPC call to Appointment Service
-//        try {
-//            appointmentServiceClient.cancelAppointment(payment.getAppointmentId(), payment.getId(), failureReason);
-//            log.info("Appointment {} cancelled via gRPC", payment.getAppointmentId());
-//        } catch (Exception e) {
-//            log.error("Failed to cancel appointment via gRPC: {}", payment.getAppointmentId(), e);
-//        }
+        AppointmentRejectEvent appointmentRejectEvent = new AppointmentRejectEvent(payment.getAppointmentId());
+        try {
+            appointmentRejectEventKafkaTemplate.send("appointment-reject", payment.getAppointmentId(), appointmentRejectEvent);
+            log.info("Appointment {} cancelled via gRPC", payment.getAppointmentId());
+        } catch (KafkaException e) {
+            log.error("Failed to cancel appointment via gRPC: {}", payment.getAppointmentId(), e);
+        }
     }
 
 

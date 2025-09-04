@@ -1,6 +1,6 @@
 package com.aarogya.appointment_service.models;
 
-import com.aarogya.appointment_service.models.enums.FollowUpStatus;
+import com.aarogya.appointment_service.enums.FollowUpStatus;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;

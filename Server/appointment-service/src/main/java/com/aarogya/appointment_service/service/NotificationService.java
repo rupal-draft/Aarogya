@@ -2,7 +2,7 @@ package com.aarogya.appointment_service.service;
 
 import com.aarogya.appointment_service.models.Appointment;
 import com.aarogya.appointment_service.models.FollowUp;
-import com.aarogya.appointment_service.models.enums.AppointmentStatus;
+import com.aarogya.appointment_service.enums.AppointmentStatus;
 
 public interface NotificationService {
 

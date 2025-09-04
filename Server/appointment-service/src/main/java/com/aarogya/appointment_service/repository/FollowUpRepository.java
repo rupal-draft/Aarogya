@@ -1,7 +1,7 @@
 package com.aarogya.appointment_service.repository;
 
 import com.aarogya.appointment_service.models.FollowUp;
-import com.aarogya.appointment_service.models.enums.FollowUpStatus;
+import com.aarogya.appointment_service.enums.FollowUpStatus;
 import jakarta.validation.constraints.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

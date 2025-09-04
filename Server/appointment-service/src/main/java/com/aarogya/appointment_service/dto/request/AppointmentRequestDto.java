@@ -1,6 +1,6 @@
 package com.aarogya.appointment_service.dto.request;
 
-import com.aarogya.appointment_service.models.enums.AppointmentType;
+import com.aarogya.appointment_service.enums.AppointmentType;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

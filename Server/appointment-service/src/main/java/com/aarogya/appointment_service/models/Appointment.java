@@ -1,7 +1,7 @@
 package com.aarogya.appointment_service.models;
 
-import com.aarogya.appointment_service.models.enums.AppointmentStatus;
-import com.aarogya.appointment_service.models.enums.AppointmentType;
+import com.aarogya.appointment_service.enums.AppointmentStatus;
+import com.aarogya.appointment_service.enums.AppointmentType;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -61,6 +61,9 @@ public class Appointment {
     private String notes;
 
     private String doctorNotes;
+
+    @Builder.Default
+    private String paymentId = "Not paid yet";
 
     private Integer priority = 1;
 

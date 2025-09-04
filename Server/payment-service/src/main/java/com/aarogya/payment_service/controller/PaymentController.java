@@ -11,6 +11,7 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -50,10 +51,22 @@ public class PaymentController {
     }
 
     @PostMapping("/webhook")
-    public ResponseEntity<Void> handleWebhook(@RequestBody WebhookRequest webhookRequest) {
+    public ResponseEntity<Void> handleWebhook(
+            @RequestBody WebhookRequest webhookRequest,
+            @RequestHeader(value = "X-Razorpay-Signature", required = false) String signature) {
+
         log.info("Received Razorpay webhook: {}", webhookRequest.getEvent());
-        paymentService.processWebhook(webhookRequest);
+        paymentService.processWebhook(webhookRequest, signature);
         return ResponseEntity.ok().build();
+    }
+
+
+    @PostMapping("/confirm")
+    public ResponseEntity<Void> confirmPaymentWithoutWebhook(@Valid @RequestBody VerifyPaymentRequest request) {
+        log.debug("Verifying payment status for order: {}", request.getRazorpayOrderId());
+        boolean processed = paymentService.confirmPaymentWithoutWebhook(request);
+        return processed ? ResponseEntity.ok().build()
+                : ResponseEntity.status(HttpStatus.ALREADY_REPORTED).build();
     }
 
 

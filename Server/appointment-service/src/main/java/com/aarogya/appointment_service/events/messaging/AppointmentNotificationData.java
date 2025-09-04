@@ -1,6 +1,6 @@
 package com.aarogya.appointment_service.events.messaging;
 
-import com.aarogya.appointment_service.models.enums.AppointmentStatus;
+import com.aarogya.appointment_service.enums.AppointmentStatus;
 import lombok.*;
 
 import java.time.LocalDate;

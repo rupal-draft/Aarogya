@@ -14,6 +14,5 @@ import java.util.Map;
 public class WebhookRequest {
     private String event;
     private Map<String, Object> payload;
-    private Map<String, String> headers;
 }
 

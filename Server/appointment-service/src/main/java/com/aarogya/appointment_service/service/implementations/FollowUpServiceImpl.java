@@ -9,7 +9,7 @@ import com.aarogya.appointment_service.exceptions.ResourceNotFound;
 import com.aarogya.appointment_service.exceptions.ServiceUnavailable;
 import com.aarogya.appointment_service.models.Appointment;
 import com.aarogya.appointment_service.models.FollowUp;
-import com.aarogya.appointment_service.models.enums.FollowUpStatus;
+import com.aarogya.appointment_service.enums.FollowUpStatus;
 import com.aarogya.appointment_service.repository.AppointmentRepository;
 import com.aarogya.appointment_service.repository.FollowUpRepository;
 import com.aarogya.appointment_service.service.FollowUpService;
