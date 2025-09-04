@@ -3,6 +3,8 @@ package com.aarogya.appointment_service.service.implementations;
 import com.aarogya.appointment_service.clients.UserGrpcClient;
 import com.aarogya.appointment_service.dto.response.DoctorResponseDTO;
 import com.aarogya.appointment_service.dto.response.PatientResponseDTO;
+import com.aarogya.appointment_service.enums.AppointmentStatus;
+import com.aarogya.appointment_service.enums.FollowUpStatus;
 import com.aarogya.appointment_service.events.NotificationEmailEvent;
 import com.aarogya.appointment_service.events.NotificationSaveEvent;
 import com.aarogya.appointment_service.events.enums.NotificationType;
@@ -11,8 +13,6 @@ import com.aarogya.appointment_service.events.messaging.FollowUpNotificationData
 import com.aarogya.appointment_service.exceptions.RuntimeConflict;
 import com.aarogya.appointment_service.models.Appointment;
 import com.aarogya.appointment_service.models.FollowUp;
-import com.aarogya.appointment_service.enums.AppointmentStatus;
-import com.aarogya.appointment_service.enums.FollowUpStatus;
 import com.aarogya.appointment_service.service.NotificationService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

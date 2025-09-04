@@ -100,3 +100,11 @@ spring:
           filters:
             - StripPrefix=2
             - name: AuthenticationFilter
+
+        - id: payment-service
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/v1/payment/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter

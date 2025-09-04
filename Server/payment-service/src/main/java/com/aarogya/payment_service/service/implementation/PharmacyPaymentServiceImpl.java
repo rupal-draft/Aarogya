@@ -1,24 +1,29 @@
 package com.aarogya.payment_service.service.implementation;
 
 import com.aarogya.payment_service.dto.request.InitiatePharmacyPaymentRequest;
+import com.aarogya.payment_service.dto.request.VerifyPaymentRequest;
 import com.aarogya.payment_service.dto.request.WebhookRequest;
 import com.aarogya.payment_service.dto.response.PharmacyPaymentDetailsResponse;
 import com.aarogya.payment_service.dto.response.PharmacyPaymentResponse;
 import com.aarogya.payment_service.enums.PaymentStatus;
 import com.aarogya.payment_service.exceptions.BadRequestException;
 import com.aarogya.payment_service.exceptions.PaymentException;
+import com.aarogya.payment_service.exceptions.ResourceNotFound;
 import com.aarogya.payment_service.models.PharmacyPayment;
 import com.aarogya.payment_service.repository.PharmacyPaymentRepository;
 import com.aarogya.payment_service.service.PharmacyPaymentService;
+import com.aarogya.payment_service.util.PaymentSignature;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
-import com.razorpay.Refund;
+import com.razorpay.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,17 +40,14 @@ public class PharmacyPaymentServiceImpl implements PharmacyPaymentService {
 
     private final PharmacyPaymentRepository pharmacyPaymentRepository;
     private final RazorpayClient razorpayClient;
+    private final PaymentSignature paymentSignature;
 
     @Value("${razorpay.webhook.secret}")
     private String webhookSecret;
 
-    @Value("${razorpay.key.secret}")
-    private String razorpayKeySecret;
-
     @Value("${deploy.env:local}")
     private String activeProfile;
     private static final String RAZORPAY_CURRENCY = "INR";
-    private static final String PAYMENT_CACHE = "payments";
 
     @Override
     @Transactional
@@ -85,28 +87,151 @@ public class PharmacyPaymentServiceImpl implements PharmacyPaymentService {
     }
 
     @Override
+    @Cacheable(value = "pharmacyPayments", key = "#paymentId")
     public PharmacyPaymentDetailsResponse getPharmacyPaymentDetails(String paymentId) {
-        return null;
+        log.debug("Fetching pharmacy payment details for ID: {}", paymentId);
+
+        PharmacyPayment payment = pharmacyPaymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFound("Pharmacy payment not found with id: " + paymentId));
+
+        return convertToPharmacyPaymentDetailsResponse(payment);
     }
 
     @Override
+    @Cacheable(value = "pharmacyPayments", key = "#razorpayOrderId")
     public PharmacyPaymentDetailsResponse getPharmacyPaymentByOrderId(String razorpayOrderId) {
-        return null;
+        log.debug("Fetching pharmacy payment by Razorpay order ID: {}", razorpayOrderId);
+
+        PharmacyPayment payment = pharmacyPaymentRepository.findByRazorpayOrderId(razorpayOrderId)
+                .orElseThrow(() -> new ResourceNotFound("Pharmacy payment not found for order id: " + razorpayOrderId));
+
+        return convertToPharmacyPaymentDetailsResponse(payment);
     }
 
     @Override
-    public void processPharmacyWebhook(WebhookRequest webhookRequest) {
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "pharmacyPayments", key = "#result?.orderId"),
+            @CacheEvict(value = "pharmacyPayments", allEntries = true),
+            @CacheEvict(value = "paymentStats", allEntries = true)
+    })
+    public void processPharmacyWebhook(WebhookRequest webhookRequest, String signature) {
+        log.info("Processing Razorpay pharmacy webhook event: {}", webhookRequest.getEvent());
 
+        try {
+            if (!"local".equalsIgnoreCase(activeProfile)) {
+                String webhookBody = webhookRequest.getPayload().toString();
+
+                boolean isValid = Utils.verifyWebhookSignature(webhookBody, signature, webhookSecret);
+                if (!isValid) {
+                    log.error("Invalid webhook signature received");
+                    throw new BadRequestException("Invalid webhook signature");
+                }
+            } else {
+                log.warn("Skipping webhook signature validation in local environment");
+            }
+
+            Map<String, Object> payload = webhookRequest.getPayload();
+            Map<String, Object> paymentEntity = (Map<String, Object>) payload.get("payload");
+            Map<String, Object> paymentData = (Map<String, Object>) paymentEntity.get("payment");
+            Map<String, Object> entity = (Map<String, Object>) paymentData.get("entity");
+
+            String razorpayOrderId = (String) entity.get("order_id");
+            String razorpayPaymentId = (String) entity.get("id");
+            String status = (String) entity.get("status");
+
+            Map<String, Object> notes = (Map<String, Object>) entity.get("notes");
+            if (notes != null && "PHARMACY".equals(notes.get("type"))) {
+                PharmacyPayment payment = pharmacyPaymentRepository.findByRazorpayOrderId(razorpayOrderId)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Pharmacy payment not found for order: " + razorpayOrderId));
+
+                if (PaymentStatus.SUCCESS.name().equals(payment.getStatus()) ||
+                        PaymentStatus.FAILED.name().equals(payment.getStatus())) {
+                    log.info("Skipping webhook for order {} since payment already processed with status {}",
+                            razorpayOrderId, payment.getStatus());
+                    return;
+                }
+
+                payment.setRazorpayPaymentId(razorpayPaymentId);
+                payment.setWebhookPayload(webhookRequest.getPayload());
+                payment.setRazorpayResponse((Map<String, Object>) entity);
+
+                if ("captured".equals(status)) {
+                    handlePharmacyPaymentSuccess(razorpayOrderId, razorpayPaymentId, webhookRequest.getPayload());
+                } else if ("failed".equals(status)) {
+                    String failureReason = (String) entity.get("error_description");
+                    handlePharmacyPaymentFailure(razorpayOrderId, failureReason, webhookRequest.getPayload());
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Error processing pharmacy webhook: {}", webhookRequest.getEvent(), e);
+            throw new PaymentException("Failed to process webhook: " + e.getMessage());
+        }
     }
 
     @Override
+    @Transactional
+    public boolean confirmPharmacyPaymentWithoutWebhook(VerifyPaymentRequest request) {
+        log.info("Confirming pharmacy payment manually for order: {}", request.getRazorpayOrderId());
+
+        boolean valid = paymentSignature.verifyPaymentSignature(request);
+        if (!valid) {
+            throw new BadRequestException("Invalid payment signature");
+        }
+
+        PharmacyPayment payment = pharmacyPaymentRepository.findByRazorpayOrderId(request.getRazorpayOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Pharmacy payment not found for order: " + request.getRazorpayOrderId()));
+
+        if (PaymentStatus.SUCCESS.name().equals(payment.getStatus())) {
+            log.info("Pharmacy payment for order {} is already marked SUCCESS, skipping duplicate confirmation.",
+                    request.getRazorpayOrderId());
+            return true;
+        } else if (PaymentStatus.FAILED.name().equals(payment.getStatus())) {
+            log.warn("Pharmacy payment for order {} is already marked FAILED, skipping manual confirmation.",
+                    request.getRazorpayOrderId());
+            return false;
+        }
+
+        payment.setStatus(PaymentStatus.SUCCESS.name());
+        payment.setRazorpayPaymentId(request.getRazorpayPaymentId());
+        payment.setPaidAt(LocalDateTime.now());
+        pharmacyPaymentRepository.save(payment);
+
+        log.info("Pharmacy payment confirmed manually for order {}", request.getRazorpayOrderId());
+        return true;
+    }
+
+
+    @Override
+    @Transactional
     public void handlePharmacyPaymentSuccess(String razorpayOrderId, String razorpayPaymentId, Map<String, Object> webhookData) {
+        log.info("Handling successful pharmacy payment for order: {}", razorpayOrderId);
 
+        PharmacyPayment payment = pharmacyPaymentRepository.findByRazorpayOrderId(razorpayOrderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pharmacy payment not found for order: " + razorpayOrderId));
+
+        payment.setStatus(PaymentStatus.SUCCESS.name());
+        payment.setRazorpayPaymentId(razorpayPaymentId);
+        payment.setPaidAt(LocalDateTime.now());
+        payment.setWebhookPayload(webhookData);
+        pharmacyPaymentRepository.save(payment);
     }
 
     @Override
+    @Transactional
     public void handlePharmacyPaymentFailure(String razorpayOrderId, String failureReason, Map<String, Object> webhookData) {
+        log.info("Handling failed pharmacy payment for order: {}", razorpayOrderId);
 
+        PharmacyPayment payment = pharmacyPaymentRepository.findByRazorpayOrderId(razorpayOrderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pharmacy payment not found for order: " + razorpayOrderId));
+
+        payment.setStatus(PaymentStatus.FAILED.name());
+        payment.setFailureReason(failureReason);
+        payment.setWebhookPayload(webhookData);
+        pharmacyPaymentRepository.save(payment);
     }
 
 

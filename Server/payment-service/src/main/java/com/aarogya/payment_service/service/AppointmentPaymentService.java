@@ -13,7 +13,6 @@ public interface AppointmentPaymentService {
     AppointmentPaymentDetailsResponse getPaymentDetails(String paymentId);
     AppointmentPaymentDetailsResponse getPaymentByOrderId(String razorpayOrderId);
     void processWebhook(WebhookRequest webhookRequest, String signature);
-    boolean verifyPaymentSignature(VerifyPaymentRequest request);
     void handlePaymentSuccess(String razorpayOrderId, String razorpayPaymentId, Map<String, Object> webhookData);
     void handlePaymentFailure(String razorpayOrderId, String failureReason, Map<String, Object> webhookData);
     boolean confirmPaymentWithoutWebhook(VerifyPaymentRequest request);

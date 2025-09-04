@@ -1,17 +1,17 @@
 package com.aarogya.appointment_service.service.implementations;
 
-import com.aarogya.appointment_service.clients.UserGrpcClient;
 import com.aarogya.appointment_service.auth.UserContextHolder;
+import com.aarogya.appointment_service.clients.UserGrpcClient;
 import com.aarogya.appointment_service.dto.request.AppointmentRequestDto;
 import com.aarogya.appointment_service.dto.request.EmergencyAppointmentDto;
 import com.aarogya.appointment_service.dto.request.UpdateAppointmentStatusDto;
 import com.aarogya.appointment_service.dto.response.AppointmentResponseDto;
+import com.aarogya.appointment_service.enums.AppointmentStatus;
+import com.aarogya.appointment_service.enums.AppointmentType;
 import com.aarogya.appointment_service.exceptions.DataIntegrityViolation;
 import com.aarogya.appointment_service.exceptions.ResourceNotFound;
 import com.aarogya.appointment_service.exceptions.ServiceUnavailable;
 import com.aarogya.appointment_service.models.Appointment;
-import com.aarogya.appointment_service.enums.AppointmentStatus;
-import com.aarogya.appointment_service.enums.AppointmentType;
 import com.aarogya.appointment_service.repository.AppointmentRepository;
 import com.aarogya.appointment_service.service.AppointmentService;
 import com.aarogya.appointment_service.service.NotificationService;
@@ -285,59 +285,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         return appointmentRepository.findAllById(ids).stream()
                 .map(appt -> modelMapper.map(appt, AppointmentResponseDto.class))
                 .toList();
-    }
-
-    @Override
-    @Transactional
-    @CacheEvict(value = APPOINTMENT_CACHE, key = "#appointmentId")
-    public AppointmentResponseDto approveAppointment(String appointmentId, String paymentId) {
-        log.info("Approving appointment with id: {}", appointmentId);
-        try {
-            Appointment appointment = appointmentRepository
-                    .findById(appointmentId)
-                    .orElseThrow(() -> new ResourceNotFound("Appointment not found with id: " + appointmentId));
-
-            appointment.setStatus(AppointmentStatus.APPROVED);
-            appointment.setPaymentId(paymentId);
-            appointmentRepository.save(appointment);
-            notificationService.sendAppointmentStatusUpdateNotification(appointment, AppointmentStatus.APPROVED);
-            return mapToResponseDto(appointment);
-        } catch (ResourceNotFound e) {
-            log.error("Appointment not found: {}", e.getMessage());
-            throw e;
-        } catch (DataIntegrityViolationException e) {
-            log.error("Data integrity violation while updating appointment status", e);
-            throw new DataIntegrityViolation("Error updating appointment status");
-        } catch (Exception e) {
-            log.error("Unexpected error updating appointment status", e);
-            throw new ServiceUnavailable(e.getLocalizedMessage());
-        }
-    }
-
-    @Override
-    @Transactional
-    @CacheEvict(value = APPOINTMENT_CACHE, key = "#appointmentId")
-    public AppointmentResponseDto rejectAppointment(String appointmentId) {
-        log.info("Rejecting appointment with id: {}", appointmentId);
-        try {
-            Appointment appointment = appointmentRepository
-                    .findById(appointmentId)
-                    .orElseThrow(() -> new ResourceNotFound("Appointment not found with id: " + appointmentId));
-
-            appointment.setStatus(AppointmentStatus.REJECTED);
-            appointmentRepository.save(appointment);
-            notificationService.sendAppointmentStatusUpdateNotification(appointment, AppointmentStatus.REJECTED);
-            return mapToResponseDto(appointment);
-        } catch (ResourceNotFound e) {
-            log.error("Appointment not found: {}", e.getMessage());
-            throw e;
-        } catch (DataIntegrityViolationException e) {
-            log.error("Data integrity violation while updating appointment status", e);
-            throw new DataIntegrityViolation("Error updating appointment status");
-        } catch (Exception e) {
-            log.error("Unexpected error updating appointment status", e);
-            throw new ServiceUnavailable(e.getLocalizedMessage());
-        }
     }
 
     private Appointment buildAppointmentFromRequest(AppointmentRequestDto requestDto, String patientId) {

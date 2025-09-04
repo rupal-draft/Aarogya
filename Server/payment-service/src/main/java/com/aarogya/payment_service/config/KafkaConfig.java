@@ -1,7 +1,7 @@
 package com.aarogya.payment_service.config;
 
-import com.aarogya.payment_service.events.appointment.AppointmentApproveEvent;
-import com.aarogya.payment_service.events.appointment.AppointmentRejectEvent;
+import com.aarogya.payment_service.events.AppointmentApproveEvent;
+import com.aarogya.payment_service.events.AppointmentRejectEvent;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.TopicConfig;

@@ -67,14 +67,14 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, pharmacy_service.events.NotificationEvent> pharmacyConsumerFactory() {
+    public ConsumerFactory<String, com.aarogya.pharmacy_service.events.NotificationEvent> pharmacyConsumerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "notification-service-group");
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, pharmacy_service.events.NotificationEvent.class);
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, com.aarogya.pharmacy_service.events.NotificationEvent.class);
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
@@ -105,8 +105,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, pharmacy_service.events.NotificationEvent> pharmacyKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, pharmacy_service.events.NotificationEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, com.aarogya.pharmacy_service.events.NotificationEvent> pharmacyKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, com.aarogya.pharmacy_service.events.NotificationEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(pharmacyConsumerFactory());
         factory.setConcurrency(3);

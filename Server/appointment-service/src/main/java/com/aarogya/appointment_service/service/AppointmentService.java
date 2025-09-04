@@ -35,8 +35,4 @@ public interface AppointmentService {
     List<AppointmentResponseDto> getPatientAppointmentsBetweenDates(String patientId, LocalDate startDate, LocalDate endDate);
 
     List<AppointmentResponseDto> findByIds(List<String> ids);
-
-    AppointmentResponseDto approveAppointment(String appointmentId, String paymentId);
-
-    AppointmentResponseDto rejectAppointment(String appointmentId);
 }

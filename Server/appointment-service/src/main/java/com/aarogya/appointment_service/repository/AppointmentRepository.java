@@ -1,7 +1,7 @@
 package com.aarogya.appointment_service.repository;
 
-import com.aarogya.appointment_service.models.Appointment;
 import com.aarogya.appointment_service.enums.AppointmentStatus;
+import com.aarogya.appointment_service.models.Appointment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;

@@ -6,15 +6,19 @@ import com.aarogya.payment_service.dto.request.WebhookRequest;
 import com.aarogya.payment_service.dto.response.AppointmentPaymentDetailsResponse;
 import com.aarogya.payment_service.dto.response.AppointmentPaymentResponse;
 import com.aarogya.payment_service.enums.PaymentStatus;
-import com.aarogya.payment_service.events.appointment.AppointmentApproveEvent;
-import com.aarogya.payment_service.events.appointment.AppointmentRejectEvent;
+import com.aarogya.payment_service.events.AppointmentApproveEvent;
+import com.aarogya.payment_service.events.AppointmentRejectEvent;
 import com.aarogya.payment_service.exceptions.BadRequestException;
 import com.aarogya.payment_service.exceptions.PaymentException;
 import com.aarogya.payment_service.exceptions.ResourceNotFound;
 import com.aarogya.payment_service.models.AppointmentPayment;
 import com.aarogya.payment_service.repository.AppointmentPaymentRepository;
 import com.aarogya.payment_service.service.AppointmentPaymentService;
-import com.razorpay.*;
+import com.aarogya.payment_service.util.PaymentSignature;
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
+import com.razorpay.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -37,14 +41,12 @@ public class AppointmentPaymentServiceImpl implements AppointmentPaymentService 
 
     private final AppointmentPaymentRepository paymentRepository;
     private final RazorpayClient razorpayClient;
+    private final PaymentSignature paymentSignature;
     private final KafkaTemplate<String, AppointmentApproveEvent> appointmentApproveEventKafkaTemplate;
     private final KafkaTemplate<String, AppointmentRejectEvent> appointmentRejectEventKafkaTemplate;
 
     @Value("${razorpay.webhook.secret}")
     private String webhookSecret;
-
-    @Value("${razorpay.key.secret}")
-    private String razorpayKeySecret;
 
     @Value("${deploy.env:local}")
     private String activeProfile;
@@ -168,26 +170,11 @@ public class AppointmentPaymentServiceImpl implements AppointmentPaymentService 
 
 
     @Override
-    public boolean verifyPaymentSignature(VerifyPaymentRequest request) {
-        try {
-            JSONObject attributes = new JSONObject();
-            attributes.put("razorpay_order_id", request.getRazorpayOrderId());
-            attributes.put("razorpay_payment_id", request.getRazorpayPaymentId());
-            attributes.put("razorpay_signature", request.getRazorpaySignature());
-
-            return Utils.verifyPaymentSignature(attributes, razorpayKeySecret);
-        } catch (RazorpayException e) {
-            log.error("Failed to verify payment signature", e);
-            return false;
-        }
-    }
-
-    @Override
     @Transactional
     public boolean confirmPaymentWithoutWebhook(VerifyPaymentRequest request) {
         log.info("Confirming payment manually for order: {}", request.getRazorpayOrderId());
 
-        boolean valid = verifyPaymentSignature(request);
+        boolean valid = paymentSignature.verifyPaymentSignature(request);
         if (!valid) {
             throw new BadRequestException("Invalid payment signature");
         }

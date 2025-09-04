@@ -1,4 +1,4 @@
-package com.aarogya.payment_service.events.appointment;
+package com.aarogya.payment_service.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
