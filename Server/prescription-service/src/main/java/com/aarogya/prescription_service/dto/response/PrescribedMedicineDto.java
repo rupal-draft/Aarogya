@@ -1,4 +1,4 @@
-package com.aarogya.prescription_service.dto;
+package com.aarogya.prescription_service.dto.response;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

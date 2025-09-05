@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Document(collection = "template_usage_stats")
 @CompoundIndex(def = "{'templateId': 1, 'usageDate': 1}")
+@CompoundIndex(name = "doctor_usage_idx", def = "{'doctorId': 1, 'wasModified': 1, 'usageDate': -1}")
 public class TemplateUsageStat {
     @Id
     private String id;

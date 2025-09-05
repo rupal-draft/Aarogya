@@ -23,6 +23,8 @@ import java.util.List;
 @AllArgsConstructor
 @Document(collection = "prescriptions")
 @CompoundIndex(def = "{'appointmentId': 1, 'patientId': 1, 'doctorId': 1}")
+@CompoundIndex(name = "doctor_created_idx", def = "{'doctorId': 1, 'createdAt': -1}")
+@CompoundIndex(name = "doctor_meds_idx", def = "{'doctorId': 1, 'medicines.medicineId': 1}")
 public class Prescription {
     @Id
     private String id;

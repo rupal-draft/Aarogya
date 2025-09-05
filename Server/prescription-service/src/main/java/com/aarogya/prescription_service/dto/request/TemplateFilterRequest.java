@@ -1,4 +1,4 @@
-package com.aarogya.prescription_service.dto;
+package com.aarogya.prescription_service.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

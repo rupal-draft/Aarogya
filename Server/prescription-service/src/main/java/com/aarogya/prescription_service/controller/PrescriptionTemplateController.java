@@ -1,6 +1,7 @@
 package com.aarogya.prescription_service.controller;
 
-import com.aarogya.prescription_service.dto.*;
+import com.aarogya.prescription_service.dto.request.*;
+import com.aarogya.prescription_service.dto.response.*;
 import com.aarogya.prescription_service.service.PrescriptionTemplateService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.validation.Valid;

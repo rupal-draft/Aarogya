@@ -1,7 +1,11 @@
 package com.aarogya.prescription_service.service.implementation;
 
 import com.aarogya.prescription_service.auth.UserContextHolder;
-import com.aarogya.prescription_service.dto.*;
+import com.aarogya.prescription_service.dto.request.*;
+import com.aarogya.prescription_service.dto.response.MedicineDto;
+import com.aarogya.prescription_service.dto.response.PrescribedMedicineDto;
+import com.aarogya.prescription_service.dto.response.PrescribedMedicineResponse;
+import com.aarogya.prescription_service.dto.response.PrescriptionResponse;
 import com.aarogya.prescription_service.enums.PrescriptionStatus;
 import com.aarogya.prescription_service.enums.Severity;
 import com.aarogya.prescription_service.exceptions.AccessForbidden;

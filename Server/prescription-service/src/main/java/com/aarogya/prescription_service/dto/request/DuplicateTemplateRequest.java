@@ -1,4 +1,4 @@
-package com.aarogya.prescription_service.dto;
+package com.aarogya.prescription_service.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

@@ -1,7 +1,8 @@
 package com.aarogya.prescription_service.service.implementation;
 
 import com.aarogya.prescription_service.auth.UserContextHolder;
-import com.aarogya.prescription_service.dto.*;
+import com.aarogya.prescription_service.dto.request.*;
+import com.aarogya.prescription_service.dto.response.*;
 import com.aarogya.prescription_service.exceptions.BadRequestException;
 import com.aarogya.prescription_service.exceptions.ResourceNotFound;
 import com.aarogya.prescription_service.model.PrescribedMedicine;

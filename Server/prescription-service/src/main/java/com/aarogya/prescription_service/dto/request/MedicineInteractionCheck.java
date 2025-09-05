@@ -1,4 +1,4 @@
-package com.aarogya.prescription_service.dto;
+package com.aarogya.prescription_service.dto.request;
 
 import com.aarogya.prescription_service.enums.Severity;
 import lombok.AllArgsConstructor;

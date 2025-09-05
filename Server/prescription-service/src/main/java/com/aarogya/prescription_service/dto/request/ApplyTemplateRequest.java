@@ -1,6 +1,7 @@
-package com.aarogya.prescription_service.dto;
+package com.aarogya.prescription_service.dto.request;
 
 
+import com.aarogya.prescription_service.dto.response.PrescribedMedicineDto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

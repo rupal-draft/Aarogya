@@ -1,5 +1,6 @@
-package com.aarogya.prescription_service.dto;
+package com.aarogya.prescription_service.dto.response;
 
+import com.aarogya.prescription_service.enums.PrescriptionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,23 +13,15 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TemplateResponse {
+public class PrescriptionResponse {
     private String id;
+    private String appointmentId;
+    private String patientId;
     private String doctorId;
-    private String name;
-    private String description;
     private String diagnosis;
     private String notes;
     private List<PrescribedMedicineResponse> medicines;
-    private List<String> tags;
-    private List<String> applicableConditions;
-    private Integer usageCount;
-    private Boolean isFavorite;
-    private Boolean isActive;
-    private Boolean isShared;
-    private Integer shareCount;
-    private String categoryId;
-    private String categoryName;
+    private PrescriptionStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

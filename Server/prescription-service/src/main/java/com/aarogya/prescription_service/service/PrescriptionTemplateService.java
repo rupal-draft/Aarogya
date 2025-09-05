@@ -1,6 +1,7 @@
 package com.aarogya.prescription_service.service;
 
-import com.aarogya.prescription_service.dto.*;
+import com.aarogya.prescription_service.dto.request.*;
+import com.aarogya.prescription_service.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

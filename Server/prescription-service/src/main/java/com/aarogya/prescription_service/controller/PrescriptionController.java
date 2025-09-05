@@ -1,6 +1,8 @@
 package com.aarogya.prescription_service.controller;
 
-import com.aarogya.prescription_service.dto.*;
+import com.aarogya.prescription_service.dto.request.*;
+import com.aarogya.prescription_service.dto.response.MedicineDto;
+import com.aarogya.prescription_service.dto.response.PrescriptionResponse;
 import com.aarogya.prescription_service.service.PrescriptionService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
