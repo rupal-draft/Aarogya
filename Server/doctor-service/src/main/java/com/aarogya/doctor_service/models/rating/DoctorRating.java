@@ -10,6 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -21,9 +22,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "doctor_ratings")
-@CompoundIndex(def = "{'doctorId': 1, 'patientId': 1}", unique = true)
-@CompoundIndex(def = "{'doctorId': 1, 'createdAt': -1}")
-@CompoundIndex(def = "{'doctorId': 1, 'rating': 1}")
+@CompoundIndexes({
+        @CompoundIndex(def = "{'doctorId': 1, 'patientId': 1}", unique = true),
+        @CompoundIndex(def = "{'doctorId': 1, 'createdAt': -1}"),  // recent reviews
+        @CompoundIndex(def = "{'doctorId': 1, 'rating': 1}"),      // distribution
+        @CompoundIndex(def = "{'doctorId': 1, 'isVerified': 1}"),  // verified count
+        @CompoundIndex(def = "{'doctorId': 1, 'isAnonymous': 1}")  // anonymous count
+})
 public class DoctorRating {
     @Id
     private String id;

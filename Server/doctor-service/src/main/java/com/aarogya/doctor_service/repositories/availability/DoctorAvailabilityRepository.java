@@ -30,4 +30,6 @@ public interface DoctorAvailabilityRepository extends MongoRepository<DoctorAvai
     List<DoctorAvailability> findAvailableSlots(String doctorId, LocalDate fromDate);
 
     void deleteByDoctorIdAndDateBefore(String doctorId, LocalDate date);
+
+    List<DoctorAvailability> findByDoctorIdAndDateBetweenAndIsActiveTrue(String doctorId, LocalDate start, LocalDate end);
 }

@@ -16,4 +16,6 @@ public interface SpecialAvailabilityRepository extends MongoRepository<SpecialAv
     List<SpecialAvailability> findByDoctorIdAndDateBetween(String doctorId, LocalDate startDate, LocalDate endDate);
 
     List<SpecialAvailability> findByDoctorIdAndIsActiveTrue(String doctorId);
+
+    List<SpecialAvailability> findByDoctorIdAndDateBetweenAndIsActiveTrue(String doctorId, LocalDate start, LocalDate end);
 }

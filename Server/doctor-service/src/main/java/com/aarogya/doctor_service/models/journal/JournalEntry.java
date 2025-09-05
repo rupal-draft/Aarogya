@@ -13,6 +13,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -25,9 +26,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "journal_entries")
-@CompoundIndex(def = "{'doctorId': 1, 'createdAt': -1}")
-@CompoundIndex(def = "{'doctorId': 1, 'patientId': 1, 'isActive': 1}")
-@CompoundIndex(def = "{'doctorId': 1, 'tags': 1, 'isActive': 1}")
+@CompoundIndexes({
+        @CompoundIndex(def = "{'doctorId': 1, 'isActive': 1}"),         
+        @CompoundIndex(def = "{'doctorId': 1, 'tags': 1, 'isActive': 1}"),
+        @CompoundIndex(def = "{'doctorId': 1, 'createdAt': -1}")
+})
 public class JournalEntry {
     @Id
     private String id;

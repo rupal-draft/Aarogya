@@ -27,13 +27,9 @@ public interface DoctorRatingRepository extends MongoRepository<DoctorRating, St
 
     List<DoctorRating> findByDoctorIdAndIsActiveTrue(String doctorId);
 
-    Integer countByDoctorId(String doctorId);
-
-    Integer countByDoctorIdAndRating(String doctorId, Integer rating);
-
-    @Query(value = "{'doctorId': ?0}", count = true)
-    Long countByDoctorIdWithReview(String doctorId);
-
-    @Query(value = "{'doctorId': ?0, 'wouldRecommend': true}", count = true)
-    Long countByDoctorIdAndWouldRecommendTrue(String doctorId);
+    long countByDoctorIdAndIsVerified(String doctorId, Boolean isVerified);
+    long countByDoctorIdAndIsAnonymous(String doctorId, Boolean isAnonymous);
+    long countByDoctorIdAndReviewIsNotNull(String doctorId);
+    long countByDoctorIdAndReportCountGreaterThan(String doctorId, int threshold);
+    List<DoctorRating> findTop5ByDoctorIdOrderByCreatedAtDesc(String doctorId);
 }

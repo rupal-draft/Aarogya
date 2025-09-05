@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Document(collection = "rating_helpful_votes")
 @CompoundIndex(def = "{'ratingId': 1, 'patientId': 1}", unique = true)
+@CompoundIndex(def = "{'ratingId': 1, 'createdAt': -1}")
 public class HelpfulVote {
     @Id
     private String id;

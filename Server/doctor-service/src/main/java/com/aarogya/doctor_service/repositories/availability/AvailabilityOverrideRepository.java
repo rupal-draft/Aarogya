@@ -16,4 +16,6 @@ public interface AvailabilityOverrideRepository extends MongoRepository<Availabi
     List<AvailabilityOverride> findByDoctorIdAndDateBetween(String doctorId, LocalDate startDate, LocalDate endDate);
 
     List<AvailabilityOverride> findByDoctorIdAndIsActiveTrue(String doctorId);
+
+    List<AvailabilityOverride> findByDoctorIdAndDateBetweenAndIsActiveTrue(String doctorId, LocalDate start, LocalDate end);
 }
