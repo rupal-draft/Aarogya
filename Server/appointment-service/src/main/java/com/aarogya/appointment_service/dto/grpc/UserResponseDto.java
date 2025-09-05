@@ -1,4 +1,4 @@
-package com.aarogya.appointment_service.dto.response;
+package com.aarogya.appointment_service.dto.grpc;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

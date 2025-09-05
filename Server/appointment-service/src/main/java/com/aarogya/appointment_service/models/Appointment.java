@@ -26,7 +26,10 @@ import java.util.List;
 @CompoundIndexes({
         @CompoundIndex(name = "doctor_date_time_idx", def = "{'doctorId': 1, 'appointmentDate': 1, 'startTime': 1}"),
         @CompoundIndex(name = "patient_date_idx", def = "{'patientId': 1, 'appointmentDate': -1}"),
-        @CompoundIndex(name = "status_date_idx", def = "{'status': 1, 'appointmentDate': -1}")
+        @CompoundIndex(name = "status_date_idx", def = "{'status': 1, 'appointmentDate': -1}"),
+        @CompoundIndex(name = "doctor_status_date_idx", def = "{'doctorId': 1, 'status': 1, 'appointmentDate': -1}"),
+        @CompoundIndex(name = "doctor_type_date_idx", def = "{'doctorId': 1, 'type': 1, 'appointmentDate': -1}"),
+        @CompoundIndex(name = "doctor_patient_idx", def = "{'doctorId': 1, 'patientId': 1, 'status': 1}")
 })
 public class Appointment {
 

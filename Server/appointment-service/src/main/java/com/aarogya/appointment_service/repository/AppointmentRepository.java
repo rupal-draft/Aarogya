@@ -73,10 +73,4 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
                                                                LocalDate startDate,
                                                                LocalDate endDate,
                                                                Sort sort);
-
-    long countByDoctorIdAndStatus(String doctorId, AppointmentStatus status);
-    long countByPatientIdAndStatus(String patientId, AppointmentStatus status);
-
-    @Query("{ 'doctorId': ?0, 'appointmentDate': ?1, 'status': { $in: ['PENDING', 'APPROVED', 'IN_PROGRESS'] } }")
-    List<Appointment> findTodayAppointmentsByDoctor(String doctorId, LocalDate today);
 }

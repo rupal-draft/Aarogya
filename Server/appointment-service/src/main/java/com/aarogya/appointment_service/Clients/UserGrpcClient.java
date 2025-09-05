@@ -1,7 +1,7 @@
 package com.aarogya.appointment_service.clients;
 
-import com.aarogya.appointment_service.dto.response.DoctorResponseDTO;
-import com.aarogya.appointment_service.dto.response.PatientResponseDTO;
+import com.aarogya.appointment_service.dto.grpc.DoctorResponseDTO;
+import com.aarogya.appointment_service.dto.grpc.PatientResponseDTO;
 import com.aarogya.appointment_service.exceptions.*;
 import com.aarogya.auth.proto.*;
 import com.google.protobuf.Timestamp;

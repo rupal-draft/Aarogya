@@ -1,5 +1,7 @@
 package com.aarogya.appointment_service.dto.response;
 
+import com.aarogya.appointment_service.dto.grpc.DoctorResponseDTO;
+import com.aarogya.appointment_service.dto.grpc.PatientResponseDTO;
 import com.aarogya.appointment_service.enums.AppointmentStatus;
 import com.aarogya.appointment_service.enums.AppointmentType;
 import lombok.AllArgsConstructor;

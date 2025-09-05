@@ -1,8 +1,8 @@
 package com.aarogya.appointment_service.service.implementations;
 
 import com.aarogya.appointment_service.clients.UserGrpcClient;
-import com.aarogya.appointment_service.dto.response.DoctorResponseDTO;
-import com.aarogya.appointment_service.dto.response.PatientResponseDTO;
+import com.aarogya.appointment_service.dto.grpc.DoctorResponseDTO;
+import com.aarogya.appointment_service.dto.grpc.PatientResponseDTO;
 import com.aarogya.appointment_service.enums.AppointmentStatus;
 import com.aarogya.appointment_service.enums.FollowUpStatus;
 import com.aarogya.appointment_service.events.NotificationEmailEvent;

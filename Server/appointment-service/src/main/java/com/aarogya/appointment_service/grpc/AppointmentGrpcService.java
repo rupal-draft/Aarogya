@@ -2,7 +2,10 @@ package com.aarogya.appointment_service.grpc;
 
 import appointment.Appointment;
 import appointment.AppointmentServiceGrpc;
+import com.aarogya.appointment_service.dto.grpc.PatientStatsDto;
 import com.aarogya.appointment_service.dto.response.AppointmentResponseDto;
+import com.aarogya.appointment_service.dto.grpc.AppointmentStatsDto;
+import com.aarogya.appointment_service.service.AppointmentConsumerService;
 import com.aarogya.appointment_service.service.AppointmentService;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -26,6 +29,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
 
     private final AppointmentService appointmentService;
     private final ModelMapper modelMapper;
+    private final AppointmentConsumerService appointmentConsumerService;
 
     @Override
     public void getAppointmentDetails(Appointment.AppointmentIdRequest request, StreamObserver<Appointment.AppointmentResponseDto> responseObserver) {
@@ -95,6 +99,49 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
         responseObserver.onNext(response);
         log.info("Sent {} appointments", grpcAppts.size());
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getDoctorStats(Appointment.DoctorIdRequest request,
+                               StreamObserver<Appointment.DoctorStatsResponse> responseObserver) {
+        try {
+            String doctorId = request.getDoctorId();
+            log.info("Fetching combined stats for doctor: {}", doctorId);
+
+            AppointmentStatsDto appointmentStatsDto = appointmentConsumerService.getDoctorStats(doctorId);
+            PatientStatsDto patientStatsDto = appointmentConsumerService.getPatientStats(doctorId);
+
+            Appointment.AppointmentStatsResponse appointmentStats =
+                    Appointment.AppointmentStatsResponse.newBuilder()
+                            .setTodayAppointments(appointmentStatsDto.getTodayAppointments())
+                            .setUpcomingAppointments(appointmentStatsDto.getUpcomingAppointments())
+                            .setCompletedAppointments(appointmentStatsDto.getCompletedAppointments())
+                            .setInProgressAppointments(appointmentStatsDto.getInProgressAppointments())
+                            .setRejectedAppointments(appointmentStatsDto.getRejectedAppointments())
+                            .setFollowupAppointments(appointmentStatsDto.getFollowupAppointments())
+                            .setEmergencyAppointments(appointmentStatsDto.getEmergencyAppointments())
+                            .setOverdueFollowupAppointments(appointmentStatsDto.getOverdueFollowupAppointments())
+                            .setPendingFollowupAppointments(appointmentStatsDto.getPendingFollowupAppointments())
+                            .build();
+
+            Appointment.PatientStatsResponse patientStats =
+                    Appointment.PatientStatsResponse.newBuilder()
+                            .setTotalPatients(patientStatsDto.getTotalPatients())
+                            .setNewPatientsThisMonth(patientStatsDto.getNewPatientsThisMonth())
+                            .setReturningPatients(patientStatsDto.getReturningPatients())
+                            .build();
+
+            Appointment.DoctorStatsResponse response =
+                    Appointment.DoctorStatsResponse.newBuilder()
+                            .setAppointmentStats(appointmentStats)
+                            .setPatientStats(patientStats)
+                            .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            handleError(responseObserver, e, "getDoctorStats");
+        }
     }
 
     private void handleAppointmentRequest(Appointment.AppointmentPageRequest request,

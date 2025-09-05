@@ -74,6 +74,24 @@ message AppointmentResponseDto {
     PatientResponseDTO patient_details = 18;
 }
 
+message AppointmentStatsResponse {
+  int32 todayAppointments = 1;
+  int32 upcomingAppointments = 2;
+  int32 completedAppointments = 3;
+  int32 inProgressAppointments = 4;
+  int32 rejectedAppointments = 5;
+  int32 followupAppointments = 6;
+  int32 emergencyAppointments = 7;
+  int32 overdueFollowupAppointments = 8;
+  int32 pendingFollowupAppointments = 9;
+}
+
+message PatientStatsResponse {
+  int64 totalPatients = 1;
+  int64 newPatientsThisMonth = 2;
+  int64 returningPatients = 3;
+}
+
 message AppointmentIdRequest {
     string appointment_id = 1;
 }
@@ -109,10 +127,20 @@ message GetAppointmentsByIdsResponse {
   repeated AppointmentResponseDto appointments = 1;
 }
 
+message DoctorIdRequest {
+  string doctorId = 1;
+}
+
+message DoctorStatsResponse {
+  AppointmentStatsResponse appointmentStats = 1;
+  PatientStatsResponse patientStats = 2;
+}
+
 service AppointmentService {
     rpc GetAppointmentDetails(AppointmentIdRequest) returns (AppointmentResponseDto);
     rpc GetPatientAppointments(AppointmentPageRequest) returns (AppointmentPageResponse);
     rpc GetDoctorAppointments(AppointmentPageRequest) returns (AppointmentPageResponse);
     rpc GetDoctorAppointmentsByDate(AppointmentListRequest) returns (AppointmentListResponse);
     rpc GetAppointmentsByIds (GetAppointmentsByIdsRequest) returns (GetAppointmentsByIdsResponse);
+    rpc GetDoctorStats(DoctorIdRequest) returns (DoctorStatsResponse);
 }

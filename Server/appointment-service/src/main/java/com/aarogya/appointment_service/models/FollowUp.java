@@ -22,7 +22,8 @@ import java.time.LocalDateTime;
 @Builder
 @CompoundIndexes({
         @CompoundIndex(name = "doctor_status_date_idx", def = "{'doctorId': 1, 'status': 1, 'recommendedDate': 1}"),
-        @CompoundIndex(name = "patient_status_date_idx", def = "{'patientId': 1, 'status': 1, 'recommendedDate': 1}")
+        @CompoundIndex(name = "patient_status_date_idx", def = "{'patientId': 1, 'status': 1, 'recommendedDate': 1}"),
+        @CompoundIndex(name = "doctor_urgency_idx", def = "{'doctorId': 1, 'urgencyLevel': -1, 'recommendedDate': 1}")
 })
 public class FollowUp {
 
