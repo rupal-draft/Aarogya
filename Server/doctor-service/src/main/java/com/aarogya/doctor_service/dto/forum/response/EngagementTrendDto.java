@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TagContributionDto {
-    private String tagId;
-    private String tagName;
+public class EngagementTrendDto {
+    private int year;
+    private int month;
     private Long threadCount;
     private Long replyCount;
 }
