@@ -2,7 +2,11 @@ package com.aarogya.article_service.controller;
 
 import com.aarogya.article_service.advices.ApiError;
 import com.aarogya.article_service.advices.ApiResponse;
-import com.aarogya.article_service.dto.*;
+import com.aarogya.article_service.dto.request.ArticleCommentRequestDTO;
+import com.aarogya.article_service.dto.request.ArticleRequestDTO;
+import com.aarogya.article_service.dto.request.ArticleUpdateRequestDto;
+import com.aarogya.article_service.dto.response.ArticleCommentResponseDTO;
+import com.aarogya.article_service.dto.response.ArticleResponseDTO;
 import com.aarogya.article_service.service.ArticleService;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.http.HttpStatus;

@@ -11,6 +11,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -20,8 +21,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "forum_replies")
-@CompoundIndex(def = "{'threadId': 1, 'createdAt': 1}")
-@CompoundIndex(def = "{'authorId': 1, 'threadId': 1}")
+@CompoundIndexes({
+        @CompoundIndex(name = "thread_created_idx", def = "{'threadId': 1, 'createdAt': -1}"),
+        @CompoundIndex(name = "author_thread_idx", def = "{'authorId': 1, 'threadId': 1}"),
+        @CompoundIndex(name = "author_created_idx", def = "{'authorId': 1, 'createdAt': -1}"),
+        @CompoundIndex(name = "author_solution_idx", def = "{'authorId': 1, 'isSolution': 1}")
+})
 public class ForumReply {
     @Id
     private String id;

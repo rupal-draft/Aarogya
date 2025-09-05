@@ -1,6 +1,10 @@
 package com.aarogya.article_service.service;
 
-import com.aarogya.article_service.dto.*;
+import com.aarogya.article_service.dto.request.ArticleCommentRequestDTO;
+import com.aarogya.article_service.dto.request.ArticleRequestDTO;
+import com.aarogya.article_service.dto.request.ArticleUpdateRequestDto;
+import com.aarogya.article_service.dto.response.ArticleCommentResponseDTO;
+import com.aarogya.article_service.dto.response.ArticleResponseDTO;
 
 import java.util.List;
 

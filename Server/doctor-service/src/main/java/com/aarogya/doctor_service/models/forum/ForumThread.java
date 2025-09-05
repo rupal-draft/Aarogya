@@ -12,6 +12,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -23,9 +24,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "forum_threads")
-@CompoundIndex(def = "{'authorId': 1, 'createdAt': -1}")
-@CompoundIndex(def = "{'tags': 1, 'createdAt': -1}")
-@CompoundIndex(def = "{'isActive': 1, 'isClosed': 1}")
+@CompoundIndexes({
+        @CompoundIndex(name = "author_created_idx", def = "{'authorId': 1, 'createdAt': -1}"),
+        @CompoundIndex(name = "tags_created_idx", def = "{'tags': 1, 'createdAt': -1}"),
+        @CompoundIndex(name = "status_idx", def = "{'isActive': 1, 'isClosed': 1}"),
+        @CompoundIndex(name = "author_upvotes_idx", def = "{'authorId': 1, 'upvoteCount': -1}")
+})
 public class ForumThread {
     @Id
     private String id;

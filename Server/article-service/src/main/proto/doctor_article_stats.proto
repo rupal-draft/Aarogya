@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package doctor.article.stats;
+
+option java_multiple_files = true;
+option java_package = "com.aarogya.doctor.article.stats";
+option java_outer_classname = "DoctorArticleStatsProto";
+
+// Request to fetch stats for a doctor
+message GetDoctorArticleStatsRequest {
+  string doctor_id = 1;
+}
+
+// Simple DTOs / nested messages
+message ArticleCategoryStats {
+  string category = 1;
+  int64 count = 2;
+}
+
+message ArticleTagStats {
+  string tag = 1;
+  int64 count = 2;
+}
+
+message TopArticle {
+  string id = 1;
+  string title = 2;
+  int64 views = 3;
+}
+
+message ArticleViewsTrend {
+  string period = 1; // e.g. "2025-03" or "Mar 2025"
+  int64 views = 2;
+}
+
+message ArticleEngagementStats {
+  int64 total_likes = 1;
+  int64 total_comments = 2;
+  repeated TopArticle top_liked_articles = 3;
+  repeated TopArticle top_commented_articles = 4;
+}
+
+message MonthlyEngagementTrend {
+  int32 year = 1;
+  int32 month = 2;
+  int64 total_views = 3;
+  int64 total_likes = 4;
+  int64 total_comments = 5;
+}
+
+// Top-level response for the aggregated doctor article stats
+message DoctorArticleStatsResponse {
+  string doctor_id = 1;
+
+  int64 total_articles = 2;
+  int64 articles_this_month = 3;
+
+  repeated ArticleCategoryStats category_stats = 4;
+  repeated ArticleTagStats tag_stats = 5;
+
+  repeated TopArticle top_articles = 6; // by views
+  repeated ArticleViewsTrend views_trend = 7;
+
+  TopArticle latest_article = 8;
+
+  ArticleEngagementStats engagement_stats = 9;
+
+  repeated MonthlyEngagementTrend engagement_trend = 10;
+}
+
+// gRPC service
+service DoctorArticleStatsService {
+  // Returns a combined DoctorArticleStatsResponse for a given doctor
+  rpc GetDoctorArticleStats(GetDoctorArticleStatsRequest) returns (DoctorArticleStatsResponse);
+}

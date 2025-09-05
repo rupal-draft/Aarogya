@@ -39,12 +39,14 @@ public class Articles {
     private String imageUrl;
 
     @Size(max = 100)
+    @Indexed
     private String category;
 
     @NotBlank
     @Pattern(regexp = "doctor|patient", message = "userType must be either 'doctor' or 'patient'")
     private String userType;
 
+    @Indexed
     private List<@Size(max = 50) String> tags;
 
     @Builder.Default

@@ -1,4 +1,4 @@
-package com.aarogya.article_service.dto;
+package com.aarogya.article_service.dto.grpc;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,7 +1,7 @@
 package com.aarogya.article_service.clients;
 
-import com.aarogya.article_service.dto.DoctorResponseDTO;
-import com.aarogya.article_service.dto.PatientResponseDTO;
+import com.aarogya.article_service.dto.grpc.DoctorResponseDTO;
+import com.aarogya.article_service.dto.grpc.PatientResponseDTO;
 import com.aarogya.article_service.exceptions.*;
 import com.aarogya.auth.proto.AuthServiceGrpc;
 import com.aarogya.auth.proto.DoctorResponse;
