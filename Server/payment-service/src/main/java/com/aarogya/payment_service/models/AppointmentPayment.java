@@ -12,6 +12,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -23,9 +24,14 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "appointment_payments")
-@CompoundIndex(def = "{'appointmentId': 1, 'status': 1}")
-@CompoundIndex(def = "{'razorpayOrderId': 1}", unique = true)
-@CompoundIndex(def = "{'razorpayPaymentId': 1}", unique = true)
+@CompoundIndexes({
+        @CompoundIndex(name = "appointment_status_idx", def = "{'appointmentId': 1, 'status': 1}"),
+        @CompoundIndex(name = "razorpay_order_idx", def = "{'razorpayOrderId': 1}", unique = true),
+        @CompoundIndex(name = "razorpay_payment_idx", def = "{'razorpayPaymentId': 1}", unique = true),
+        @CompoundIndex(name = "doctor_status_paidAt_idx", def = "{'doctorId': 1, 'status': 1, 'paidAt': -1}"),
+        @CompoundIndex(name = "doctor_paidAt_idx", def = "{'doctorId': 1, 'paidAt': -1}"),
+        @CompoundIndex(name = "status_paidAt_idx", def = "{'status': 1, 'paidAt': -1}")
+})
 public class AppointmentPayment {
     @Id
     private String id;

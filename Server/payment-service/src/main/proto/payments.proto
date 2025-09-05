@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package payment;
+
+option java_multiple_files = true;
+option java_package = "com.aarogya.payment.grpc";
+option java_outer_classname = "PaymentProto";
+
+service PaymentService {
+  rpc GetPaymentStats(PaymentStatsRequest) returns (PaymentStatsResponse);
+}
+
+message PaymentStatsRequest {
+  string doctorId = 1;
+}
+
+message MonthlyEarning {
+  int32 year = 1;
+  int32 month = 2;
+  double totalEarnings = 3;
+}
+
+
+message PaymentStatsResponse {
+  double totalEarningsThisMonth = 1;
+  double pendingPayouts = 2;
+  double averageConsultationFee = 3;
+  repeated MonthlyEarning earningsTrend = 4;
+}
