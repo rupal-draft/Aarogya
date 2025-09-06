@@ -136,6 +136,21 @@ message DoctorStatsResponse {
   PatientStatsResponse patientStats = 2;
 }
 
+message AppointmentTrendRequest {
+  string doctorId = 1;
+  google.protobuf.Timestamp startDate = 2;
+  google.protobuf.Timestamp endDate = 3;
+}
+
+message AppointmentCountByDate {
+  google.protobuf.Timestamp date = 1;
+  int64 count = 2;
+}
+
+message AppointmentTrendResponse {
+  repeated AppointmentCountByDate trend = 1;
+}
+
 service AppointmentService {
     rpc GetAppointmentDetails(AppointmentIdRequest) returns (AppointmentResponseDto);
     rpc GetPatientAppointments(AppointmentPageRequest) returns (AppointmentPageResponse);
@@ -143,4 +158,5 @@ service AppointmentService {
     rpc GetDoctorAppointmentsByDate(AppointmentListRequest) returns (AppointmentListResponse);
     rpc GetAppointmentsByIds (GetAppointmentsByIdsRequest) returns (GetAppointmentsByIdsResponse);
     rpc GetDoctorStats(DoctorIdRequest) returns (DoctorStatsResponse);
+    rpc GetDoctorAppointmentsTrend(AppointmentTrendRequest) returns (AppointmentTrendResponse);
 }

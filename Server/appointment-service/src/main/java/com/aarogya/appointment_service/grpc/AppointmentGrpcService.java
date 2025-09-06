@@ -2,6 +2,7 @@ package com.aarogya.appointment_service.grpc;
 
 import appointment.Appointment;
 import appointment.AppointmentServiceGrpc;
+import com.aarogya.appointment_service.dto.grpc.AppointmentCountByDateDto;
 import com.aarogya.appointment_service.dto.grpc.PatientStatsDto;
 import com.aarogya.appointment_service.dto.response.AppointmentResponseDto;
 import com.aarogya.appointment_service.dto.grpc.AppointmentStatsDto;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import com.google.protobuf.util.Timestamps;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -143,6 +145,47 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
             handleError(responseObserver, e, "getDoctorStats");
         }
     }
+
+    @Override
+    public void getDoctorAppointmentsTrend(Appointment.AppointmentTrendRequest request,
+                                           StreamObserver<Appointment.AppointmentTrendResponse> responseObserver) {
+        try {
+            String doctorId = request.getDoctorId();
+            LocalDate startDate = Instant.ofEpochSecond(
+                    request.getStartDate().getSeconds(),
+                    request.getStartDate().getNanos()
+            ).atZone(ZoneId.systemDefault()).toLocalDate();
+
+            LocalDate endDate = Instant.ofEpochSecond(
+                    request.getEndDate().getSeconds(),
+                    request.getEndDate().getNanos()
+            ).atZone(ZoneId.systemDefault()).toLocalDate();
+
+            List<AppointmentCountByDateDto> stats =
+                    appointmentConsumerService.getAppointmentCountsByDateRange(doctorId, startDate, endDate);
+
+            List<Appointment.AppointmentCountByDate> grpcStats = stats.stream()
+                    .map(dto -> Appointment.AppointmentCountByDate.newBuilder()
+                            .setDate(Timestamps.fromMillis(dto.getDate()
+                                    .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()))
+                            .setCount(dto.getCount())
+                            .build())
+                    .toList();
+
+            Appointment.AppointmentTrendResponse response =
+                    Appointment.AppointmentTrendResponse.newBuilder()
+                            .addAllTrend(grpcStats)
+                            .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+            log.info("Sent {} daily appointment stats for doctor {}", grpcStats.size(), doctorId);
+        } catch (Exception e) {
+            handleError(responseObserver, e, "getDoctorAppointmentsTrend");
+        }
+    }
+
 
     private void handleAppointmentRequest(Appointment.AppointmentPageRequest request,
                                           StreamObserver<Appointment.AppointmentPageResponse> responseObserver,

@@ -1,10 +1,13 @@
 package com.aarogya.appointment_service.repository;
 
+import com.aarogya.appointment_service.dto.grpc.AppointmentCountByDateDto;
 import com.aarogya.appointment_service.enums.AppointmentStatus;
 import com.aarogya.appointment_service.models.Appointment;
+import org.bson.Document;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -73,4 +76,15 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
                                                                LocalDate startDate,
                                                                LocalDate endDate,
                                                                Sort sort);
+
+    @Aggregation(pipeline = {
+            "{ $match: { doctorId: ?0, appointmentDate: { $gte: ?1, $lte: ?2 } } }",
+            "{ $group: { _id: '$appointmentDate', count: { $sum: 1 } } }",
+            "{ $project: { date: '$_id', count: 1, _id: 0 } }",
+            "{ $sort: { date: 1 } }"
+    })
+    List<AppointmentCountByDateDto> countAppointmentsByDoctorAndDateRange(
+            String doctorId, LocalDate start, LocalDate end
+    );
+
 }

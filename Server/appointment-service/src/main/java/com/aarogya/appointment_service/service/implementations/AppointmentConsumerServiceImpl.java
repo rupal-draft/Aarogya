@@ -1,5 +1,6 @@
 package com.aarogya.appointment_service.service.implementations;
 
+import com.aarogya.appointment_service.dto.grpc.AppointmentCountByDateDto;
 import com.aarogya.appointment_service.dto.grpc.AppointmentStatsDto;
 import com.aarogya.appointment_service.dto.grpc.PatientStatsDto;
 import com.aarogya.appointment_service.enums.AppointmentStatus;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -169,6 +171,7 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
     }
 
     @Override
+    @Cacheable(value = "patientStats", key = "#doctorId", unless = "#result == null")
     public PatientStatsDto getPatientStats(String doctorId) {
         LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
         LocalDate lastDayOfMonth = firstDayOfMonth.plusMonths(1).minusDays(1);
@@ -207,4 +210,13 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
 
         return new PatientStatsDto(totalPatients, newPatients, returningPatients);
     }
+
+    @Override
+    public List<AppointmentCountByDateDto> getAppointmentCountsByDateRange(
+            String doctorId, LocalDate start, LocalDate end) {
+        log.info("Fetching appointments for doctor: {} from {} to {}", doctorId, start, end);
+        return appointmentRepository
+                .countAppointmentsByDoctorAndDateRange(doctorId, start, end);
+    }
+
 }
