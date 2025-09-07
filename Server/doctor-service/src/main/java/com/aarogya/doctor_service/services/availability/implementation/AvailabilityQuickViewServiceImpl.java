@@ -1,7 +1,9 @@
 package com.aarogya.doctor_service.services.availability.implementation;
 
+import com.aarogya.doctor_service.clients.AppointmentGrpcClient;
 import com.aarogya.doctor_service.dto.availability.response.CalendarDayQuickViewDto;
 import com.aarogya.doctor_service.dto.availability.response.CalendarQuickViewResponse;
+import com.aarogya.doctor_service.dto.grpc.appointment_service.AppointmentCountByDateDto;
 import com.aarogya.doctor_service.enums.availability.OverrideType;
 import com.aarogya.doctor_service.models.availability.AvailabilityOverride;
 import com.aarogya.doctor_service.models.availability.DoctorAvailability;
@@ -28,6 +30,7 @@ public class AvailabilityQuickViewServiceImpl implements AvailabilityQuickViewSe
     private final DoctorAvailabilityRepository doctorAvailabilityRepo;
     private final AvailabilityOverrideRepository availabilityOverrideRepo;
     private final SpecialAvailabilityRepository specialAvailabilityRepo;
+    private final AppointmentGrpcClient appointmentGrpcClient;
 
     @Override
     @Cacheable(value = "doctorCalendarQuickView", key = "#doctorId + '-' + #month.toString()")
@@ -53,8 +56,11 @@ public class AvailabilityQuickViewServiceImpl implements AvailabilityQuickViewSe
         Map<LocalDate, SpecialAvailability> specialMap = specials.stream()
                 .collect(Collectors.toMap(SpecialAvailability::getDate, s -> s));
 
-//        Map<LocalDate, Long> bookedCounts =
-//                appointmentRepo.countByDoctorIdAndDateBetweenGrouped(doctorId, start, end);
+        List<AppointmentCountByDateDto> bookedCountsList =
+                appointmentGrpcClient.getDoctorAppointmentsTrend(doctorId, start, end);
+
+        Map<LocalDate, Long> bookedCounts = bookedCountsList.stream()
+                .collect(Collectors.toMap(AppointmentCountByDateDto::getDate, AppointmentCountByDateDto::getCount));
 
         List<CalendarDayQuickViewDto> days = new ArrayList<>();
         for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
@@ -65,8 +71,8 @@ public class AvailabilityQuickViewServiceImpl implements AvailabilityQuickViewSe
             int totalSlots = (availability != null) ?
                     availability.getTimeSlots().size() : 0;
 
-//            long booked = bookedCounts.getOrDefault(date, 0L);
-            int freeSlots = Math.max(totalSlots - (int) 0L, 0);
+            long booked = bookedCounts.getOrDefault(date, 0L);
+            int freeSlots = Math.max(totalSlots - (int) booked, 0);
 
             boolean isAvailable = (availability != null && availability.getIsAvailable());
 
@@ -89,7 +95,7 @@ public class AvailabilityQuickViewServiceImpl implements AvailabilityQuickViewSe
                     .date(date)
                     .isAvailable(isAvailable)
                     .totalSlots(totalSlots)
-//                    .bookedSlots((int) booked)
+                    .bookedSlots((int) booked)
                     .freeSlots(freeSlots)
                     .status(status)
                     .note(note)

@@ -4,6 +4,7 @@ import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.dto.availability.request.*;
 import com.aarogya.doctor_service.dto.availability.response.*;
 import com.aarogya.doctor_service.enums.availability.AvailabilityStatus;
+import com.aarogya.doctor_service.enums.availability.DayOfWeek;
 import com.aarogya.doctor_service.enums.availability.OverrideType;
 import com.aarogya.doctor_service.enums.availability.RecurrenceType;
 import com.aarogya.doctor_service.exceptions.BadRequestException;
@@ -18,8 +19,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import com.aarogya.doctor_service.enums.availability.DayOfWeek;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;

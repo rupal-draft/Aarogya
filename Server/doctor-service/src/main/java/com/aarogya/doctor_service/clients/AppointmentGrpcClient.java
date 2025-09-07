@@ -2,7 +2,7 @@ package com.aarogya.doctor_service.clients;
 
 import appointment.Appointment;
 import appointment.AppointmentServiceGrpc;
-import com.aarogya.doctor_service.dto.grpc.AppointmentDto;
+import com.aarogya.doctor_service.dto.grpc.appointment_service.*;
 import com.aarogya.doctor_service.exceptions.*;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -106,9 +108,96 @@ public class AppointmentGrpcClient {
                         this::mapToAppointmentDTO));
     }
 
+    public DoctorPatientAppointmentStats getDoctorAppointmentStats(String doctorId) {
+        checkServiceHealth();
+        log.info("Fetching doctor stats for doctorId: {}", doctorId);
+
+        try {
+            Appointment.DoctorIdRequest request = Appointment.DoctorIdRequest.newBuilder()
+                    .setDoctorId(doctorId)
+                    .build();
+
+            Appointment.DoctorStatsResponse response = appointmentServiceBlockingStub.getDoctorStats(request);
+
+            AppointmentStatsDto appointmentStats = mapToAppointmentStatsDto(response.getAppointmentStats());
+            PatientStatsDto patientStats = mapToPatientStatsDto(response.getPatientStats());
+
+            return new DoctorPatientAppointmentStats(appointmentStats, patientStats);
+
+        } catch (StatusRuntimeException e) {
+            handleGrpcException(e);
+            return null;
+        }
+    }
+
+    public List<AppointmentCountByDateDto> getDoctorAppointmentsTrend(String doctorId, LocalDate start, LocalDate end) {
+        checkServiceHealth();
+        log.info("Fetching doctor appointment trends for doctorId: {}", doctorId);
+
+        try {
+            Appointment.AppointmentTrendRequest request = Appointment.AppointmentTrendRequest.newBuilder()
+                    .setDoctorId(doctorId)
+                    .setStartDate(toTimestamp(start))
+                    .setEndDate(toTimestamp(end))
+                    .build();
+
+            Appointment.AppointmentTrendResponse response = appointmentServiceBlockingStub.getDoctorAppointmentsTrend(request);
+
+            return response.getTrendList()
+                    .stream()
+                    .map(this::mapToAppointmentCountByDateDto)
+                    .collect(Collectors.toList());
+
+        } catch (StatusRuntimeException e) {
+            handleGrpcException(e);
+            return Collections.emptyList();
+        }
+    }
+
 
     private AppointmentDto mapToAppointmentDTO(Appointment.AppointmentResponseDto response) {
         return modelMapper.map(response, AppointmentDto.class);
+    }
+
+    private AppointmentStatsDto mapToAppointmentStatsDto(Appointment.AppointmentStatsResponse grpcResponse) {
+        return new AppointmentStatsDto(
+                grpcResponse.getTodayAppointments(),
+                grpcResponse.getUpcomingAppointments(),
+                grpcResponse.getCompletedAppointments(),
+                grpcResponse.getInProgressAppointments(),
+                grpcResponse.getRejectedAppointments(),
+                grpcResponse.getFollowupAppointments(),
+                grpcResponse.getEmergencyAppointments(),
+                grpcResponse.getOverdueFollowupAppointments(),
+                grpcResponse.getPendingFollowupAppointments()
+        );
+    }
+
+    private PatientStatsDto mapToPatientStatsDto(Appointment.PatientStatsResponse grpcResponse) {
+        return new PatientStatsDto(
+                grpcResponse.getTotalPatients(),
+                grpcResponse.getNewPatientsThisMonth(),
+                grpcResponse.getReturningPatients()
+        );
+    }
+
+    private AppointmentCountByDateDto mapToAppointmentCountByDateDto(Appointment.AppointmentCountByDate grpcResponse) {
+        return new AppointmentCountByDateDto(
+                fromTimestamp(grpcResponse.getDate()).toLocalDate(),
+                grpcResponse.getCount()
+        );
+    }
+
+    private Timestamp toTimestamp(LocalDate date) {
+        return Timestamp.newBuilder()
+                .setSeconds(date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond())
+                .build();
+    }
+
+    private LocalDateTime fromTimestamp(com.google.protobuf.Timestamp timestamp) {
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
     }
 
     private void handleGrpcException(StatusRuntimeException e) {

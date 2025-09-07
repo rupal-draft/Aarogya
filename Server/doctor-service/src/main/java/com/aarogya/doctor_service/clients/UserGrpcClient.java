@@ -2,8 +2,8 @@ package com.aarogya.doctor_service.clients;
 
 
 import com.aarogya.auth.proto.*;
-import com.aarogya.doctor_service.dto.grpc.DoctorResponseDTO;
-import com.aarogya.doctor_service.dto.grpc.PatientResponseDTO;
+import com.aarogya.doctor_service.dto.grpc.auth_service.DoctorResponseDTO;
+import com.aarogya.doctor_service.dto.grpc.auth_service.PatientResponseDTO;
 import com.aarogya.doctor_service.exceptions.*;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
@@ -109,7 +109,7 @@ public class UserGrpcClient {
     }
 
     @Cacheable(value = "doctor", key = "#doctorId")
-    public com.aarogya.doctor_service.dto.grpc.DoctorResponseDTO getDoctor(String doctorId) {
+    public DoctorResponseDTO getDoctor(String doctorId) {
         checkServiceHealth();
         log.info("Getting doctor with id: {}", doctorId);
 

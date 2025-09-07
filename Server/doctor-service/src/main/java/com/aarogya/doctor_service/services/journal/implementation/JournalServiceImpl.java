@@ -2,7 +2,7 @@ package com.aarogya.doctor_service.services.journal.implementation;
 
 import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.clients.UserGrpcClient;
-import com.aarogya.doctor_service.dto.grpc.PatientResponseDTO;
+import com.aarogya.doctor_service.dto.grpc.auth_service.PatientResponseDTO;
 import com.aarogya.doctor_service.dto.journal.request.*;
 import com.aarogya.doctor_service.dto.journal.response.*;
 import com.aarogya.doctor_service.enums.journal.EntryType;
@@ -23,7 +23,6 @@ import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

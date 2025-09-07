@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.dto.grpc;
+package com.aarogya.doctor_service.dto.grpc.appointment_service;
 
 import com.aarogya.doctor_service.enums.grpc.AppointmentStatus;
 import com.aarogya.doctor_service.enums.grpc.AppointmentType;

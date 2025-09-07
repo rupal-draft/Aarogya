@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package lab;
+
+option java_multiple_files = true;
+option java_package = "com.aarogya.lab.grpc";
+option java_outer_classname = "LabProto";
+
+service LabService {
+  // Fetch lab dashboard stats for a doctor
+  rpc GetDoctorLabStats(LabStatsRequest) returns (LabStatsResponse);
+}
+
+message LabStatsRequest {
+  string doctorId = 1;
+}
+
+message TopLabTest {
+  string testId = 1;
+  string testName = 2;
+  int64 count = 3;
+}
+
+message LabTestTrend {
+  int32 year = 1;
+  int32 month = 2;
+  int64 testCount = 3;
+}
+
+message LabStatsResponse {
+  int64 totalTestsOrdered = 1;
+  int64 completedResults = 2;
+  int64 pendingResults = 3;
+  int64 verifiedResults = 4;
+  int64 criticalResults = 5;
+  double avgTurnaroundTimeHours = 6;
+  repeated TopLabTest topTests = 7;
+  int64 abnormalParameters = 8;
+  int64 doctorNotificationsSent = 9;
+  int64 uniquePatientsTested = 10;
+  repeated LabTestTrend monthlyTestTrend = 11;
+}
