@@ -75,7 +75,6 @@ public class AppointmentPayment {
     private LocalDateTime updatedAt;
 
     private LocalDateTime paidAt;
-    private LocalDateTime refundedAt;
 
     @Version
     private Long version;

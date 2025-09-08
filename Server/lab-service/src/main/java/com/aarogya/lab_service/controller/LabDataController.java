@@ -1,10 +1,9 @@
 package com.aarogya.lab_service.controller;
 
 import com.aarogya.lab_service.advices.ApiResponse;
-import com.aarogya.lab_service.utils.LabDataSeedingService;
+import com.aarogya.lab_service.utils.LabTestDataSeedingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,8 +16,8 @@ public class LabDataController {
 
     private static final Logger logger = LoggerFactory.getLogger(LabDataController.class);
 
-    private final LabDataSeedingService dataSeedingService;
-    public LabDataController(LabDataSeedingService dataSeedingService) {
+    private final LabTestDataSeedingService dataSeedingService;
+    public LabDataController(LabTestDataSeedingService dataSeedingService) {
         this.dataSeedingService = dataSeedingService;
     }
 

@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LabDataSeedingService {
+public class LabTestDataSeedingService {
 
 
     private final LabTestRepository labTestRepository;
