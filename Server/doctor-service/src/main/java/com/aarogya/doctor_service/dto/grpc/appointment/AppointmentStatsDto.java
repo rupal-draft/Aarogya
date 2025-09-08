@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.dto.grpc.appointment_service;
+package com.aarogya.doctor_service.dto.grpc.appointment;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

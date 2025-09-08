@@ -1,9 +1,13 @@
 package com.aarogya.doctor_service.clients;
 
 
-import com.aarogya.auth.proto.*;
-import com.aarogya.doctor_service.dto.grpc.auth_service.DoctorResponseDTO;
-import com.aarogya.doctor_service.dto.grpc.auth_service.PatientResponseDTO;
+import com.aarogya.auth.proto.AuthServiceGrpc;
+import com.aarogya.auth.proto.DoctorResponse;
+import com.aarogya.auth.proto.IdRequest;
+import com.aarogya.auth.proto.PatientResponse;
+import com.aarogya.auth.proto.SpecializationRequest;
+import com.aarogya.doctor_service.dto.grpc.auth.DoctorResponseDTO;
+import com.aarogya.doctor_service.dto.grpc.auth.PatientResponseDTO;
 import com.aarogya.doctor_service.exceptions.*;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
@@ -100,7 +104,7 @@ public class UserGrpcClient {
                     .newBuilder()
                     .setSpecialization(Specialization)
                     .build();
-            PrefferedDoctorId response =  authServiceBlockingStub.getPrefferedDoctorBySpecialization(request);
+            com.aarogya.auth.proto.PrefferedDoctorId response =  authServiceBlockingStub.getPrefferedDoctorBySpecialization(request);
             return response.getId();
         } catch (StatusRuntimeException e) {
             handleGrpcException(e, "Failed to get doctor with specialization: " + Specialization);

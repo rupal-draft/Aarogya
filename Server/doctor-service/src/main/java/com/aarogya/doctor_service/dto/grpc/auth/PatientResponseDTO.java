@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.dto.grpc.auth_service;
+package com.aarogya.doctor_service.dto.grpc.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

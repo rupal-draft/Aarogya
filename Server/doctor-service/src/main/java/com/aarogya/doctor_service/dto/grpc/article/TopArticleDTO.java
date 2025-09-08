@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.dto.grpc.article_service;
+package com.aarogya.doctor_service.dto.grpc.article;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArticleCategoryStatsDTO {
-    private String category;
-    private long count;
+public class TopArticleDTO {
+    private String id;
+    private String title;
+    private int views;
 }

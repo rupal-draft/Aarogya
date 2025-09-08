@@ -4,7 +4,7 @@ import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.clients.UserGrpcClient;
 import com.aarogya.doctor_service.dto.forum.request.*;
 import com.aarogya.doctor_service.dto.forum.response.*;
-import com.aarogya.doctor_service.dto.grpc.auth_service.DoctorResponseDTO;
+import com.aarogya.doctor_service.dto.grpc.auth.DoctorResponseDTO;
 import com.aarogya.doctor_service.enums.forum.ThreadType;
 import com.aarogya.doctor_service.enums.forum.VoteType;
 import com.aarogya.doctor_service.exceptions.BadRequestException;

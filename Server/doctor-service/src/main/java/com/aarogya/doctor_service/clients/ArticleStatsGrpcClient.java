@@ -1,6 +1,6 @@
 package com.aarogya.doctor_service.clients;
 
-import com.aarogya.doctor_service.dto.grpc.article_service.*;
+import com.aarogya.doctor_service.dto.grpc.article.*;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;

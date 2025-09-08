@@ -66,7 +66,7 @@ public class LabStatsServiceImpl implements LabStatsService {
         ), LabResult.class, Document.class).getMappedResults();
 
         double avgTatHours = tatDocs.isEmpty() ? 0.0 :
-                tatDocs.get(0).get("avgTat") != null ?
+                tatDocs.getFirst().get("avgTat") != null ?
                         ((Number) tatDocs.getFirst().get("avgTat")).doubleValue() / (1000 * 60 * 60) : 0.0;
 
         long abnormalParams = mongoTemplate.aggregate(Aggregation.newAggregation(

@@ -3,7 +3,7 @@ package com.aarogya.doctor_service.services.availability.implementation;
 import com.aarogya.doctor_service.clients.AppointmentGrpcClient;
 import com.aarogya.doctor_service.dto.availability.response.CalendarDayQuickViewDto;
 import com.aarogya.doctor_service.dto.availability.response.CalendarQuickViewResponse;
-import com.aarogya.doctor_service.dto.grpc.appointment_service.AppointmentCountByDateDto;
+import com.aarogya.doctor_service.dto.grpc.appointment.AppointmentCountByDateDto;
 import com.aarogya.doctor_service.enums.availability.OverrideType;
 import com.aarogya.doctor_service.models.availability.AvailabilityOverride;
 import com.aarogya.doctor_service.models.availability.DoctorAvailability;

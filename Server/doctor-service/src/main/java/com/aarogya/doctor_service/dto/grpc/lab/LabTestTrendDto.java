@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.dto.grpc.article_service;
+package com.aarogya.doctor_service.dto.grpc.lab;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MonthlyEngagementTrendDTO {
+public class LabTestTrendDto {
     private int year;
     private int month;
-    private long totalViews;
-    private long totalLikes;
-    private long totalComments;
+    private Long testCount;
 }
-

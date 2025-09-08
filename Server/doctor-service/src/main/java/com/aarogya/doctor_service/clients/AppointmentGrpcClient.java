@@ -2,7 +2,7 @@ package com.aarogya.doctor_service.clients;
 
 import appointment.Appointment;
 import appointment.AppointmentServiceGrpc;
-import com.aarogya.doctor_service.dto.grpc.appointment_service.*;
+import com.aarogya.doctor_service.dto.grpc.appointment.*;
 import com.aarogya.doctor_service.exceptions.*;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;

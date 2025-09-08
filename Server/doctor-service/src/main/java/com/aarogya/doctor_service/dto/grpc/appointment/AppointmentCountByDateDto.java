@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.dto.grpc.appointment_service;
+package com.aarogya.doctor_service.dto.grpc.appointment;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
