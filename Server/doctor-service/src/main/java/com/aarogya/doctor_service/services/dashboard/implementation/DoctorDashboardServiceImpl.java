@@ -2,18 +2,28 @@ package com.aarogya.doctor_service.services.dashboard.implementation;
 
 import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.clients.*;
+import com.aarogya.doctor_service.dto.availability.response.CalendarQuickViewResponse;
 import com.aarogya.doctor_service.dto.dashboard.DoctorDashboard;
+import com.aarogya.doctor_service.dto.forum.response.ForumDashboardResponse;
+import com.aarogya.doctor_service.dto.forum.response.JournalDashboardResponse;
 import com.aarogya.doctor_service.dto.grpc.appointment.DoctorPatientAppointmentStats;
 import com.aarogya.doctor_service.dto.grpc.article.DoctorArticleStatsDTO;
 import com.aarogya.doctor_service.dto.grpc.auth.DoctorResponseDTO;
 import com.aarogya.doctor_service.dto.grpc.lab.LabDashboardResponse;
 import com.aarogya.doctor_service.dto.grpc.payment.PaymentDashboardResponse;
 import com.aarogya.doctor_service.dto.grpc.prescription.PrescriptionDashboardResponse;
+import com.aarogya.doctor_service.dto.rating.response.DoctorRatingDashboardResponse;
+import com.aarogya.doctor_service.services.availability.AvailabilityQuickViewService;
 import com.aarogya.doctor_service.services.dashboard.DoctorDashboardService;
+import com.aarogya.doctor_service.services.forum.ForumStatsService;
+import com.aarogya.doctor_service.services.journal.JournalStatsService;
+import com.aarogya.doctor_service.services.rating.RatingStatsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import java.time.YearMonth;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +36,10 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
     private final LabGrpcClient labGrpcClient;
     private final PaymentGrpcClient paymentGrpcClient;
     private final PrescriptionGrpcClient prescriptionGrpcClient;
+    private final AvailabilityQuickViewService availabilityQuickViewService;
+    private final ForumStatsService forumStatsService;
+    private final RatingStatsService ratingStatsService;
+    private final JournalStatsService journalStatsService;
 
     @Override
     @Cacheable(value = "doctorDashboardCache", key = "#root.methodName + '_' + T(com.aarogya.doctor_service.auth.UserContextHolder).getUserDetails().getUserId()")
@@ -51,6 +65,11 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
         PrescriptionDashboardResponse prescriptionStats = prescriptionGrpcClient.getPrescriptionStats(doctorId);
         log.debug("Fetched prescription stats for {}", doctorId);
 
+        CalendarQuickViewResponse calendarQuickViewResponse = availabilityQuickViewService.getQuickView(doctorId, YearMonth.now());
+        ForumDashboardResponse forumDashboardResponse = forumStatsService.getDoctorForumStats(doctorId);
+        JournalDashboardResponse journalDashboardResponse = journalStatsService.getDoctorJournalStats(doctorId);
+        DoctorRatingDashboardResponse ratingStatsResponse = ratingStatsService.getDoctorRatingStats(doctorId);
+
         return DoctorDashboard.builder()
                 .doctorResponseDTO(doctor)
                 .appointmentStats(appointmentStats)
@@ -58,6 +77,10 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
                 .labStats(labStats)
                 .paymentStats(paymentStats)
                 .prescriptionStats(prescriptionStats)
+                .forumDashboardResponse(forumDashboardResponse)
+                .journalDashboardResponse(journalDashboardResponse)
+                .quickViewResponse(calendarQuickViewResponse)
+                .ratingDashboardResponse(ratingStatsResponse)
                 .build();
     }
 }

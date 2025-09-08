@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LabTestTrendDto {
-    private int year;
-    private int month;
+    private Integer year;
+    private Integer month;
     private Long testCount;
 }

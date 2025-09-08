@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PrescriptionGrowthDto {
-    private int year;
-    private int month;
+    private Integer year;
+    private Integer month;
     private Long totalPrescriptions;
 }

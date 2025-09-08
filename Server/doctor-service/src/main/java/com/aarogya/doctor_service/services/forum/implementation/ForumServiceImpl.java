@@ -201,7 +201,7 @@ public class ForumServiceImpl implements ForumService {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.debug("Fetching replies for thread: {}", threadId);
 
-        if (!threadRepository.existsByIdAndIsActiveTrue(threadId)) {
+        if (threadRepository.existsByIdAndIsActiveTrue(threadId)) {
             throw new ResourceNotFoundException("Thread not found with id: " + threadId);
         }
 
@@ -280,7 +280,7 @@ public class ForumServiceImpl implements ForumService {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.info("Bookmarking thread: {} by doctor: {}", threadId, doctorId);
 
-        if (!threadRepository.existsByIdAndIsActiveTrue(threadId)) {
+        if (threadRepository.existsByIdAndIsActiveTrue(threadId)) {
             throw new ResourceNotFoundException("Thread not found with id: " + threadId);
         }
 
@@ -350,7 +350,7 @@ public class ForumServiceImpl implements ForumService {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.info("Voting on thread: {} by doctor: {}", threadId, doctorId);
 
-        if (!threadRepository.existsByIdAndIsActiveTrue(threadId)) {
+        if (threadRepository.existsByIdAndIsActiveTrue(threadId)) {
             throw new ResourceNotFoundException("Thread not found with id: " + threadId);
         }
 
@@ -797,7 +797,7 @@ public class ForumServiceImpl implements ForumService {
     }
 
     public Page<ForumThread> applyThreadFilters(ThreadFilterRequest filter, Pageable pageable, String doctorId) {
-        return threadRepository.findByFilters(filter, pageable, doctorId);
+        return threadRepository.searchWithFilters(filter, pageable, doctorId);
     }
 
     private ThreadResponse convertToThreadResponse(ForumThread thread, String currentDoctorId) {

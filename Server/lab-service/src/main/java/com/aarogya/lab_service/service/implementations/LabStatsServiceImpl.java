@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
@@ -90,13 +91,31 @@ public class LabStatsServiceImpl implements LabStatsService {
                 .distinct("patientId", new org.bson.Document("doctorId", doctorId), String.class)
                 .into(new ArrayList<>()).size();
 
-        List<LabTestTrendDto> monthlyTrend = mongoTemplate.aggregate(Aggregation.newAggregation(
-                match(Criteria.where("doctorId").is(doctorId)),
-                project().andExpression("year(createdAt)").as("year")
-                        .andExpression("month(createdAt)").as("month"),
-                group("year", "month").count().as("testCount"),
-                sort(Sort.Direction.ASC, "_id.year", "_id.month")
-        ), LabResult.class, LabTestTrendDto.class).getMappedResults();
+        Aggregation agg = Aggregation.newAggregation(
+                Aggregation.match(Criteria.where("doctorId").is(doctorId)),
+                Aggregation.project()
+                        .andExpression("dateToString('%Y', createdAt)").as("yearStr")
+                        .andExpression("dateToString('%m', createdAt)").as("monthStr"),
+                Aggregation.group("yearStr", "monthStr")
+                        .count().as("testCount"),
+                Aggregation.sort(Sort.by(Sort.Order.asc("_id.yearStr"), Sort.Order.asc("_id.monthStr")))
+        );
+        List<Document> rawResults = mongoTemplate.aggregate(agg, LabResult.class, Document.class)
+                .getMappedResults();
+        List<LabTestTrendDto> monthlyTrend = rawResults.stream()
+                .map(doc -> {
+                    Document idDoc = (Document) doc.get("_id");
+
+                    Number testCountNum = (Number) doc.get("testCount");
+                    long testCount = testCountNum != null ? testCountNum.longValue() : 0L;
+
+                    return LabTestTrendDto.builder()
+                            .year(Integer.parseInt(idDoc.getString("yearStr")))
+                            .month(Integer.parseInt(idDoc.getString("monthStr")))
+                            .testCount(testCount)
+                            .build();
+                })
+                .collect(Collectors.toList());
 
         return LabDashboardResponse.builder()
                 .totalTestsOrdered(totalTests)

@@ -59,11 +59,10 @@ public class Prescription {
         this.medicines.add(medicine);
     }
 
-    public boolean removeMedicine(String medicineId) {
+    public void removeMedicine(String medicineId) {
         if (this.medicines != null) {
-            return this.medicines.removeIf(med -> med.getMedicineId().equals(medicineId));
+            this.medicines.removeIf(med -> med.getMedicineId().equals(medicineId));
         }
-        return false;
     }
 }
 

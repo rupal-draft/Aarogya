@@ -6,5 +6,5 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ThreadRepositoryCustom {
-    Page<ForumThread> findByFilters(ThreadFilterRequest filter, Pageable pageable, String doctorId);
+    Page<ForumThread> searchWithFilters(ThreadFilterRequest filter, Pageable pageable, String doctorId);
 }

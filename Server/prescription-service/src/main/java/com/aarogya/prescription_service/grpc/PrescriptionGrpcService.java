@@ -3,10 +3,13 @@ package com.aarogya.prescription_service.grpc;
 import com.aarogya.prescription.grpc.*;
 import com.aarogya.prescription_service.dto.grpc.PrescriptionDashboardResponse;
 import com.aarogya.prescription_service.service.PrescriptionStatsService;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 
+@Slf4j
 @GrpcService
 @RequiredArgsConstructor
 public class PrescriptionGrpcService extends PrescriptionServiceGrpc.PrescriptionServiceImplBase {
@@ -65,7 +68,13 @@ public class PrescriptionGrpcService extends PrescriptionServiceGrpc.Prescriptio
             responseObserver.onCompleted();
 
         } catch (Exception e) {
-            responseObserver.onError(e);
+            log.error("Error in getPrescriptionStats", e);
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Error fetching prescription stats: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
         }
     }
 }

@@ -18,7 +18,7 @@ public class ArticleStatsGrpcClient {
     private final com.aarogya.doctor.article.stats.DoctorArticleStatsServiceGrpc.DoctorArticleStatsServiceBlockingStub blockingStub;
 
     public ArticleStatsGrpcClient() {
-        this.channel = ManagedChannelBuilder.forAddress("localhost", 3001)
+        this.channel = ManagedChannelBuilder.forAddress("localhost", 6084)
                 .usePlaintext()
                 .build();
         this.blockingStub = com.aarogya.doctor.article.stats.DoctorArticleStatsServiceGrpc.newBlockingStub(channel);

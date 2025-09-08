@@ -20,7 +20,7 @@ public class LabGrpcClient {
     private final com.aarogya.lab.grpc.LabServiceGrpc.LabServiceBlockingStub blockingStub;
 
     public LabGrpcClient() {
-        this.channel = ManagedChannelBuilder.forAddress("localhost", 6001)
+        this.channel = ManagedChannelBuilder.forAddress("localhost", 2051)
                 .usePlaintext()
                 .build();
         this.blockingStub = com.aarogya.lab.grpc.LabServiceGrpc.newBlockingStub(channel);

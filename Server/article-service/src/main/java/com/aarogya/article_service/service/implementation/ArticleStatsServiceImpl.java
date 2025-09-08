@@ -15,7 +15,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -104,34 +103,40 @@ public class ArticleStatsServiceImpl implements ArticleStatsService {
         Map<String, MonthlyEngagementTrendDTO> trendMap = new HashMap<>();
 
         views.forEach(v -> {
-            int year = (int) v.get("_id.year");
-            int month = (int) v.get("_id.month");
-            long totalViews = ((Number) v.get("totalViews")).longValue();
+            Map<String, Object> idMap = (Map<String, Object>) v.get("_id");
+            int year = idMap != null && idMap.get("year") != null ? ((Number) idMap.get("year")).intValue() : 0;
+            int month = idMap != null && idMap.get("month") != null ? ((Number) idMap.get("month")).intValue() : 0;
+            long totalViews = ((Number) v.getOrDefault("totalViews", 0)).longValue();
             String key = year + "-" + month;
 
             trendMap.putIfAbsent(key, new MonthlyEngagementTrendDTO(year, month, 0, 0, 0));
             trendMap.get(key).setTotalViews(totalViews);
         });
 
+
         likes.forEach(l -> {
-            int year = (int) ((Map<String, Object>) l.get("_id")).get("year");
-            int month = (int) ((Map<String, Object>) l.get("_id")).get("month");
-            long count = ((Number) l.get("count")).longValue();
+            Map<String, Object> idMap = (Map<String, Object>) l.get("_id");
+            int year = idMap.get("year") != null ? ((Number) idMap.get("year")).intValue() : 0;
+            int month = idMap.get("month") != null ? ((Number) idMap.get("month")).intValue() : 0;
+            long count = ((Number) l.getOrDefault("count", 0)).longValue();
             String key = year + "-" + month;
 
             trendMap.putIfAbsent(key, new MonthlyEngagementTrendDTO(year, month, 0, 0, 0));
             trendMap.get(key).setTotalLikes(count);
         });
 
+
         comments.forEach(c -> {
-            int year = (int) ((Map<String, Object>) c.get("_id")).get("year");
-            int month = (int) ((Map<String, Object>) c.get("_id")).get("month");
-            long count = ((Number) c.get("count")).longValue();
+            Map<String, Object> idMap = (Map<String, Object>) c.get("_id");
+            int year = idMap.get("year") != null ? ((Number) idMap.get("year")).intValue() : 0;
+            int month = idMap.get("month") != null ? ((Number) idMap.get("month")).intValue() : 0;
+            long count = ((Number) c.getOrDefault("count", 0)).longValue();
             String key = year + "-" + month;
 
             trendMap.putIfAbsent(key, new MonthlyEngagementTrendDTO(year, month, 0, 0, 0));
             trendMap.get(key).setTotalComments(count);
         });
+
 
         return trendMap.values().stream()
                 .sorted(Comparator.comparing(MonthlyEngagementTrendDTO::getYear)

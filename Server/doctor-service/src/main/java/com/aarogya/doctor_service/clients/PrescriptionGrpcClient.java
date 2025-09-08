@@ -21,7 +21,7 @@ public class PrescriptionGrpcClient {
     private final com.aarogya.prescription.grpc.PrescriptionServiceGrpc.PrescriptionServiceBlockingStub blockingStub;
 
     public PrescriptionGrpcClient() {
-        this.channel = ManagedChannelBuilder.forAddress("localhost", 6001)
+        this.channel = ManagedChannelBuilder.forAddress("localhost", 8084)
                 .usePlaintext()
                 .build();
         this.blockingStub = com.aarogya.prescription.grpc.PrescriptionServiceGrpc.newBlockingStub(channel);

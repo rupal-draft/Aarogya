@@ -39,7 +39,7 @@ public class AppointmentGrpcClient {
     public AppointmentGrpcClient(ModelMapper modelMapper) {
         try {
             this.channel = ManagedChannelBuilder
-                    .forAddress("localhost", 3001)
+                    .forAddress("localhost", 7084)
                     .usePlaintext()
                     .build();
 

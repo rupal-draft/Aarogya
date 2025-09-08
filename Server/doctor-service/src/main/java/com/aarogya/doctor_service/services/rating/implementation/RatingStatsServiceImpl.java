@@ -10,6 +10,7 @@ import com.aarogya.doctor_service.repositories.rating.DoctorRatingSummaryReposit
 import com.aarogya.doctor_service.repositories.rating.HelpfulVoteRepository;
 import com.aarogya.doctor_service.services.rating.RatingStatsService;
 import lombok.RequiredArgsConstructor;
+import org.bson.Document;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -19,6 +20,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -74,19 +76,41 @@ public class RatingStatsServiceImpl implements RatingStatsService {
     private List<RatingTrendDto> getMonthlyRatingTrend(String doctorId) {
         Aggregation agg = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("doctorId").is(doctorId)),
-                Aggregation.project("rating")
-                        .andExpression("year(createdAt)").as("year")
-                        .andExpression("month(createdAt)").as("month"),
-                Aggregation.group("year", "month")
+
+                Aggregation.project()
+                        .andExpression("dateToString('%Y', createdAt)").as("yearStr")
+                        .andExpression("dateToString('%m', createdAt)").as("monthStr")
+                        .and("rating").as("rating"),
+
+                Aggregation.group("yearStr", "monthStr")
                         .avg("rating").as("avgRating")
                         .count().as("ratingCount"),
-                Aggregation.sort(Sort.Direction.DESC, "_id"),
+
+                Aggregation.sort(Sort.by(Sort.Order.asc("_id.yearStr"), Sort.Order.asc("_id.monthStr"))),
                 Aggregation.limit(12)
         );
+        List<Document> rawResults = mongoTemplate.aggregate(agg, DoctorRating.class, Document.class)
+                .getMappedResults();
+        return rawResults.stream()
+                .map(doc -> {
+                    Document idDoc = (Document) doc.get("_id");
 
-        AggregationResults<RatingTrendDto> results = mongoTemplate.aggregate(agg, DoctorRating.class, RatingTrendDto.class);
-        return results.getMappedResults();
+                    String yearStr = idDoc.getString("yearStr");
+                    String monthStr = idDoc.getString("monthStr");
+
+                    Number avgRatingNum = (Number) doc.get("avgRating");
+                    Number ratingCountNum = (Number) doc.get("ratingCount");
+
+                    return RatingTrendDto.builder()
+                            .year(yearStr != null ? Integer.parseInt(yearStr) : 0)
+                            .month(monthStr != null ? Integer.parseInt(monthStr) : 0)
+                            .avgRating(avgRatingNum != null ? avgRatingNum.doubleValue() : 0.0)
+                            .ratingCount(ratingCountNum != null ? ratingCountNum.longValue() : 0L)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
+
 
     private List<RecentReviewDto> getRecentReviews(String doctorId) {
         List<DoctorRating> ratings = doctorRatingRepository

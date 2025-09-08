@@ -36,7 +36,7 @@ public class LabOrderResultSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (mongoTemplate.count(new Query(), LabOrder.class) == 1) {
+        if (mongoTemplate.exists(new Query(), LabOrder.class)) {
             return;
         }
 

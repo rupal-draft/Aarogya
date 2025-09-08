@@ -1,11 +1,7 @@
 package com.aarogya.doctor_service.clients;
 
 
-import com.aarogya.auth.proto.AuthServiceGrpc;
-import com.aarogya.auth.proto.DoctorResponse;
-import com.aarogya.auth.proto.IdRequest;
-import com.aarogya.auth.proto.PatientResponse;
-import com.aarogya.auth.proto.SpecializationRequest;
+import com.aarogya.auth.proto.*;
 import com.aarogya.doctor_service.dto.grpc.auth.DoctorResponseDTO;
 import com.aarogya.doctor_service.dto.grpc.auth.PatientResponseDTO;
 import com.aarogya.doctor_service.exceptions.*;

@@ -218,5 +218,4 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
         return appointmentRepository
                 .countAppointmentsByDoctorAndDateRange(doctorId, start, end);
     }
-
 }

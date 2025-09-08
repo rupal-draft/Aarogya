@@ -51,9 +51,5 @@ management:
     health:
       show-details: always
 
-async:
-  core-pool-size: 10
-  max-pool-size: 50
-  queue-capacity: 100
-  thread-name-prefix: doctor-async-
+
 

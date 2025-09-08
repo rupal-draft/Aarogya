@@ -1,8 +1,7 @@
-package com.aarogya.doctor_service.services.forum.implementation;
+package com.aarogya.doctor_service.repositories.forum;
 
 import com.aarogya.doctor_service.dto.forum.request.ThreadFilterRequest;
 import com.aarogya.doctor_service.models.forum.ForumThread;
-import com.aarogya.doctor_service.repositories.forum.ThreadRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,12 +17,12 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class ThreadRepositoryImpl implements ThreadRepositoryCustom {
+public class ThreadRepositoryCustomImpl  implements ThreadRepositoryCustom {
 
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public Page<ForumThread> findByFilters(ThreadFilterRequest filter, Pageable pageable, String doctorId) {
+    public Page<ForumThread> searchWithFilters(ThreadFilterRequest filter, Pageable pageable, String doctorId) {
         Query query = new Query();
         List<Criteria> criteriaList = new ArrayList<>();
 

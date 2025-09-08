@@ -1,0 +1,695 @@
+{
+  "doctorResponseDTO": {
+    "id": "68a810b60474d478779e5c6d",
+    "email": "dr.john@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "specialization": "CARDIOLOGY",
+    "licenseNumber": "LIC123456",
+    "experienceYears": 10,
+    "phone": "+12345678901",
+    "address": "123 Medical Street, Health City",
+    "imageUrl": "https://images.pexels.com/photos/3714743/pexels-photo-3714743.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    "createdAt": "2025-08-22T12:09:50.275"
+  },
+  "appointmentStats": {
+    "appointmentStatsDto": {
+      "todayAppointments": 1,
+      "upcomingAppointments": 8,
+      "completedAppointments": 1,
+      "inProgressAppointments": 1,
+      "rejectedAppointments": 1,
+      "followupAppointments": 2,
+      "emergencyAppointments": 2,
+      "overdueFollowupAppointments": 0,
+      "pendingFollowupAppointments": 2
+    },
+    "patientStatsDto": {
+      "totalPatients": 1,
+      "newPatientsThisMonth": 1,
+      "returningPatients": 0
+    }
+  },
+  "articleStats": {
+    "doctorId": "68a810b60474d478779e5c6d",
+    "totalArticles": 5,
+    "articlesThisMonth": 5,
+    "categoryStats": [
+      {
+        "category": "Diabetes",
+        "count": 1
+      },
+      {
+        "category": "Nutrition",
+        "count": 1
+      },
+      {
+        "category": "Mental Health",
+        "count": 1
+      },
+      {
+        "category": "Health Awareness",
+        "count": 1
+      },
+      {
+        "category": "Fitness",
+        "count": 1
+      }
+    ],
+    "tagStats": [
+      {
+        "tag": "checkup",
+        "count": 1
+      },
+      {
+        "tag": "prevention",
+        "count": 1
+      },
+      {
+        "tag": "nutrition",
+        "count": 2
+      },
+      {
+        "tag": "stress",
+        "count": 1
+      },
+      {
+        "tag": "exercise",
+        "count": 2
+      },
+      {
+        "tag": "therapy",
+        "count": 1
+      },
+      {
+        "tag": "healthy eating",
+        "count": 1
+      },
+      {
+        "tag": "fitness",
+        "count": 1
+      },
+      {
+        "tag": "mental health",
+        "count": 1
+      },
+      {
+        "tag": "health",
+        "count": 2
+      },
+      {
+        "tag": "diet",
+        "count": 1
+      },
+      {
+        "tag": "diabetes",
+        "count": 1
+      }
+    ],
+    "topArticles": [
+      {
+        "id": "68bef38e4d87cd63e6ad6bda",
+        "title": "The Role of Exercise in Preventing Diseases",
+        "views": 200
+      },
+      {
+        "id": "68bef38e4d87cd63e6ad6bd8",
+        "title": "Mental Health Matters",
+        "views": 150
+      },
+      {
+        "id": "68bef38e4d87cd63e6ad6bd6",
+        "title": "The Importance of Regular Health Checkups",
+        "views": 120
+      }
+    ],
+    "viewsTrend": [
+      {
+        "period": "2025-09",
+        "views": 655
+      }
+    ],
+    "latestArticle": {
+      "id": "68bef38e4d87cd63e6ad6bd6",
+      "title": "The Importance of Regular Health Checkups",
+      "views": 120
+    },
+    "engagementStats": {
+      "totalLikes": 25,
+      "totalComments": 25,
+      "topLikedArticles": [
+        {
+          "id": "68bef38e4d87cd63e6ad6bd6",
+          "title": "The Importance of Regular Health Checkups",
+          "views": 5
+        },
+        {
+          "id": "68bef38e4d87cd63e6ad6bd7",
+          "title": "Managing Diabetes Effectively",
+          "views": 5
+        },
+        {
+          "id": "68bef38e4d87cd63e6ad6bd9",
+          "title": "Nutrition Tips for a Healthy Lifestyle",
+          "views": 5
+        }
+      ],
+      "topCommentedArticles": [
+        {
+          "id": "68bef38e4d87cd63e6ad6bd6",
+          "title": "The Importance of Regular Health Checkups",
+          "views": 5
+        },
+        {
+          "id": "68bef38e4d87cd63e6ad6bd7",
+          "title": "Managing Diabetes Effectively",
+          "views": 5
+        },
+        {
+          "id": "68bef38e4d87cd63e6ad6bd9",
+          "title": "Nutrition Tips for a Healthy Lifestyle",
+          "views": 5
+        }
+      ]
+    },
+    "engagementTrend": [
+      {
+        "year": 2025,
+        "month": 9,
+        "totalViews": 655,
+        "totalLikes": 25,
+        "totalComments": 25
+      }
+    ]
+  },
+  "labStats": {
+    "totalTestsOrdered": 18,
+    "completedResults": 18,
+    "pendingResults": 0,
+    "verifiedResults": 18,
+    "criticalResults": 0,
+    "avgTurnaroundTimeHours": 1.000023487654321,
+    "topTests": [
+      {
+        "testId": "68a87b6469eeb3f774735357",
+        "testName": "Erythrocyte Sedimentation Rate",
+        "count": 4
+      },
+      {
+        "testId": "68a87b6469eeb3f774735350",
+        "testName": "Hemoglobin A1c",
+        "count": 2
+      },
+      {
+        "testId": "68a87b6469eeb3f774735358",
+        "testName": "Urinalysis",
+        "count": 2
+      },
+      {
+        "testId": "68a87b6469eeb3f77473535b",
+        "testName": "HIV Antibody Test",
+        "count": 2
+      },
+      {
+        "testId": "68a87b6469eeb3f77473535a",
+        "testName": "COVID-19 PCR Test",
+        "count": 1
+      }
+    ],
+    "abnormalParameters": 0,
+    "doctorNotificationsSent": 18,
+    "uniquePatientsTested": 4,
+    "monthlyTestTrend": [
+      {
+        "year": 2025,
+        "month": 9,
+        "testCount": 18
+      }
+    ]
+  },
+  "paymentStats": {
+    "totalEarningsThisMonth": 5714.0,
+    "pendingPayouts": 0.0,
+    "averageConsultationFee": 1904.6666666666667,
+    "earningsTrend": [
+      {
+        "year": 2025,
+        "month": 9,
+        "totalAmount": 5714.0
+      }
+    ]
+  },
+  "prescriptionStats": {
+    "totalPrescriptionsIssued": 8,
+    "topMedicines": [
+      {
+        "medicineId": "68b1ee23c4536321ab276aa9",
+        "medicineName": "zypower tablet",
+        "count": 1
+      },
+      {
+        "medicineId": "68b1ee1fc4536321ab25b115",
+        "medicineName": "levopure 500mg tablet",
+        "count": 1
+      },
+      {
+        "medicineId": "68b1ee1bc4536321ab23be00",
+        "medicineName": "axer 150mg tablet",
+        "count": 1
+      }
+    ],
+    "favoriteTemplatesUsed": [],
+    "avgMedicinesPerPrescription": 2.0,
+    "templateModificationRatio": 0.3333333333333333,
+    "prescriptionGrowthTrend": [
+      {
+        "year": 2025,
+        "month": 9,
+        "totalPrescriptions": 8
+      }
+    ]
+  },
+  "quickViewResponse": {
+    "doctorId": "68a810b60474d478779e5c6d",
+    "month": "2025-09",
+    "days": [
+      {
+        "date": "2025-09-01",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-02",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-03",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-04",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-05",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-06",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-07",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-08",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-09",
+        "isAvailable": true,
+        "totalSlots": 3,
+        "bookedSlots": 1,
+        "freeSlots": 2,
+        "status": "AVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-10",
+        "isAvailable": true,
+        "totalSlots": 3,
+        "bookedSlots": 1,
+        "freeSlots": 2,
+        "status": "AVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-11",
+        "isAvailable": false,
+        "totalSlots": 3,
+        "bookedSlots": 1,
+        "freeSlots": 2,
+        "status": "OVERRIDDEN",
+        "note": "Conference attendance"
+      },
+      {
+        "date": "2025-09-12",
+        "isAvailable": false,
+        "totalSlots": 3,
+        "bookedSlots": 1,
+        "freeSlots": 2,
+        "status": "OVERRIDDEN",
+        "note": "Evening clinic"
+      },
+      {
+        "date": "2025-09-13",
+        "isAvailable": true,
+        "totalSlots": 3,
+        "bookedSlots": 1,
+        "freeSlots": 2,
+        "status": "AVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-14",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 1,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-15",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 1,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-16",
+        "isAvailable": true,
+        "totalSlots": 0,
+        "bookedSlots": 1,
+        "freeSlots": 0,
+        "status": "SPECIAL",
+        "note": "Health Camp"
+      },
+      {
+        "date": "2025-09-17",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-18",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-19",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-20",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-21",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-22",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-23",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-24",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-25",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-26",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-27",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-28",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-29",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      },
+      {
+        "date": "2025-09-30",
+        "isAvailable": false,
+        "totalSlots": 0,
+        "bookedSlots": 0,
+        "freeSlots": 0,
+        "status": "UNAVAILABLE",
+        "note": null
+      }
+    ]
+  },
+  "forumDashboardResponse": {
+    "totalThreadsCreated": 1,
+    "totalRepliesGiven": 1,
+    "totalUpvotesReceived": 0,
+    "bookmarkedThreadsCount": 1,
+    "totalSolutionsAccepted": 0,
+    "totalThreadViews": 1,
+    "mostActiveTags": [
+      {
+        "tagId": "Cardiology",
+        "tagName": null,
+        "threadCount": 1,
+        "replyCount": null
+      },
+      {
+        "tagId": "Research",
+        "tagName": null,
+        "threadCount": 1,
+        "replyCount": null
+      }
+    ],
+    "engagementTrend": [
+      {
+        "year": 0,
+        "month": 0,
+        "threadCount": 1,
+        "replyCount": 1
+      }
+    ]
+  },
+  "journalDashboardResponse": {
+    "totalEntries": 4,
+    "activeEntries": 4,
+    "archivedEntries": 0,
+    "avgWordsPerEntry": 114.75,
+    "totalWordsWritten": 459,
+    "patientNotesCount": 1,
+    "personalNotesCount": 3,
+    "bookmarksCount": 2,
+    "modificationRatio": 1.0,
+    "avgVersionsPerEntry": 1.0,
+    "upcomingReminders": 2,
+    "recurringReminders": 0,
+    "totalTemplates": 2,
+    "topTemplates": [
+      {
+        "templateId": "{\"general\": 4}",
+        "templateName": null,
+        "usageCount": 1
+      }
+    ],
+    "topTags": [
+      {
+        "tag": "general",
+        "count": 4
+      },
+      {
+        "tag": "tag2",
+        "count": 1
+      },
+      {
+        "tag": "tag4",
+        "count": 1
+      },
+      {
+        "tag": "tag3",
+        "count": 1
+      },
+      {
+        "tag": "tag1",
+        "count": 1
+      }
+    ],
+    "monthlyTrends": [
+      {
+        "year": 0,
+        "month": 0,
+        "entriesCreated": 4,
+        "wordsWritten": 459
+      }
+    ]
+  },
+  "ratingDashboardResponse": {
+    "averageRating": 2.8,
+    "totalRatings": 4,
+    "rating1Count": 2,
+    "rating2Count": 0,
+    "rating3Count": 0,
+    "rating4Count": 1,
+    "rating5Count": 1,
+    "averageWaitTimeRating": 3.5,
+    "averageStaffRating": 4.0,
+    "averageFacilityRating": 4.3,
+    "recommendationRate": 50.0,
+    "verifiedReviewsCount": 4,
+    "anonymousReviewsCount": 2,
+    "totalReviews": 4,
+    "totalHelpfulVotes": 0,
+    "reportedReviewsCount": 0,
+    "tagFrequency": {
+      "long wait": 1,
+      "friendly": 2,
+      "professional": 2
+    },
+    "monthlyRatingTrend": [
+      {
+        "year": 2025,
+        "month": 9,
+        "avgRating": 2.75,
+        "ratingCount": 4
+      }
+    ],
+    "recentReviews": [
+      {
+        "patientName": "Anonymous",
+        "rating": 4,
+        "review": "This is a sample review with 4 stars.",
+        "isVerified": true,
+        "isAnonymous": true,
+        "createdAt": "2025-09-09T00:36:49.928"
+      },
+      {
+        "patientName": "Patient 4",
+        "rating": 1,
+        "review": "This is a sample review with 1 stars.",
+        "isVerified": true,
+        "isAnonymous": false,
+        "createdAt": "2025-09-09T00:36:49.928"
+      },
+      {
+        "patientName": "Patient 2",
+        "rating": 1,
+        "review": "This is a sample review with 1 stars.",
+        "isVerified": true,
+        "isAnonymous": false,
+        "createdAt": "2025-09-09T00:36:49.927"
+      },
+      {
+        "patientName": "Anonymous",
+        "rating": 5,
+        "review": "This is a sample review with 5 stars.",
+        "isVerified": true,
+        "isAnonymous": true,
+        "createdAt": "2025-09-09T00:36:49.926"
+      }
+    ]
+  }
+}

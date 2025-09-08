@@ -12,7 +12,7 @@ public interface HelpfulVoteRepository extends MongoRepository<HelpfulVote, Stri
 
     Optional<HelpfulVote> findByRatingIdAndPatientId(String ratingId, String patientId);
 
-    @Query(value = "{ 'ratingId': { $in: ?0 } }", count = true)
+    @Query(value = "{ 'ratingId': ?0 }", count = true)
     long countByDoctorId(String doctorId);
 
     Boolean existsByRatingIdAndPatientId(String ratingId, String patientId);

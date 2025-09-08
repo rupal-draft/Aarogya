@@ -19,7 +19,7 @@ public class PaymentGrpcClient {
     private final com.aarogya.payment.grpc.PaymentServiceGrpc.PaymentServiceBlockingStub blockingStub;
 
     public PaymentGrpcClient() {
-        this.channel = ManagedChannelBuilder.forAddress("localhost", 6001)
+        this.channel = ManagedChannelBuilder.forAddress("localhost", 5084)
                 .usePlaintext()
                 .build();
         this.blockingStub = com.aarogya.payment.grpc.PaymentServiceGrpc.newBlockingStub(channel);
