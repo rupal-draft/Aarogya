@@ -3,7 +3,7 @@ import type {
   DiseaseHistoryResponse,
   CreateDiseaseHistoryRequest,
   UpdateDiseaseHistoryRequest,
-} from "../../../types/dashboard";
+} from "../../../types/patientDashboard";
 import { api } from "../../../utils/dashboardApi";
 
 export class DiseaseHistoryService {

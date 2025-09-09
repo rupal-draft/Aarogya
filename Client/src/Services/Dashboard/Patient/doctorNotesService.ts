@@ -2,7 +2,7 @@ import type {
   ApiResponse,
   DoctorNoteResponse,
   PageResponse,
-} from "../../../types/dashboard";
+} from "../../../types/patientDashboard";
 import { api } from "../../../utils/dashboardApi";
 
 export class DoctorNotesService {

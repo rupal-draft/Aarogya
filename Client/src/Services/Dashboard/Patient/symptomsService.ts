@@ -3,7 +3,7 @@ import type {
   CreateSymptomTrackerRequest,
   SymptomTrackerResponse,
   UpdateSymptomTrackerRequest,
-} from "../../../types/dashboard";
+} from "../../../types/patientDashboard";
 import { api } from "../../../utils/dashboardApi";
 
 export class SymptomsService {

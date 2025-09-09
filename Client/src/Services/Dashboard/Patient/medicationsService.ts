@@ -3,7 +3,7 @@ import type {
   CreateMedicationRequest,
   PatientMedicationResponse,
   UpdateMedicationRequest,
-} from "../../../types/dashboard";
+} from "../../../types/patientDashboard";
 import { api } from "../../../utils/dashboardApi";
 
 export class MedicationsService {

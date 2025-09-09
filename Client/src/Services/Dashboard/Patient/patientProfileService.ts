@@ -1,7 +1,7 @@
 import type {
   ApiResponse,
   CompletePatientProfileResponse,
-} from "../../../types/dashboard";
+} from "../../../types/patientDashboard";
 import { api } from "../../../utils/dashboardApi";
 
 export class PatientProfileService {

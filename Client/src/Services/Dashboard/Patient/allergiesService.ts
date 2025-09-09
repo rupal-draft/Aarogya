@@ -4,7 +4,7 @@ import type {
   PatientAllergyResponse,
   CreateAllergyRequest,
   UpdateAllergyRequest,
-} from "../../../types/dashboard";
+} from "../../../types/patientDashboard";
 import { api } from "../../../utils/dashboardApi";
 
 export class AllergiesService {

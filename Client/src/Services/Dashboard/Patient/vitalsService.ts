@@ -3,7 +3,7 @@ import type {
   CreateVitalsRequest,
   PatientVitalsResponse,
   UpdateVitalsRequest,
-} from "../../../types/dashboard";
+} from "../../../types/patientDashboard";
 import { api } from "../../../utils/dashboardApi";
 
 export class VitalsService {

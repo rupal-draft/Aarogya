@@ -3,7 +3,7 @@ import type {
   CreateEmergencyContactRequest,
   EmergencyContactResponse,
   UpdateEmergencyContactRequest,
-} from "../../../types/dashboard";
+} from "../../../types/patientDashboard";
 import { api } from "../../../utils/dashboardApi";
 
 export class EmergencyContactsService {

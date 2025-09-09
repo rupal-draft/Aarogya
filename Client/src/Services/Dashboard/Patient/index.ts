@@ -9,4 +9,4 @@ export { vitalsService } from "./vitalsService";
 export { symptomsService } from "./symptomsService";
 export { patientProfileService } from "./patientProfileService";
 
-export type * from "../../../types/dashboard";
+export type * from "../../../types/patientDashboard";

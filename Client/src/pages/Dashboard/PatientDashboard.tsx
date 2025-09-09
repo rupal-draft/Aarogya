@@ -7,7 +7,7 @@ import axios from "axios";
 import DashboardOverview from "../../components/Dashboard/Patient/Tabs/Overview";
 import GlassCard from "../../common/Cards/GlassCard";
 import { DashboardTabs } from "../../Data/tabs";
-import type { PatientDashboardData } from "../../types/dashboard";
+import type { PatientDashboardData } from "../../types/patientDashboard";
 import LoadingSpinner from "../../common/Spinners/LoadingSpinner";
 import ErrorState from "../../common/Error/ErrorState";
 import TabNavigation from "../../components/Dashboard/Patient/Components/TabNavigation";

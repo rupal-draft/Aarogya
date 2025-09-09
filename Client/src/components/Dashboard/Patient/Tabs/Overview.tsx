@@ -29,7 +29,7 @@ import MedicationCard from "../Components/MedicationCard";
 import GoalCard from "../Components/GoalCard";
 import EmergencyContactCard from "../Components/EmergencyContactCard";
 import DoctorNoteCard from "../Components/DoctorNoteCard";
-import type { PatientDashboardData } from "../../../../types/dashboard";
+import type { PatientDashboardData } from "../../../../types/patientDashboard";
 import GlassCard from "../../../../common/Cards/GlassCard";
 import { AnimatedCounter } from "../../../../pages/Dashboard/PatientDashboard";
 
