@@ -14,11 +14,13 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.DateOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
@@ -80,27 +82,62 @@ public class ForumStatsServiceImpl implements ForumStatsService {
         List<TagContributionDto> tagContributions = mongoTemplate.aggregate(Aggregation.newAggregation(
                 match(Criteria.where("authorId").is(doctorId)),
                 unwind("tags"),
-                group("tags").count().as("threadCount"),
-                project("threadCount").and("_id").as("tagId"),
+                group("tags")
+                        .count().as("threadCount")
+                        .sum("replyCount").as("replyCount"),
+                project("threadCount", "replyCount")
+                        .and("_id").as("tagId")
+                        .and("_id").as("tagName"),
                 sort(Sort.Direction.DESC, "threadCount"),
                 limit(5)
         ), ForumThread.class, TagContributionDto.class).getMappedResults();
 
-        List<EngagementTrendDto> threadTrend = mongoTemplate.aggregate(Aggregation.newAggregation(
-                match(Criteria.where("authorId").is(doctorId)),
-                project().andExpression("year(createdAt)").as("year")
-                        .andExpression("month(createdAt)").as("month"),
-                group("year", "month").count().as("threadCount"),
-                sort(Sort.Direction.ASC, "_id.year", "_id.month")
-        ), ForumThread.class, EngagementTrendDto.class).getMappedResults();
 
-        List<EngagementTrendDto> replyTrend = mongoTemplate.aggregate(Aggregation.newAggregation(
+        List<Document> rawThreadTrend = mongoTemplate.aggregate(Aggregation.newAggregation(
                 match(Criteria.where("authorId").is(doctorId)),
-                project().andExpression("year(createdAt)").as("year")
-                        .andExpression("month(createdAt)").as("month"),
-                group("year", "month").count().as("replyCount"),
-                sort(Sort.Direction.ASC, "_id.year", "_id.month")
-        ), ForumReply.class, EngagementTrendDto.class).getMappedResults();
+                project()
+                        .andExpression("dateToString('%Y', createdAt)").as("yearStr")
+                        .andExpression("dateToString('%m', createdAt)").as("monthStr"),
+                group("yearStr", "monthStr").count().as("threadCount"),
+                sort(Sort.by(Sort.Order.asc("_id.yearStr"), Sort.Order.asc("_id.monthStr")))
+        ), ForumThread.class, Document.class).getMappedResults();
+
+        List<EngagementTrendDto> threadTrend = rawThreadTrend.stream()
+                .map(doc -> {
+                    Document idDoc = (Document) doc.get("_id");
+
+                    return EngagementTrendDto.builder()
+                            .year(Integer.parseInt(idDoc.getString("yearStr")))
+                            .month(Integer.parseInt(idDoc.getString("monthStr")))
+                            .threadCount(((Number) doc.get("threadCount")).longValue())
+                            .replyCount(0L)
+                            .build();
+                })
+                .toList();
+
+
+        List<Document> rawReplyTrend = mongoTemplate.aggregate(Aggregation.newAggregation(
+                match(Criteria.where("authorId").is(doctorId)),
+                project()
+                        .andExpression("dateToString('%Y', createdAt)").as("yearStr")
+                        .andExpression("dateToString('%m', createdAt)").as("monthStr"),
+                group("yearStr", "monthStr").count().as("replyCount"),
+                sort(Sort.by(Sort.Order.asc("_id.yearStr"), Sort.Order.asc("_id.monthStr")))
+        ), ForumReply.class, Document.class).getMappedResults();
+
+        List<EngagementTrendDto> replyTrend = rawReplyTrend.stream()
+                .map(doc -> {
+                    Document idDoc = (Document) doc.get("_id");
+
+                    return EngagementTrendDto.builder()
+                            .year(Integer.parseInt(idDoc.getString("yearStr")))
+                            .month(Integer.parseInt(idDoc.getString("monthStr")))
+                            .threadCount(0L)
+                            .replyCount(((Number) doc.get("replyCount")).longValue())
+                            .build();
+                })
+                .toList();
+
 
         Map<String, EngagementTrendDto> mergedTrend = new LinkedHashMap<>();
         threadTrend.forEach(t -> {

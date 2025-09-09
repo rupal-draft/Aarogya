@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
+import org.springframework.data.mongodb.core.aggregation.ConvertOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
@@ -61,10 +62,15 @@ public class PrescriptionStatsServiceImpl implements PrescriptionStatsService {
 
         Aggregation favTemplatesAgg = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("doctorId").is(doctorId)),
-                Aggregation.lookup("prescription_templates", "templateId", "_id", "template"),
+                Aggregation.addFields().addField("templateObjId")
+                        .withValue(ConvertOperators.ToObjectId.toObjectId("$templateId")).build(),
+                Aggregation.lookup("prescription_templates", "templateObjId", "_id", "template"),
                 Aggregation.unwind("template"),
                 Aggregation.match(Criteria.where("template.isFavorite").is(true)),
                 Aggregation.group("template._id", "template.name").count().as("usageCount"),
+                Aggregation.project("usageCount")
+                        .and("_id._id").as("templateId")
+                        .and("_id.name").as("templateName"),
                 Aggregation.sort(Sort.by(Sort.Direction.DESC, "usageCount")),
                 Aggregation.limit(5)
         );

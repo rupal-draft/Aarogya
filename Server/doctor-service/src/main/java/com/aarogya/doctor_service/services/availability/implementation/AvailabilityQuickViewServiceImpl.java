@@ -80,7 +80,7 @@ public class AvailabilityQuickViewServiceImpl implements AvailabilityQuickViewSe
                     ? (freeSlots == 0 ? "FULL" : "AVAILABLE")
                     : "UNAVAILABLE";
 
-            String note = null;
+            String note = "Normal schedule";
             if (override != null) {
                 note = override.getReason();
                 status = "OVERRIDDEN";

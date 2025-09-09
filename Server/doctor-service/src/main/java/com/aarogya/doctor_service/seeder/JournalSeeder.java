@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -131,16 +132,21 @@ public class JournalSeeder implements CommandLineRunner {
 
         mongoTemplate.insertAll(templates);
 
-        // ---- Seed Analytics ----
+        Map<String, Integer> tagUsage = templates.stream()
+                .collect(Collectors.toMap(
+                        JournalTemplate::getId,
+                        t -> random.nextInt(5) + 1
+                ));
+
         JournalAnalytics analytics = JournalAnalytics.builder()
                 .doctorId(DOCTOR_ID)
-                .date(LocalDate.now().atStartOfDay()) // per-day
+                .date(LocalDate.now().atStartOfDay())
                 .entriesCreated(entries.size())
                 .entriesUpdated(2)
                 .totalWords(entries.stream().mapToInt(JournalEntry::getWordCount).sum())
                 .patientNotes((int) entries.stream().filter(e -> e.getPatientId() != null).count())
                 .personalNotes((int) entries.stream().filter(e -> e.getPatientId() == null).count())
-                .tagUsage(Map.of("general", entries.size()))
+                .tagUsage(tagUsage)
                 .createdAt(LocalDateTime.now())
                 .build();
 

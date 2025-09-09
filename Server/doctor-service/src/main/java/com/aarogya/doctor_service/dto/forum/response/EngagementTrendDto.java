@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EngagementTrendDto {
-    private int year;
-    private int month;
+    private Integer year;
+    private Integer month;
     private Long threadCount;
     private Long replyCount;
 }

@@ -13,12 +13,15 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.ConvertOperators;
+import org.springframework.data.mongodb.core.aggregation.ObjectOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
@@ -90,24 +93,56 @@ public class JournalStatsServiceImpl implements JournalStatsService {
 
         List<JournalTemplateUsageDto> topTemplates = mongoTemplate.aggregate(Aggregation.newAggregation(
                 match(Criteria.where("doctorId").is(doctorId)),
-                unwind("tagUsage"),
-                group("tagUsage").count().as("usageCount"),
-                project("usageCount").and("_id").as("templateId"),
+                project("doctorId")
+                        .and(ObjectOperators.valueOf("tagUsage").toArray()).as("tagUsageArray"),
+                unwind("tagUsageArray"),
+                group("tagUsageArray.k").sum("tagUsageArray.v").as("usageCount"),
+                project("usageCount")
+                        .and(ConvertOperators.ToObjectId.toObjectId("$_id")).as("templateId"),
+                lookup("journal_templates", "templateId", "_id", "template"),
+                unwind("template", true),
+                project("usageCount")
+                        .and("templateId").as("templateId")
+                        .and("template.name").as("templateName"),
                 sort(Sort.Direction.DESC, "usageCount"),
                 limit(5)
         ), JournalAnalytics.class, JournalTemplateUsageDto.class).getMappedResults();
 
-        List<JournalTrendDto> monthlyTrends = mongoTemplate.aggregate(Aggregation.newAggregation(
+        Aggregation monthlyTrendAgg = Aggregation.newAggregation(
                 match(Criteria.where("doctorId").is(doctorId)),
-                project().andExpression("year(date)").as("year")
-                        .andExpression("month(date)").as("month")
+                project()
+                        .andExpression("dateToString('%Y', $date)").as("yearStr")
+                        .andExpression("dateToString('%m', $date)").as("monthStr")
                         .and("entriesCreated").as("entriesCreated")
                         .and("totalWords").as("wordsWritten"),
-                group("year", "month")
+                group("yearStr", "monthStr")
                         .sum("entriesCreated").as("entriesCreated")
                         .sum("wordsWritten").as("wordsWritten"),
-                sort(Sort.Direction.ASC, "_id.year", "_id.month")
-        ), JournalAnalytics.class, JournalTrendDto.class).getMappedResults();
+                sort(Sort.by(Sort.Order.asc("_id.yearStr"), Sort.Order.asc("_id.monthStr")))
+        );
+
+        List<Document> rawResults = mongoTemplate.aggregate(
+                monthlyTrendAgg, JournalAnalytics.class, Document.class
+        ).getMappedResults();
+
+        List<JournalTrendDto> monthlyTrends = rawResults.stream()
+                .map(doc -> {
+                    Document idDoc = (Document) doc.get("_id");
+
+                    int year = Integer.parseInt(idDoc.getString("yearStr"));
+                    int month = Integer.parseInt(idDoc.getString("monthStr"));
+
+                    long entries = ((Number) doc.get("entriesCreated")).longValue();
+                    long words = ((Number) doc.get("wordsWritten")).longValue();
+
+                    return JournalTrendDto.builder()
+                            .year(year)
+                            .month(month)
+                            .entriesCreated(entries)
+                            .wordsWritten(words)
+                            .build();
+                })
+                .collect(Collectors.toList());
 
         return JournalDashboardResponse.builder()
                 .totalEntries(totalEntries)

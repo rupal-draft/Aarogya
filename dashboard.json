@@ -36,15 +36,11 @@
     "articlesThisMonth": 5,
     "categoryStats": [
       {
-        "category": "Diabetes",
-        "count": 1
-      },
-      {
         "category": "Nutrition",
         "count": 1
       },
       {
-        "category": "Mental Health",
+        "category": "Diabetes",
         "count": 1
       },
       {
@@ -54,9 +50,29 @@
       {
         "category": "Fitness",
         "count": 1
+      },
+      {
+        "category": "Mental Health",
+        "count": 1
       }
     ],
     "tagStats": [
+      {
+        "tag": "exercise",
+        "count": 2
+      },
+      {
+        "tag": "diet",
+        "count": 1
+      },
+      {
+        "tag": "healthy eating",
+        "count": 1
+      },
+      {
+        "tag": "fitness",
+        "count": 1
+      },
       {
         "tag": "checkup",
         "count": 1
@@ -74,19 +90,11 @@
         "count": 1
       },
       {
-        "tag": "exercise",
-        "count": 2
+        "tag": "diabetes",
+        "count": 1
       },
       {
         "tag": "therapy",
-        "count": 1
-      },
-      {
-        "tag": "healthy eating",
-        "count": 1
-      },
-      {
-        "tag": "fitness",
         "count": 1
       },
       {
@@ -96,14 +104,6 @@
       {
         "tag": "health",
         "count": 2
-      },
-      {
-        "tag": "diet",
-        "count": 1
-      },
-      {
-        "tag": "diabetes",
-        "count": 1
       }
     ],
     "topArticles": [
@@ -139,35 +139,35 @@
       "totalComments": 25,
       "topLikedArticles": [
         {
+          "id": "68bef38e4d87cd63e6ad6bd9",
+          "title": "Nutrition Tips for a Healthy Lifestyle",
+          "views": 5
+        },
+        {
           "id": "68bef38e4d87cd63e6ad6bd6",
           "title": "The Importance of Regular Health Checkups",
           "views": 5
         },
         {
-          "id": "68bef38e4d87cd63e6ad6bd7",
-          "title": "Managing Diabetes Effectively",
-          "views": 5
-        },
-        {
-          "id": "68bef38e4d87cd63e6ad6bd9",
-          "title": "Nutrition Tips for a Healthy Lifestyle",
+          "id": "68bef38e4d87cd63e6ad6bda",
+          "title": "The Role of Exercise in Preventing Diseases",
           "views": 5
         }
       ],
       "topCommentedArticles": [
         {
-          "id": "68bef38e4d87cd63e6ad6bd6",
-          "title": "The Importance of Regular Health Checkups",
-          "views": 5
-        },
-        {
-          "id": "68bef38e4d87cd63e6ad6bd7",
-          "title": "Managing Diabetes Effectively",
-          "views": 5
-        },
-        {
           "id": "68bef38e4d87cd63e6ad6bd9",
           "title": "Nutrition Tips for a Healthy Lifestyle",
+          "views": 5
+        },
+        {
+          "id": "68bef38e4d87cd63e6ad6bda",
+          "title": "The Role of Exercise in Preventing Diseases",
+          "views": 5
+        },
+        {
+          "id": "68bef38e4d87cd63e6ad6bd8",
+          "title": "Mental Health Matters",
           "views": 5
         }
       ]
@@ -196,8 +196,8 @@
         "count": 4
       },
       {
-        "testId": "68a87b6469eeb3f774735350",
-        "testName": "Hemoglobin A1c",
+        "testId": "68a87b6469eeb3f77473535b",
+        "testName": "HIV Antibody Test",
         "count": 2
       },
       {
@@ -206,13 +206,13 @@
         "count": 2
       },
       {
-        "testId": "68a87b6469eeb3f77473535b",
-        "testName": "HIV Antibody Test",
+        "testId": "68a87b6469eeb3f774735350",
+        "testName": "Hemoglobin A1c",
         "count": 2
       },
       {
-        "testId": "68a87b6469eeb3f77473535a",
-        "testName": "COVID-19 PCR Test",
+        "testId": "68a87b6469eeb3f77473534f",
+        "testName": "Thyroid Stimulating Hormone",
         "count": 1
       }
     ],
@@ -243,22 +243,28 @@
     "totalPrescriptionsIssued": 8,
     "topMedicines": [
       {
-        "medicineId": "68b1ee23c4536321ab276aa9",
-        "medicineName": "zypower tablet",
+        "medicineId": "68b1ee23c4536321ab27439f",
+        "medicineName": "welminic dx syrup",
         "count": 1
       },
       {
-        "medicineId": "68b1ee1fc4536321ab25b115",
-        "medicineName": "levopure 500mg tablet",
+        "medicineId": "68b1ee1bc4536321ab23f58c",
+        "medicineName": "alerkid oral suspension",
         "count": 1
       },
       {
-        "medicineId": "68b1ee1bc4536321ab23be00",
-        "medicineName": "axer 150mg tablet",
+        "medicineId": "68b1ee21c4536321ab2656fc",
+        "medicineName": "oxyfag-a oral suspension sugar free",
         "count": 1
       }
     ],
-    "favoriteTemplatesUsed": [],
+    "favoriteTemplatesUsed": [
+      {
+        "templateId": "68bf048552da34dc13772af5",
+        "templateName": "Cold & Flu",
+        "usageCount": 2
+      }
+    ],
     "avgMedicinesPerPrescription": 2.0,
     "templateModificationRatio": 0.3333333333333333,
     "prescriptionGrowthTrend": [
@@ -280,7 +286,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-02",
@@ -289,7 +295,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-03",
@@ -298,7 +304,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-04",
@@ -307,7 +313,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-05",
@@ -316,7 +322,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-06",
@@ -325,7 +331,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-07",
@@ -334,7 +340,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-08",
@@ -343,7 +349,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-09",
@@ -352,7 +358,7 @@
         "bookedSlots": 1,
         "freeSlots": 2,
         "status": "AVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-10",
@@ -361,7 +367,7 @@
         "bookedSlots": 1,
         "freeSlots": 2,
         "status": "AVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-11",
@@ -388,7 +394,7 @@
         "bookedSlots": 1,
         "freeSlots": 2,
         "status": "AVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-14",
@@ -397,7 +403,7 @@
         "bookedSlots": 1,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-15",
@@ -406,7 +412,7 @@
         "bookedSlots": 1,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-16",
@@ -424,7 +430,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-18",
@@ -433,7 +439,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-19",
@@ -442,7 +448,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-20",
@@ -451,7 +457,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-21",
@@ -460,7 +466,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-22",
@@ -469,7 +475,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-23",
@@ -478,7 +484,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-24",
@@ -487,7 +493,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-25",
@@ -496,7 +502,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-26",
@@ -505,7 +511,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-27",
@@ -514,7 +520,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-28",
@@ -523,7 +529,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-29",
@@ -532,7 +538,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       },
       {
         "date": "2025-09-30",
@@ -541,7 +547,7 @@
         "bookedSlots": 0,
         "freeSlots": 0,
         "status": "UNAVAILABLE",
-        "note": null
+        "note": "Normal schedule"
       }
     ]
   },
@@ -554,22 +560,22 @@
     "totalThreadViews": 1,
     "mostActiveTags": [
       {
-        "tagId": "Cardiology",
-        "tagName": null,
+        "tagId": "Research",
+        "tagName": "Research",
         "threadCount": 1,
-        "replyCount": null
+        "replyCount": 0
       },
       {
-        "tagId": "Research",
-        "tagName": null,
+        "tagId": "Cardiology",
+        "tagName": "Cardiology",
         "threadCount": 1,
-        "replyCount": null
+        "replyCount": 0
       }
     ],
     "engagementTrend": [
       {
-        "year": 0,
-        "month": 0,
+        "year": 2025,
+        "month": 9,
         "threadCount": 1,
         "replyCount": 1
       }
@@ -579,10 +585,10 @@
     "totalEntries": 4,
     "activeEntries": 4,
     "archivedEntries": 0,
-    "avgWordsPerEntry": 114.75,
-    "totalWordsWritten": 459,
-    "patientNotesCount": 1,
-    "personalNotesCount": 3,
+    "avgWordsPerEntry": 119.5,
+    "totalWordsWritten": 478,
+    "patientNotesCount": 0,
+    "personalNotesCount": 4,
     "bookmarksCount": 2,
     "modificationRatio": 1.0,
     "avgVersionsPerEntry": 1.0,
@@ -591,9 +597,14 @@
     "totalTemplates": 2,
     "topTemplates": [
       {
-        "templateId": "{\"general\": 4}",
-        "templateName": null,
-        "usageCount": 1
+        "templateId": "68bfca20160e44322ba1d890",
+        "templateName": "General Clinical Note",
+        "usageCount": 4
+      },
+      {
+        "templateId": "68bfca20160e44322ba1d891",
+        "templateName": "Research Idea",
+        "usageCount": 3
       }
     ],
     "topTags": [
@@ -602,11 +613,7 @@
         "count": 4
       },
       {
-        "tag": "tag2",
-        "count": 1
-      },
-      {
-        "tag": "tag4",
+        "tag": "tag1",
         "count": 1
       },
       {
@@ -614,16 +621,20 @@
         "count": 1
       },
       {
-        "tag": "tag1",
+        "tag": "tag2",
+        "count": 1
+      },
+      {
+        "tag": "tag4",
         "count": 1
       }
     ],
     "monthlyTrends": [
       {
-        "year": 0,
-        "month": 0,
+        "year": 2025,
+        "month": 9,
         "entriesCreated": 4,
-        "wordsWritten": 459
+        "wordsWritten": 478
       }
     ]
   },
