@@ -208,7 +208,63 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
                 Document.class
         ).getMappedResults().size();
 
-        return new PatientStatsDto(totalPatients, newPatients, returningPatients);
+        long activePatientsThisMonth = mongoTemplate.aggregate(
+                Aggregation.newAggregation(
+                        Aggregation.match(Criteria.where("doctorId").is(doctorId)
+                                .and("status").is(AppointmentStatus.COMPLETED)
+                                .and("appointmentDate").gte(firstDayOfMonth).lte(lastDayOfMonth)),
+                        Aggregation.group("patientId")
+                ),
+                Appointment.class,
+                Document.class
+        ).getMappedResults().size();
+
+        long patientsWithFollowUps = mongoTemplate.aggregate(
+                Aggregation.newAggregation(
+                        Aggregation.match(Criteria.where("doctorId").is(doctorId)),
+                        Aggregation.group("patientId")
+                ),
+                FollowUp.class,
+                Document.class
+        ).getMappedResults().size();
+
+        long patientsWithMultipleVisitsThisMonth = mongoTemplate.aggregate(
+                Aggregation.newAggregation(
+                        Aggregation.match(Criteria.where("doctorId").is(doctorId)
+                                .and("status").is(AppointmentStatus.COMPLETED)
+                                .and("appointmentDate").gte(firstDayOfMonth).lte(lastDayOfMonth)),
+                        Aggregation.group("patientId").count().as("visits"),
+                        Aggregation.match(Criteria.where("visits").gt(1))
+                ),
+                Appointment.class,
+                Document.class
+        ).getMappedResults().size();
+
+        AggregationResults<Document> avgResults = mongoTemplate.aggregate(
+                Aggregation.newAggregation(
+                        Aggregation.match(Criteria.where("doctorId").is(doctorId)
+                                .and("status").is(AppointmentStatus.COMPLETED)),
+                        Aggregation.group("patientId").count().as("visitCount"),
+                        Aggregation.group().avg("visitCount").as("avgVisits")
+                ),
+                Appointment.class,
+                Document.class
+        );
+
+        double averageVisitsPerPatient = avgResults.getUniqueMappedResult() != null
+                ? avgResults.getUniqueMappedResult().getDouble("avgVisits")
+                : 0.0;
+
+        return PatientStatsDto
+                .builder()
+                .totalPatients(totalPatients)
+                .newPatientsThisMonth(newPatients)
+                .activePatientsThisMonth(activePatientsThisMonth)
+                .averageVisitsPerPatient(averageVisitsPerPatient)
+                .patientsWithFollowUps(patientsWithFollowUps)
+                .patientsWithMultipleVisitsThisMonth(patientsWithMultipleVisitsThisMonth)
+                .returningPatients(returningPatients)
+                .build();
     }
 
     @Override

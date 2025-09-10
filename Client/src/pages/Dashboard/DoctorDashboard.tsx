@@ -41,11 +41,16 @@ import {
   Mail,
   Badge,
   GraduationCap,
+  Repeat,
+  BarChart,
+  XCircle,
+  FileEdit,
+  Bookmark,
+  Clipboard,
+  Target,
+  Building,
 } from "lucide-react";
-import type {
-  DoctorDashboardData,
-  RatingDashboardResponse,
-} from "../../types/doctorDashboard";
+import type { DoctorDashboardData } from "../../types/doctorDashboard";
 import { AnimatedCounter } from "../../common/Counter/AnimatedCounter";
 import { StatCard } from "../../components/Dashboard/Doctor/stats-card";
 import { CategoryBadge } from "../../components/Dashboard/Doctor/CategoryBadge";
@@ -54,6 +59,8 @@ import { EnhancedLineChart } from "../../components/Dashboard/Doctor/EnhancedLin
 import { EnhancedBarChart } from "../../components/Dashboard/Doctor/EnhancedBarChart";
 import { EnhancedAvailabilityCalendar } from "../../components/Dashboard/Doctor/EnhancedAvailabilityCalendar";
 import { RatingStars } from "../../components/Dashboard/Doctor/RatingStars";
+import { DayDetailsPanel } from "../../components/Dashboard/Doctor/DayDetailsPanel";
+import { ProgressBar } from "../../components/Dashboard/Doctor/ProgressBar";
 
 const DoctorDashboard = () => {
   const [data, setData] = useState<DoctorDashboardData | null>(null);
@@ -423,6 +430,39 @@ const DoctorDashboard = () => {
                 value={appointmentStats.patientStatsDto.returningPatients}
                 icon={Heart}
                 color="bg-gradient-to-r from-purple-500 to-indigo-500"
+                animateValue={true}
+              />
+
+              {/* New fields */}
+              <StatCard
+                title="Active This Month"
+                value={appointmentStats.patientStatsDto.activePatientsThisMonth}
+                icon={Activity}
+                color="bg-gradient-to-r from-yellow-500 to-orange-500"
+                animateValue={true}
+              />
+              <StatCard
+                title="With Follow-Ups"
+                value={appointmentStats.patientStatsDto.patientsWithFollowUps}
+                icon={Calendar}
+                color="bg-gradient-to-r from-pink-500 to-rose-500"
+                animateValue={true}
+              />
+              <StatCard
+                title="Multiple Visits"
+                value={
+                  appointmentStats.patientStatsDto
+                    .patientsWithMultipleVisitsThisMonth
+                }
+                icon={Repeat}
+                color="bg-gradient-to-r from-teal-500 to-cyan-600"
+                animateValue={true}
+              />
+              <StatCard
+                title="Avg. Visits/Patient"
+                value={appointmentStats.patientStatsDto.averageVisitsPerPatient}
+                icon={BarChart}
+                color="bg-gradient-to-r from-gray-600 to-gray-800"
                 animateValue={true}
               />
             </div>
@@ -891,8 +931,14 @@ const DoctorDashboard = () => {
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md">
               <EnhancedAvailabilityCalendar days={quickViewResponse.days} />
 
+              {/* Stats Overview */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <div className="text-center p-4 bg-green-50 rounded-lg">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.9 }}
+                  className="text-center p-4 bg-green-50 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                >
                   <div className="text-2xl font-bold text-green-800">
                     {
                       quickViewResponse.days.filter(
@@ -900,18 +946,34 @@ const DoctorDashboard = () => {
                       ).length
                     }
                   </div>
-                  <div className="text-sm text-green-600">Available Days</div>
-                </div>
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-sm text-green-600 flex items-center justify-center gap-1 mt-1">
+                    <CheckCircle className="w-4 h-4" /> Available Days
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.0 }}
+                  className="text-center p-4 bg-blue-50 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                >
                   <div className="text-2xl font-bold text-blue-800">
                     {quickViewResponse.days.reduce(
                       (total, day) => total + day.bookedSlots,
                       0
                     )}
                   </div>
-                  <div className="text-sm text-blue-600">Booked Slots</div>
-                </div>
-                <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                  <div className="text-sm text-blue-600 flex items-center justify-center gap-1 mt-1">
+                    <Users className="w-4 h-4" /> Booked Slots
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.1 }}
+                  className="text-center p-4 bg-yellow-50 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                >
                   <div className="text-2xl font-bold text-yellow-800">
                     {
                       quickViewResponse.days.filter(
@@ -919,9 +981,17 @@ const DoctorDashboard = () => {
                       ).length
                     }
                   </div>
-                  <div className="text-sm text-yellow-600">Overridden Days</div>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-sm text-yellow-600 flex items-center justify-center gap-1 mt-1">
+                    <Clock className="w-4 h-4" /> Overridden Days
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.2 }}
+                  className="text-center p-4 bg-purple-50 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                >
                   <div className="text-2xl font-bold text-purple-800">
                     {
                       quickViewResponse.days.filter(
@@ -929,23 +999,89 @@ const DoctorDashboard = () => {
                       ).length
                     }
                   </div>
-                  <div className="text-sm text-purple-600">Special Days</div>
-                </div>
+                  <div className="text-sm text-purple-600 flex items-center justify-center gap-1 mt-1">
+                    <Star className="w-4 h-4" /> Special Days
+                  </div>
+                </motion.div>
               </div>
+
+              {/* Additional Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.3 }}
+                  className="text-center p-4 bg-cyan-50 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="text-2xl font-bold text-cyan-800">
+                    {quickViewResponse.days.reduce(
+                      (total, day) => total + day.freeSlots,
+                      0
+                    )}
+                  </div>
+                  <div className="text-sm text-cyan-600 flex items-center justify-center gap-1 mt-1">
+                    <Zap className="w-4 h-4" /> Free Slots
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.4 }}
+                  className="text-center p-4 bg-rose-50 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="text-2xl font-bold text-rose-800">
+                    {
+                      quickViewResponse.days.filter(
+                        (d) => d.status === "UNAVAILABLE"
+                      ).length
+                    }
+                  </div>
+                  <div className="text-sm text-rose-600 flex items-center justify-center gap-1 mt-1">
+                    <XCircle className="w-4 h-4" /> Unavailable Days
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.5 }}
+                  className="text-center p-4 bg-orange-50 rounded-lg shadow-sm hover:shadow-md transition-shadow col-span-2 md:col-span-1"
+                >
+                  <div className="text-2xl font-bold text-orange-800">
+                    {quickViewResponse.days.reduce(
+                      (total, day) => total + day.totalSlots,
+                      0
+                    )}
+                  </div>
+                  <div className="text-sm text-orange-600 flex items-center justify-center gap-1 mt-1">
+                    <Calendar className="w-4 h-4" /> Total Slots
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Day Details Panel */}
+              <DayDetailsPanel days={quickViewResponse.days} />
             </div>
           </motion.div>
 
-          {/* Rating Stats */}
+          {/* Rating Stats Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-b from-white to-blue-50 rounded-2xl p-6 shadow-md h-full flex flex-col"
           >
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Star className="w-6 h-6 text-yellow-600" />
-              Ratings & Reviews
-            </h2>
-            <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <Star className="w-6 h-6 text-yellow-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800">
+                Ratings & Reviews
+              </h2>
+            </div>
+
+            <div className="space-y-4 flex-grow">
               <StatCard
                 title="Average Rating"
                 value={ratingDashboardResponse.averageRating.toFixed(1)}
@@ -967,88 +1103,135 @@ const DoctorDashboard = () => {
               />
 
               {/* Rating Distribution */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md">
-                <h3 className="text-sm font-semibold text-gray-800 mb-3">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-blue-500" />
                   Rating Distribution
                 </h3>
-                <div className="space-y-2">
-                  {[5, 4, 3, 2, 1].map((rating) => (
-                    <div
-                      key={rating}
-                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                          {rating}
+                <div className="space-y-3">
+                  {[5, 4, 3, 2, 1].map((rating) => {
+                    const count =
+                      ratingDashboardResponse[`rating${rating}Count`];
+                    const total = ratingDashboardResponse.totalRatings;
+                    return (
+                      <motion.div
+                        key={rating}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: rating * 0.1 }}
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors duration-200"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            {rating}
+                          </div>
+                          <RatingStars rating={rating} />
                         </div>
-                        <RatingStars rating={rating} />
-                      </div>
-                      <span className="text-sm font-medium text-gray-700">
-                        {
-                          ratingDashboardResponse[
-                            `rating${rating}Count` as keyof RatingDashboardResponse
-                          ] as number
-                        }
-                      </span>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-3">
+                          <div className="w-20">
+                            <ProgressBar
+                              value={count}
+                              max={total}
+                              color="bg-gradient-to-r from-yellow-400 to-amber-500"
+                            />
+                          </div>
+                          <span className="text-sm font-medium text-gray-700 w-8 text-right">
+                            {count}
+                          </span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
-              </div>
+              </motion.div>
 
               {/* Rating Details */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md">
-                <h3 className="text-sm font-semibold text-gray-800 mb-3">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <Clipboard className="w-4 h-4 text-blue-500" />
                   Rating Details
                 </h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600">
-                      Wait Time Rating:
-                    </span>
-                    <span className="font-medium text-blue-600">
-                      {ratingDashboardResponse.averageWaitTimeRating.toFixed(1)}
-                      /5
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600">Staff Rating:</span>
-                    <span className="font-medium text-blue-600">
-                      {ratingDashboardResponse.averageStaffRating.toFixed(1)}/5
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600">
-                      Facility Rating:
-                    </span>
-                    <span className="font-medium text-blue-600">
-                      {ratingDashboardResponse.averageFacilityRating.toFixed(1)}
-                      /5
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600">
-                      Verified Reviews:
-                    </span>
-                    <span className="font-medium text-green-600">
-                      {ratingDashboardResponse.verifiedReviewsCount}
-                    </span>
-                  </div>
+                  {[
+                    {
+                      label: "Wait Time Rating",
+                      value:
+                        ratingDashboardResponse.averageWaitTimeRating.toFixed(
+                          1
+                        ),
+                      icon: Clock,
+                    },
+                    {
+                      label: "Staff Rating",
+                      value:
+                        ratingDashboardResponse.averageStaffRating.toFixed(1),
+                      icon: Users,
+                    },
+                    {
+                      label: "Facility Rating",
+                      value:
+                        ratingDashboardResponse.averageFacilityRating.toFixed(
+                          1
+                        ),
+                      icon: Building,
+                    },
+                    {
+                      label: "Verified Reviews",
+                      value: ratingDashboardResponse.verifiedReviewsCount,
+                      icon: CheckCircle,
+                    },
+                  ].map((item, index) => (
+                    <motion.div
+                      key={item.label}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 + index * 0.1 }}
+                      className="flex justify-between items-center p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                    >
+                      <div className="flex items-center gap-2">
+                        <item.icon className="w-4 h-4 text-blue-500" />
+                        <span className="text-xs text-gray-600">
+                          {item.label}:
+                        </span>
+                      </div>
+                      <span className="font-medium text-blue-600">
+                        {item.value}
+                        {item.label !== "Verified Reviews" && "/5"}
+                      </span>
+                    </motion.div>
+                  ))}
                 </div>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
 
-          {/* Forum Stats */}
+          {/* Forum Stats Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-gradient-to-b from-white to-purple-50 rounded-2xl p-6 shadow-md h-full flex flex-col"
           >
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <MessageSquare className="w-6 h-6 text-indigo-600" />
-              Forum Activity
-            </h2>
-            <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <MessageSquare className="w-6 h-6 text-indigo-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800">
+                Forum Activity
+              </h2>
+            </div>
+
+            <div className="space-y-4 flex-grow">
               <StatCard
                 title="Threads Created"
                 value={forumDashboardResponse.totalThreadsCreated}
@@ -1072,68 +1255,100 @@ const DoctorDashboard = () => {
               />
 
               {/* Forum Metrics */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md">
-                <h3 className="text-sm font-semibold text-gray-800 mb-3">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-purple-500" />
                   Forum Metrics
                 </h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600">
-                      Bookmarked Threads:
-                    </span>
-                    <span className="font-medium text-purple-600">
-                      {forumDashboardResponse.bookmarkedThreadsCount}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600">
-                      Solutions Accepted:
-                    </span>
-                    <span className="font-medium text-purple-600">
-                      {forumDashboardResponse.totalSolutionsAccepted}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600">
-                      Total Thread Views:
-                    </span>
-                    <span className="font-medium text-purple-600">
-                      {forumDashboardResponse.totalThreadViews}
-                    </span>
-                  </div>
+                  {[
+                    {
+                      label: "Bookmarked Threads",
+                      value: forumDashboardResponse.bookmarkedThreadsCount,
+                      icon: Bookmark,
+                    },
+                    {
+                      label: "Solutions Accepted",
+                      value: forumDashboardResponse.totalSolutionsAccepted,
+                      icon: CheckCircle,
+                    },
+                    {
+                      label: "Total Thread Views",
+                      value: forumDashboardResponse.totalThreadViews,
+                      icon: Eye,
+                    },
+                  ].map((item, index) => (
+                    <motion.div
+                      key={item.label}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 + index * 0.1 }}
+                      className="flex justify-between items-center p-2 hover:bg-purple-50 rounded-lg transition-colors duration-200"
+                    >
+                      <div className="flex items-center gap-2">
+                        <item.icon className="w-4 h-4 text-purple-500" />
+                        <span className="text-xs text-gray-600">
+                          {item.label}:
+                        </span>
+                      </div>
+                      <span className="font-medium text-purple-600">
+                        {item.value.toLocaleString()}
+                      </span>
+                    </motion.div>
+                  ))}
                 </div>
-              </div>
+              </motion.div>
 
               {/* Active Tags */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md">
-                <h3 className="text-sm font-semibold text-gray-800 mb-3">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-purple-500" />
                   Active Topics
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {forumDashboardResponse.mostActiveTags.map((tag) => (
-                    <span
+                  {forumDashboardResponse.mostActiveTags.map((tag, index) => (
+                    <motion.span
                       key={tag.tagId}
-                      className="px-3 py-1 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 text-xs font-medium rounded-full border border-indigo-200"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.8 + index * 0.1 }}
+                      className="px-3 py-1 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 text-xs font-medium rounded-full border border-indigo-200 hover:from-indigo-200 hover:to-purple-200 transition-all duration-300 cursor-pointer"
                     >
                       {tag.tagName} ({tag.threadCount})
-                    </span>
+                    </motion.span>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
 
-          {/* Journal Stats */}
+          {/* Journal Stats Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1 }}
+            transition={{ delay: 0.5 }}
+            className="bg-gradient-to-b from-white to-teal-50 rounded-2xl p-6 shadow-md h-full flex flex-col"
           >
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-gray-600" />
-              Journal Entries
-            </h2>
-            <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-teal-100 rounded-lg">
+                <BookOpen className="w-6 h-6 text-teal-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800">
+                Journal Entries
+              </h2>
+            </div>
+
+            <div className="space-y-4 flex-grow">
               <StatCard
                 title="Total Entries"
                 value={journalDashboardResponse.totalEntries}
@@ -1143,7 +1358,7 @@ const DoctorDashboard = () => {
               />
               <StatCard
                 title="Words Written"
-                value={journalDashboardResponse.totalWordsWritten}
+                value={journalDashboardResponse.totalWordsWritten.toLocaleString()}
                 icon={PenTool}
                 color="bg-gradient-to-r from-blue-500 to-cyan-500"
                 animateValue={true}
@@ -1151,69 +1366,100 @@ const DoctorDashboard = () => {
               <StatCard
                 title="Active Entries"
                 value={journalDashboardResponse.activeEntries}
-                icon={BookOpen}
+                icon={FileEdit}
                 color="bg-gradient-to-r from-green-500 to-emerald-500"
                 animateValue={true}
               />
 
               {/* Journal Metrics */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md">
-                <h3 className="text-sm font-semibold text-gray-800 mb-3">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <Clipboard className="w-4 h-4 text-teal-500" />
                   Journal Metrics
                 </h3>
                 <div className="space-y-3 text-sm">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Avg Words/Entry:</span>
-                    <span className="font-medium text-blue-600">
-                      {journalDashboardResponse.avgWordsPerEntry.toFixed(0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Bookmarks:</span>
-                    <span className="font-medium text-blue-600">
-                      {journalDashboardResponse.bookmarksCount}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Upcoming Reminders:</span>
-                    <span className="font-medium text-blue-600">
-                      {journalDashboardResponse.upcomingReminders}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Patient Notes:</span>
-                    <span className="font-medium text-blue-600">
-                      {journalDashboardResponse.patientNotesCount}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Personal Notes:</span>
-                    <span className="font-medium text-blue-600">
-                      {journalDashboardResponse.personalNotesCount}
-                    </span>
-                  </div>
+                  {[
+                    {
+                      label: "Avg Words/Entry",
+                      value:
+                        journalDashboardResponse.avgWordsPerEntry.toFixed(0),
+                      icon: PenTool,
+                    },
+                    {
+                      label: "Bookmarks",
+                      value: journalDashboardResponse.bookmarksCount,
+                      icon: Bookmark,
+                    },
+                    {
+                      label: "Upcoming Reminders",
+                      value: journalDashboardResponse.upcomingReminders,
+                      icon: Calendar,
+                    },
+                    {
+                      label: "Patient Notes",
+                      value: journalDashboardResponse.patientNotesCount,
+                      icon: Users,
+                    },
+                    {
+                      label: "Personal Notes",
+                      value: journalDashboardResponse.personalNotesCount,
+                      icon: FileEdit,
+                    },
+                  ].map((item, index) => (
+                    <motion.div
+                      key={item.label}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 + index * 0.1 }}
+                      className="flex justify-between items-center p-2 hover:bg-teal-50 rounded-lg transition-colors duration-200"
+                    >
+                      <div className="flex items-center gap-2">
+                        <item.icon className="w-4 h-4 text-teal-500" />
+                        <span className="text-gray-600">{item.label}:</span>
+                      </div>
+                      <span className="font-medium text-teal-600">
+                        {item.value.toLocaleString()}
+                      </span>
+                    </motion.div>
+                  ))}
                 </div>
-              </div>
+              </motion.div>
 
               {/* Top Templates */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md">
-                <h3 className="text-sm font-semibold text-gray-800 mb-3">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-teal-500" />
                   Top Templates
                 </h3>
-                {journalDashboardResponse.topTemplates.map((template) => (
-                  <div
-                    key={template.templateId}
-                    className="flex justify-between items-center text-sm p-2 bg-blue-50 rounded-lg mb-2"
-                  >
-                    <span className="text-gray-700">
-                      {template.templateName}
-                    </span>
-                    <span className="font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded-full text-xs">
-                      {template.usageCount} uses
-                    </span>
-                  </div>
-                ))}
-              </div>
+                {journalDashboardResponse.topTemplates.map(
+                  (template, index) => (
+                    <motion.div
+                      key={template.templateId}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.9 + index * 0.1 }}
+                      className="flex justify-between items-center text-sm p-2 bg-teal-50 rounded-lg mb-2 hover:bg-teal-100 transition-colors duration-200 cursor-pointer"
+                    >
+                      <span className="text-gray-700 truncate">
+                        {template.templateName}
+                      </span>
+                      <span className="font-medium text-teal-600 bg-teal-100 px-2 py-1 rounded-full text-xs whitespace-nowrap">
+                        {template.usageCount} uses
+                      </span>
+                    </motion.div>
+                  )
+                )}
+              </motion.div>
             </div>
           </motion.div>
         </div>

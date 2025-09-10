@@ -90,7 +90,13 @@ message PatientStatsResponse {
   int64 totalPatients = 1;
   int64 newPatientsThisMonth = 2;
   int64 returningPatients = 3;
+
+  int64 activePatientsThisMonth = 4;
+  int64 patientsWithFollowUps = 5;
+  int64 patientsWithMultipleVisitsThisMonth = 6;
+  double averageVisitsPerPatient = 7;
 }
+
 
 message AppointmentIdRequest {
     string appointment_id = 1;

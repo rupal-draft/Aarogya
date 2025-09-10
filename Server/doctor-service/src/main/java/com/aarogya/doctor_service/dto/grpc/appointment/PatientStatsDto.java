@@ -13,4 +13,9 @@ public class PatientStatsDto {
     private long totalPatients;
     private long newPatientsThisMonth;
     private long returningPatients;
+
+    private long activePatientsThisMonth;
+    private long patientsWithFollowUps;
+    private long patientsWithMultipleVisitsThisMonth;
+    private double averageVisitsPerPatient;
 }

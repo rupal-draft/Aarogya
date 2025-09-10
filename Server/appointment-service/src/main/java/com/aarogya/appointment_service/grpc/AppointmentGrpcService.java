@@ -131,6 +131,10 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                             .setTotalPatients(patientStatsDto.getTotalPatients())
                             .setNewPatientsThisMonth(patientStatsDto.getNewPatientsThisMonth())
                             .setReturningPatients(patientStatsDto.getReturningPatients())
+                            .setActivePatientsThisMonth(patientStatsDto.getActivePatientsThisMonth())
+                            .setPatientsWithFollowUps(patientStatsDto.getPatientsWithFollowUps())
+                            .setPatientsWithMultipleVisitsThisMonth(patientStatsDto.getPatientsWithMultipleVisitsThisMonth())
+                            .setAverageVisitsPerPatient(patientStatsDto.getAverageVisitsPerPatient())
                             .build();
 
             Appointment.DoctorStatsResponse response =

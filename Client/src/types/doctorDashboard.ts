@@ -28,6 +28,11 @@ export interface PatientStatsDto {
   totalPatients: number;
   newPatientsThisMonth: number;
   returningPatients: number;
+
+  activePatientsThisMonth: number;
+  patientsWithFollowUps: number;
+  patientsWithMultipleVisitsThisMonth: number;
+  averageVisitsPerPatient: number;
 }
 
 export interface CategoryStat {

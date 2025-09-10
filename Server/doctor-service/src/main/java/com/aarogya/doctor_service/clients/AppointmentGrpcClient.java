@@ -174,11 +174,16 @@ public class AppointmentGrpcClient {
     }
 
     private PatientStatsDto mapToPatientStatsDto(Appointment.PatientStatsResponse grpcResponse) {
-        return new PatientStatsDto(
-                grpcResponse.getTotalPatients(),
-                grpcResponse.getNewPatientsThisMonth(),
-                grpcResponse.getReturningPatients()
-        );
+        return PatientStatsDto
+                .builder()
+                .totalPatients(grpcResponse.getTotalPatients())
+                .returningPatients(grpcResponse.getReturningPatients())
+                .newPatientsThisMonth(grpcResponse.getNewPatientsThisMonth())
+                .patientsWithFollowUps(grpcResponse.getPatientsWithFollowUps())
+                .activePatientsThisMonth(grpcResponse.getActivePatientsThisMonth())
+                .averageVisitsPerPatient(grpcResponse.getAverageVisitsPerPatient())
+                .patientsWithMultipleVisitsThisMonth(grpcResponse.getPatientsWithMultipleVisitsThisMonth())
+                .build();
     }
 
     private AppointmentCountByDateDto mapToAppointmentCountByDateDto(Appointment.AppointmentCountByDate grpcResponse) {
