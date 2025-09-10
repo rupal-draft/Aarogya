@@ -192,6 +192,14 @@ export interface ForumEngagementTrend {
   replyCount: number;
 }
 
+export interface MostUpvotedThreadResponse {
+  title: string;
+  tags: string[];
+  content: string;
+  upvoteCount: number;
+  isActive: boolean;
+}
+
 export interface ForumDashboardResponse {
   totalThreadsCreated: number;
   totalRepliesGiven: number;
@@ -201,6 +209,7 @@ export interface ForumDashboardResponse {
   totalThreadViews: number;
   mostActiveTags: MostActiveTag[];
   engagementTrend: ForumEngagementTrend[];
+  mostUpvotedThreadResponse: MostUpvotedThreadResponse;
 }
 
 export interface TopTemplate {

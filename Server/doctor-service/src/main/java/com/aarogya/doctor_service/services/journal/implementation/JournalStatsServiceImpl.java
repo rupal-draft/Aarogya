@@ -1,9 +1,9 @@
 package com.aarogya.doctor_service.services.journal.implementation;
 
-import com.aarogya.doctor_service.dto.forum.response.JournalDashboardResponse;
-import com.aarogya.doctor_service.dto.forum.response.JournalTagUsageDto;
-import com.aarogya.doctor_service.dto.forum.response.JournalTemplateUsageDto;
-import com.aarogya.doctor_service.dto.forum.response.JournalTrendDto;
+import com.aarogya.doctor_service.dto.journal.response.JournalDashboardResponse;
+import com.aarogya.doctor_service.dto.journal.response.JournalTagUsageDto;
+import com.aarogya.doctor_service.dto.journal.response.JournalTemplateUsageDto;
+import com.aarogya.doctor_service.dto.journal.response.JournalTrendDto;
 import com.aarogya.doctor_service.enums.journal.EntryType;
 import com.aarogya.doctor_service.models.journal.*;
 import com.aarogya.doctor_service.services.journal.JournalStatsService;

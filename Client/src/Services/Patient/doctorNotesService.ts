@@ -2,8 +2,8 @@ import type {
   ApiResponse,
   DoctorNoteResponse,
   PageResponse,
-} from "../../../types/patientDashboard";
-import { api } from "../../../utils/dashboardApi";
+} from "../../types/patientDashboard";
+import { api } from "../../utils/dashboardApi";
 
 export class DoctorNotesService {
   private readonly basePath = "/doctor-notes";

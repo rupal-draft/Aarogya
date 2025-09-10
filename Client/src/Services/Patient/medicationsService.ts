@@ -3,8 +3,8 @@ import type {
   CreateMedicationRequest,
   PatientMedicationResponse,
   UpdateMedicationRequest,
-} from "../../../types/patientDashboard";
-import { api } from "../../../utils/dashboardApi";
+} from "../../types/patientDashboard";
+import { api } from "../../utils/dashboardApi";
 
 export class MedicationsService {
   private readonly basePath = "/medications";

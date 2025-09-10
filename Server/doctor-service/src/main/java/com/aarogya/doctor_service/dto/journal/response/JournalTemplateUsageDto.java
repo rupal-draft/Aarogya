@@ -1,4 +1,4 @@
-package com.aarogya.doctor_service.dto.forum.response;
+package com.aarogya.doctor_service.dto.journal.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

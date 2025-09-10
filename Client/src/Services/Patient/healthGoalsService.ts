@@ -3,8 +3,8 @@ import type {
   CreateHealthGoalRequest,
   HealthGoalResponse,
   UpdateHealthGoalRequest,
-} from "../../../types/patientDashboard";
-import { api } from "../../../utils/dashboardApi";
+} from "../../types/patientDashboard";
+import { api } from "../../utils/dashboardApi";
 
 export class HealthGoalsService {
   private readonly basePath = "/health-goals";

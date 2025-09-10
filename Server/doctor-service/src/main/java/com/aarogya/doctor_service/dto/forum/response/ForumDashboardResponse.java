@@ -20,5 +20,6 @@ public class ForumDashboardResponse {
     private Long totalThreadViews;
     private List<TagContributionDto> mostActiveTags;
     private List<EngagementTrendDto> engagementTrend;
+    private MostUpvotedThreadResponse mostUpvotedThreadResponse;
 }
 

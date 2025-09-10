@@ -3,8 +3,8 @@ import type {
   CreateVitalsRequest,
   PatientVitalsResponse,
   UpdateVitalsRequest,
-} from "../../../types/patientDashboard";
-import { api } from "../../../utils/dashboardApi";
+} from "../../types/patientDashboard";
+import { api } from "../../utils/dashboardApi";
 
 export class VitalsService {
   private readonly basePath = "/vitals";

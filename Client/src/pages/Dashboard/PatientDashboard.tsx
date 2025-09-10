@@ -165,7 +165,6 @@ export default function PatientDashboard() {
           withCredentials: true,
         }
       );
-      console.log(response);
       setData(response.data);
     } catch (err: any) {
       console.error("Failed to load mock data:", err);

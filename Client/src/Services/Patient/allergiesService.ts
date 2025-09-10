@@ -1,11 +1,10 @@
 import type {
   ApiResponse,
-  PageResponse,
   PatientAllergyResponse,
   CreateAllergyRequest,
   UpdateAllergyRequest,
-} from "../../../types/patientDashboard";
-import { api } from "../../../utils/dashboardApi";
+} from "../../types/patientDashboard";
+import { api } from "../../utils/dashboardApi";
 
 export class AllergiesService {
   private readonly basePath = "/allergies";

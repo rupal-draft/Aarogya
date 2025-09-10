@@ -2,8 +2,8 @@ import type {
   ApiResponse,
   CreateMedicalHistoryRequest,
   MedicalHistoryResponse,
-} from "../../../types/patientDashboard";
-import { api } from "../../../utils/dashboardApi";
+} from "../../types/patientDashboard";
+import { api } from "../../utils/dashboardApi";
 
 export class MedicalHistoryService {
   private readonly basePath = "/medical-history";

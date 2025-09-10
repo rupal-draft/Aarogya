@@ -1,20 +1,21 @@
-import { logout } from "../../redux/slices/authSlice"
-import { useAppDispatch, useAppSelector } from "../../redux/store"
-
+import { logout } from "../../redux/slices/authSlice";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 
 export const useAuth = () => {
-  const dispatch = useAppDispatch()
-  const { isAuthenticated, userType, doctor, patient, loading, error } = useAppSelector((state) => state.auth)
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, userType, doctor, patient, loading, error } =
+    useAppSelector((state) => state.auth);
 
-  const userData = userType === "doctor" ? doctor : patient
+  const userData = userType === "doctor" ? doctor : patient;
 
-  const userName = userData?.firstName + " " + userData?.lastName || ""
+  const userName = userData?.firstName + " " + userData?.lastName || "";
 
-  const profileImage = userData?.imageUrl || "/default-avatar.png"
+  const profileImage = userData?.imageUrl || "/default-avatar.png";
+  console.log(userData);
 
   const handleLogout = () => {
-    dispatch(logout())
-  }
+    dispatch(logout());
+  };
 
   return {
     isAuthenticated,
@@ -27,5 +28,5 @@ export const useAuth = () => {
     userName,
     profileImage,
     handleLogout,
-  }
-}
+  };
+};

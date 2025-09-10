@@ -2,6 +2,7 @@ package com.aarogya.doctor_service.services.forum.implementation;
 
 import com.aarogya.doctor_service.dto.forum.response.EngagementTrendDto;
 import com.aarogya.doctor_service.dto.forum.response.ForumDashboardResponse;
+import com.aarogya.doctor_service.dto.forum.response.MostUpvotedThreadResponse;
 import com.aarogya.doctor_service.dto.forum.response.TagContributionDto;
 import com.aarogya.doctor_service.models.forum.ForumBookmark;
 import com.aarogya.doctor_service.models.forum.ForumReply;
@@ -162,6 +163,22 @@ public class ForumStatsServiceImpl implements ForumStatsService {
                 .totalThreadViews(views)
                 .mostActiveTags(tagContributions)
                 .engagementTrend(new ArrayList<>(mergedTrend.values()))
+                .mostUpvotedThreadResponse(getMostUpvotedThread(doctorId))
+                .build();
+    }
+
+    private MostUpvotedThreadResponse getMostUpvotedThread(String doctorId) {
+        Query query = new Query(Criteria.where("authorId").is(doctorId));
+        query.with(Sort.by(Sort.Direction.DESC, "upvoteCount"));
+        query.limit(1);
+        ForumThread forumThread = mongoTemplate.findOne(query, ForumThread.class);
+        return MostUpvotedThreadResponse
+                .builder()
+                .title(Objects.requireNonNull(forumThread).getTitle())
+                .tags(forumThread.getTags())
+                .content(forumThread.getContent())
+                .upvoteCount(forumThread.getUpvoteCount())
+                .isActive(forumThread.getIsActive())
                 .build();
     }
 }

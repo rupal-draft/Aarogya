@@ -2,7 +2,7 @@ package com.aarogya.doctor_service.dto.dashboard;
 
 import com.aarogya.doctor_service.dto.availability.response.CalendarQuickViewResponse;
 import com.aarogya.doctor_service.dto.forum.response.ForumDashboardResponse;
-import com.aarogya.doctor_service.dto.forum.response.JournalDashboardResponse;
+import com.aarogya.doctor_service.dto.journal.response.JournalDashboardResponse;
 import com.aarogya.doctor_service.dto.grpc.appointment.DoctorPatientAppointmentStats;
 import com.aarogya.doctor_service.dto.grpc.article.DoctorArticleStatsDTO;
 import com.aarogya.doctor_service.dto.grpc.auth.DoctorResponseDTO;

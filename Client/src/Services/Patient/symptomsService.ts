@@ -3,8 +3,8 @@ import type {
   CreateSymptomTrackerRequest,
   SymptomTrackerResponse,
   UpdateSymptomTrackerRequest,
-} from "../../../types/patientDashboard";
-import { api } from "../../../utils/dashboardApi";
+} from "../../types/patientDashboard";
+import { api } from "../../utils/dashboardApi";
 
 export class SymptomsService {
   private readonly basePath = "/symptoms";

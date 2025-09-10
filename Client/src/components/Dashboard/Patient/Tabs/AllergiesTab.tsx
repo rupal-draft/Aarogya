@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { allergiesService } from "../../../../Services/Dashboard/Patient";
 import { AnimatePresence, motion } from "framer-motion";
 import Button from "../../../../common/Ui/Button";
 import { AlertTriangle, Edit, Plus, Shield, Trash2, X } from "lucide-react";
@@ -15,6 +14,7 @@ import { Input } from "../../../../common/Ui/input";
 import { Textarea } from "../../../../common/Ui/Textarea";
 import { Badge } from "../../../../common/Ui/Badge2";
 import { Card } from "../../../../common/Ui/Card2";
+import { allergiesService } from "../../../../Services/Patient/allergiesService";
 
 interface AllergiesTabProps {
   data: any[];

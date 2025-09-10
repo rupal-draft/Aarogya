@@ -61,6 +61,9 @@ import { EnhancedAvailabilityCalendar } from "../../components/Dashboard/Doctor/
 import { RatingStars } from "../../components/Dashboard/Doctor/RatingStars";
 import { DayDetailsPanel } from "../../components/Dashboard/Doctor/DayDetailsPanel";
 import { ProgressBar } from "../../components/Dashboard/Doctor/ProgressBar";
+import { DashboardService } from "../../Services/dashboard";
+
+const dashboardService = new DashboardService();
 
 const DoctorDashboard = () => {
   const [data, setData] = useState<DoctorDashboardData | null>(null);
@@ -71,14 +74,8 @@ const DoctorDashboard = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          "http://localhost:8080/api/v1/doctors/dashboard",
-          {
-            withCredentials: true,
-          }
-        );
-        console.log(response);
-        setData(response.data);
+        const result = await dashboardService.getDoctorDashboard();
+        setData(result);
       } catch (err) {
         setError("Failed to load dashboard data");
         console.error(err);
@@ -1328,6 +1325,109 @@ const DoctorDashboard = () => {
                     </motion.span>
                   ))}
                 </div>
+              </motion.div>
+
+              {/* Most Upvoted Thread */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+                className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-4 shadow-md border border-indigo-100 hover:shadow-lg transition-all duration-300 group"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                    <Crown className="w-4 h-4 text-amber-500" />
+                    Most Upvoted Thread
+                  </h3>
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    className="flex items-center gap-1 bg-gradient-to-r from-amber-400 to-amber-500 text-white px-2 py-1 rounded-full text-xs font-bold"
+                  >
+                    <TrendingUp className="w-3 h-3" />
+                    {
+                      forumDashboardResponse.mostUpvotedThreadResponse
+                        .upvoteCount
+                    }
+                  </motion.div>
+                </div>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.0 }}
+                  className="space-y-3"
+                >
+                  {/* Thread Title */}
+                  <div className="flex items-start gap-2">
+                    <FileText className="w-4 h-4 text-indigo-500 mt-0.5 flex-shrink-0" />
+                    <h4 className="text-sm font-medium text-gray-800 leading-tight">
+                      {forumDashboardResponse.mostUpvotedThreadResponse.title}
+                    </h4>
+                  </div>
+
+                  {/* Thread Content Preview */}
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    transition={{ delay: 1.1 }}
+                    className="bg-white/70 rounded-lg p-3 border border-indigo-100"
+                  >
+                    <p className="text-xs text-gray-600 line-clamp-3">
+                      {forumDashboardResponse.mostUpvotedThreadResponse.content}
+                    </p>
+                  </motion.div>
+
+                  {/* Tags */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.2 }}
+                    className="flex flex-wrap gap-1"
+                  >
+                    {forumDashboardResponse.mostUpvotedThreadResponse.tags.map(
+                      (tag, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 text-xs rounded-full border border-indigo-200"
+                        >
+                          #{tag}
+                        </span>
+                      )
+                    )}
+                  </motion.div>
+
+                  {/* Status Indicator */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.3 }}
+                    className="flex items-center gap-2 pt-2 border-t border-indigo-100"
+                  >
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        forumDashboardResponse.mostUpvotedThreadResponse
+                          .isActive
+                          ? "bg-green-400 animate-pulse"
+                          : "bg-gray-300"
+                      }`}
+                    />
+                    <span className="text-xs text-gray-500">
+                      {forumDashboardResponse.mostUpvotedThreadResponse.isActive
+                        ? "Active discussion"
+                        : "Archived"}
+                    </span>
+                  </motion.div>
+                </motion.div>
+
+                {/* View Thread Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full mt-3 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-medium rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 flex items-center justify-center gap-1"
+                >
+                  <Eye className="w-3 h-3" />
+                  View Thread
+                </motion.button>
               </motion.div>
             </div>
           </motion.div>

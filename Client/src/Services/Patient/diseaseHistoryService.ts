@@ -3,8 +3,8 @@ import type {
   DiseaseHistoryResponse,
   CreateDiseaseHistoryRequest,
   UpdateDiseaseHistoryRequest,
-} from "../../../types/patientDashboard";
-import { api } from "../../../utils/dashboardApi";
+} from "../../types/patientDashboard";
+import { api } from "../../utils/dashboardApi";
 
 export class DiseaseHistoryService {
   private readonly basePath = "/disease-history";

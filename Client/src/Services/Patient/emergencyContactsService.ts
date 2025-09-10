@@ -3,8 +3,8 @@ import type {
   CreateEmergencyContactRequest,
   EmergencyContactResponse,
   UpdateEmergencyContactRequest,
-} from "../../../types/patientDashboard";
-import { api } from "../../../utils/dashboardApi";
+} from "../../types/patientDashboard";
+import { api } from "../../utils/dashboardApi";
 
 export class EmergencyContactsService {
   private readonly basePath = "/emergency-contacts";
