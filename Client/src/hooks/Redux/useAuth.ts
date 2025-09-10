@@ -11,7 +11,6 @@ export const useAuth = () => {
   const userName = userData?.firstName + " " + userData?.lastName || "";
 
   const profileImage = userData?.imageUrl || "/default-avatar.png";
-  console.log(userData);
 
   const handleLogout = () => {
     dispatch(logout());

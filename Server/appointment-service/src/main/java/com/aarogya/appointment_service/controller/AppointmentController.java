@@ -119,7 +119,7 @@ public class AppointmentController {
             @RequestParam(defaultValue = "10") int size) {
         log.info("Fetching patient appointments with filters - status: {}, date: {}", status, date);
         Page<AppointmentResponseDto> response = appointmentService.getPatientAppointments(
-                status != null ? status : null,
+                status,
                 date, page, size);
         return ResponseEntity.ok(ApiResponse.success(response));
     }

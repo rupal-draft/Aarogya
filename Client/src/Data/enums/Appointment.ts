@@ -1,12 +1,16 @@
 export enum AppointmentType {
-    REGULAR = "REGULAR",
-    EMERGENCY = "EMERGENCY",
-    FOLLOW_UP = "FOLLOW_UP",
-  }
+  REGULAR = "REGULAR",
+  EMERGENCY = "EMERGENCY",
+  FOLLOW_UP = "FOLLOW_UP",
+}
 
-  export enum AppointmentStatus {
-    PENDING = "PENDING",
-    CONFIRMED = "CONFIRMED",
-    CANCELLED = "CANCELLED",
-    COMPLETED = "COMPLETED",
-  }
+export enum AppointmentStatus {
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  CANCELLED = "CANCELLED",
+  COMPLETED = "COMPLETED",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+  IN_PROGRESS = "IN_PROGRESS",
+  NO_SHOW = "NO_SHOW",
+}

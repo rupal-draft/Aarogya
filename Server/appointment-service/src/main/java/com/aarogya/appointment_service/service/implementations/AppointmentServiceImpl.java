@@ -8,6 +8,7 @@ import com.aarogya.appointment_service.dto.request.UpdateAppointmentStatusDto;
 import com.aarogya.appointment_service.dto.response.AppointmentResponseDto;
 import com.aarogya.appointment_service.enums.AppointmentStatus;
 import com.aarogya.appointment_service.enums.AppointmentType;
+import com.aarogya.appointment_service.exceptions.BadRequestException;
 import com.aarogya.appointment_service.exceptions.DataIntegrityViolation;
 import com.aarogya.appointment_service.exceptions.ResourceNotFound;
 import com.aarogya.appointment_service.exceptions.ServiceUnavailable;
@@ -201,7 +202,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
-
     @Cacheable(value = APPOINTMENT_CACHE, key = "{#status, #date, #page, #size, 'doctor'}")
     @Transactional(readOnly = true)
     @Override
@@ -210,13 +210,27 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         try {
             String doctorId = UserContextHolder.getUserDetails().getUserId();
-            Pageable pageable = PageRequest.of(page, size, Sort.by("appointmentDate").descending().and(Sort.by("startTime").descending()));
+            Pageable pageable = PageRequest.of(
+                    page,
+                    size,
+                    Sort.by("appointmentDate").descending().and(Sort.by("startTime").descending())
+            );
 
-            Page<Appointment> appointments = fetchDoctorAppointments(doctorId, AppointmentStatus.valueOf(status.toUpperCase()), date, pageable);
+            AppointmentStatus parsedStatus = null;
+            if (status != null && !status.isBlank()) {
+                try {
+                    parsedStatus = AppointmentStatus.valueOf(status.toUpperCase());
+                } catch (IllegalArgumentException ex) {
+                    log.warn("Invalid status provided: {}", status);
+                    throw new BadRequestException("Invalid appointment status: " + status);
+                }
+            }
+
+            Page<Appointment> appointments = fetchDoctorAppointments(doctorId, parsedStatus, date, pageable);
             return appointments.map(this::mapToResponseDto);
         } catch (Exception e) {
             log.error("Error fetching doctor appointments", e);
-            throw new ServiceUnavailable(e.getLocalizedMessage());
+            throw new ServiceUnavailable("Unable to fetch appointments at the moment");
         }
     }
 
