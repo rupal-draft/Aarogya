@@ -193,3 +193,25 @@ export const priorityColors = [
   "bg-orange-100 text-orange-800", // High priority
   "bg-red-100 text-red-800", // Critical priority
 ];
+
+export const statusOptions = [
+  {
+    value: "PENDING",
+    label: "Pending",
+    color: "bg-yellow-100 text-yellow-800",
+  },
+  { value: "APPROVED", label: "Approved", color: "bg-blue-100 text-blue-800" },
+  {
+    value: "IN_PROGRESS",
+    label: "In Progress",
+    color: "bg-purple-100 text-purple-800",
+  },
+  {
+    value: "COMPLETED",
+    label: "Completed",
+    color: "bg-green-100 text-green-800",
+  },
+  { value: "CANCELLED", label: "Cancelled", color: "bg-red-100 text-red-800" },
+  { value: "REJECTED", label: "Rejected", color: "bg-red-100 text-red-800" },
+  { value: "NO_SHOW", label: "No Show", color: "bg-gray-100 text-gray-800" },
+];

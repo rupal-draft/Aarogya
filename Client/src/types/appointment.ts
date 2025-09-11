@@ -119,3 +119,10 @@ export interface Page<T> {
   first: boolean;
   empty: boolean;
 }
+
+export interface UpdateAppointmentStatusDto {
+  status: string;
+  notes?: string;
+  doctorNotes?: string;
+  cancellationReason?: string;
+}

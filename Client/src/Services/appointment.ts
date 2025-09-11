@@ -5,6 +5,7 @@ import type {
   AppointmentResponseDto,
   EmergencyAppointmentDto,
   PageResponse,
+  UpdateAppointmentStatusDto,
 } from "../types/appointment";
 
 const API_BASE_URL = "http://localhost:8080/api/v1/appointment/core";
@@ -125,4 +126,12 @@ export const getDoctorAppointments = async (
     console.error("Error fetching doctor appointments:", error);
     throw error;
   }
+};
+
+export const updateAppointmentStatus = async (
+  id: string,
+  updateData: UpdateAppointmentStatusDto
+): Promise<AppointmentResponseDto> => {
+  const response = await api.put(`${API_BASE_URL}/${id}/status`, updateData);
+  return response.data.data;
 };

@@ -30,6 +30,13 @@ import type { AppointmentResponseDto } from "../../types/appointment";
 import { getDoctorAppointments } from "../../Services/appointment";
 import { AnimatedCounter } from "../../common/Counter/AnimatedCounter";
 import { FloatingElements } from "../../common/Floating Particles/floating-elements";
+import { UpdateAppointmentStatusModal } from "../../components/Dashboard/Doctor/UpdateAppointmentStatusModal";
+
+const statusChangeVariants = {
+  initial: { opacity: 0, scale: 0.8 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.8 },
+};
 
 const StatusBadge = ({ status }: { status: string }) => {
   const config = statusConfig[status] || statusConfig.PENDING;
@@ -99,6 +106,27 @@ const DoctorAppointmentsDashboard = () => {
   const [expandedAppointment, setExpandedAppointment] = useState<string | null>(
     null
   );
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<AppointmentResponseDto | null>(null);
+
+  const handleEditClick = (appointment: AppointmentResponseDto) => {
+    setSelectedAppointment(appointment);
+    setIsStatusModalOpen(true);
+  };
+
+  const handleStatusUpdate = (updatedAppointment: AppointmentResponseDto) => {
+    setAppointments((prev) =>
+      prev.map((apt) =>
+        apt.id === updatedAppointment.id ? updatedAppointment : apt
+      )
+    );
+    setFilteredAppointments((prev) =>
+      prev.map((apt) =>
+        apt.id === updatedAppointment.id ? updatedAppointment : apt
+      )
+    );
+  };
 
   // Fetch appointments
   useEffect(() => {
@@ -408,7 +436,18 @@ const DoctorAppointmentsDashboard = () => {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <StatusBadge status={appointment.status} />
+                        <AnimatePresence mode="wait">
+                          <motion.span
+                            key={appointment.status}
+                            variants={statusChangeVariants}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                            transition={{ duration: 0.3 }}
+                          >
+                            <StatusBadge status={appointment.status} />
+                          </motion.span>
+                        </AnimatePresence>
                         <TypeBadge type={appointment.type} />
                         {expandedAppointment === appointment.id ? (
                           <ChevronDown className="w-5 h-5 text-blue-500 transform rotate-180" />
@@ -571,12 +610,12 @@ const DoctorAppointmentsDashboard = () => {
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
+                            onClick={() => handleEditClick(appointment)}
                             className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all flex items-center gap-2"
                           >
                             <Edit className="w-4 h-4" />
                             Edit
                           </motion.button>
-
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
@@ -585,7 +624,6 @@ const DoctorAppointmentsDashboard = () => {
                             <MessageCircle className="w-4 h-4" />
                             Message
                           </motion.button>
-
                           {appointment.status === "APPROVED" && (
                             <motion.button
                               whileHover={{ scale: 1.05 }}
@@ -605,6 +643,12 @@ const DoctorAppointmentsDashboard = () => {
             })
           )}
         </motion.div>
+        <UpdateAppointmentStatusModal
+          isOpen={isStatusModalOpen}
+          onClose={() => setIsStatusModalOpen(false)}
+          appointment={selectedAppointment!}
+          onStatusUpdate={handleStatusUpdate}
+        />
       </div>
     </div>
   );
