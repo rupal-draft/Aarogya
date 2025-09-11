@@ -74,7 +74,7 @@ export const DoctorNotesCard: React.FC<DoctorNotesCardProps> = ({ notes }) => {
         </span>
       </h2>
 
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="space-y-4 ">
         {notes.map((note, index) => (
           <motion.div
             key={note.id}

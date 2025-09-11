@@ -42,7 +42,7 @@ export const HealthGoalsCard: React.FC<HealthGoalsCardProps> = ({ goals }) => {
         </span>
       </h2>
 
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="space-y-4">
         {goals.map((goal, index) => {
           const progress = Math.min(
             (goal.currentValue / goal.targetValue) * 100,

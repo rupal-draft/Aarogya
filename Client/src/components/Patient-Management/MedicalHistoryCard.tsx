@@ -65,7 +65,7 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
         </span>
       </h2>
 
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="space-y-4 ">
         {history.map((condition, index) => (
           <motion.div
             key={index}

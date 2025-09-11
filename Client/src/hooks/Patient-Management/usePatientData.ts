@@ -11,7 +11,10 @@ export const usePatientData = (patientId: string) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:8080/api/v1/patient/management/${patientId}`
+        `http://localhost:8080/api/v1/patient/management/${patientId}`,
+        {
+          withCredentials: true,
+        }
       );
       setData(response.data);
       setError(null);
