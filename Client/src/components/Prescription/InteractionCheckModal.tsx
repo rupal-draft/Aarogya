@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   X,
   AlertTriangle,
@@ -9,10 +9,7 @@ import {
   AlertCircle,
   XCircle,
 } from "lucide-react";
-import type {
-  MedicineDto,
-  MedicineInteractionCheck,
-} from "../../types/prescription";
+import type { MedicineInteractionCheck } from "../../types/prescription";
 import { prescriptionService } from "../../Services/prescription";
 
 interface InteractionCheckModalProps {
@@ -25,45 +22,34 @@ const InteractionCheckModal: React.FC<InteractionCheckModalProps> = ({
   onClose,
 }) => {
   const [selectedMedicines, setSelectedMedicines] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<MedicineDto[]>([]);
+  const [medicineInput, setMedicineInput] = useState("");
   const [interactions, setInteractions] = useState<MedicineInteractionCheck[]>(
     []
   );
-  const [isSearching, setIsSearching] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [hasChecked, setHasChecked] = useState(false);
 
-  const handleMedicineSearch = async (query: string) => {
-    if (query.length < 2) {
-      setSearchResults([]);
-      return;
+  const addMedicine = () => {
+    if (
+      medicineInput.trim() &&
+      !selectedMedicines.includes(medicineInput.trim())
+    ) {
+      setSelectedMedicines((prev) => [...prev, medicineInput.trim()]);
+      setInteractions([]); // Reset interactions when adding a new medicine
     }
+    setMedicineInput("");
+  };
 
-    setIsSearching(true);
-    try {
-      const response = await prescriptionService.searchMedicines({
-        name: query,
-        page: 0,
-        size: 10,
-      });
-      setSearchResults(response.content);
-    } catch (error) {
-      console.error("Error searching medicines:", error);
-    } finally {
-      setIsSearching(false);
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      addMedicine();
     }
   };
 
-  const addMedicine = (medicineId: string) => {
-    if (!selectedMedicines.includes(medicineId)) {
-      setSelectedMedicines((prev) => [...prev, medicineId]);
-    }
-    setSearchQuery("");
-    setSearchResults([]);
-  };
-
-  const removeMedicine = (medicineId: string) => {
-    setSelectedMedicines((prev) => prev.filter((id) => id !== medicineId));
+  const removeMedicine = (medicineName: string) => {
+    setSelectedMedicines((prev) =>
+      prev.filter((name) => name !== medicineName)
+    );
     setInteractions([]);
   };
 
@@ -71,6 +57,7 @@ const InteractionCheckModal: React.FC<InteractionCheckModalProps> = ({
     if (selectedMedicines.length < 2) return;
 
     setIsChecking(true);
+    setHasChecked(true);
     try {
       const result = await prescriptionService.checkInteractions(
         selectedMedicines
@@ -165,73 +152,32 @@ const InteractionCheckModal: React.FC<InteractionCheckModalProps> = ({
         </div>
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-          {/* Medicine Search */}
+          {/* Medicine Input */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Add Medicines to Check
             </h3>
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search medicines to add..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  handleMedicineSearch(e.target.value);
-                }}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Search Results */}
-            <AnimatePresence>
-              {searchResults.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="bg-gray-50 rounded-lg p-4 mb-4"
-                >
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {searchResults.map((medicine, index) => (
-                      <motion.button
-                        key={index}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => addMedicine(medicine.id || "")}
-                        disabled={selectedMedicines.includes(medicine.id || "")}
-                        className="w-full text-left p-3 bg-white rounded-lg border border-gray-200 hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-gray-900">
-                              {medicine.name}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              {medicine.therapeuticClass}
-                            </div>
-                          </div>
-                          {selectedMedicines.includes(medicine.id || "") && (
-                            <CheckCircle className="w-5 h-5 text-green-500" />
-                          )}
-                        </div>
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {isSearching && (
-              <div className="text-center py-4">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full mx-auto"
+            <div className="flex gap-2 mb-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Enter medicine name..."
+                  value={medicineInput}
+                  onChange={(e) => setMedicineInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
-            )}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={addMedicine}
+                className="px-4 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+              >
+                Add
+              </motion.button>
+            </div>
           </div>
 
           {/* Selected Medicines */}
@@ -243,27 +189,27 @@ const InteractionCheckModal: React.FC<InteractionCheckModalProps> = ({
               <div className="text-center py-8 text-gray-500">
                 <Search className="w-12 h-12 mx-auto mb-2 text-gray-300" />
                 <p>
-                  No medicines selected. Search and add medicines to check for
+                  No medicines added. Enter medicine names to check for
                   interactions.
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                {selectedMedicines.map((medicineId, index) => (
+                {selectedMedicines.map((medicineName, index) => (
                   <motion.div
-                    key={medicineId}
+                    key={index}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     className="flex items-center justify-between bg-orange-50 rounded-lg p-3 border border-orange-200"
                   >
                     <span className="font-medium text-gray-900">
-                      Medicine {index + 1}
+                      {medicineName}
                     </span>
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => removeMedicine(medicineId)}
+                      onClick={() => removeMedicine(medicineName)}
                       className="p-1 text-red-600 hover:bg-red-100 rounded"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -305,7 +251,7 @@ const InteractionCheckModal: React.FC<InteractionCheckModalProps> = ({
             )}
           </div>
 
-          {/* Interaction Results */}
+          {/* Interaction Results - Only show after checking */}
           {interactions.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -340,14 +286,7 @@ const InteractionCheckModal: React.FC<InteractionCheckModalProps> = ({
                               {interaction.severity}
                             </span>
                             <span className="text-sm text-gray-600">
-                              Medicine{" "}
-                              {selectedMedicines.indexOf(
-                                interaction.medicineId1
-                              ) + 1}{" "}
-                              ↔ Medicine{" "}
-                              {selectedMedicines.indexOf(
-                                interaction.medicineId2
-                              ) + 1}
+                              {interaction.medicine1} ↔ {interaction.medicine2}
                             </span>
                           </div>
                           <p className="text-gray-700">
@@ -362,8 +301,9 @@ const InteractionCheckModal: React.FC<InteractionCheckModalProps> = ({
             </motion.div>
           )}
 
-          {/* No Interactions Message */}
-          {selectedMedicines.length >= 2 &&
+          {/* No Interactions Message - Only show after checking */}
+          {hasChecked &&
+            selectedMedicines.length >= 2 &&
             interactions.length === 0 &&
             !isChecking && (
               <motion.div

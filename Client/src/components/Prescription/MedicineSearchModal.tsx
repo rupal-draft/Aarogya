@@ -87,7 +87,6 @@ const MedicineSearchModal: React.FC<MedicineSearchModalProps> = ({
   };
 
   if (!isOpen) return null;
-
   return (
     <motion.div
       variants={modalVariants}
@@ -240,7 +239,7 @@ const MedicineSearchModal: React.FC<MedicineSearchModalProps> = ({
 
           {/* Results Panel */}
           <div className="flex-1 overflow-y-auto">
-            {results.length === 0 && !isSearching ? (
+            {results?.length === 0 && !isSearching ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <Pill className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -397,7 +396,7 @@ const MedicineSearchModal: React.FC<MedicineSearchModalProps> = ({
                 ) : (
                   // Results List View
                   <div className="space-y-3">
-                    {results.map((medicine, index) => (
+                    {results?.map((medicine, index) => (
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, y: 20 }}

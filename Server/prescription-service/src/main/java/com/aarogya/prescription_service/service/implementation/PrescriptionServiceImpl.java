@@ -62,7 +62,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         log.info("Creating prescription for appointment: {}", request.getAppointmentId());
 
         List<String> medicineNames = getMedicineNames(request.getMedicines());
-        checkForCriticalInteractions(medicineNames);
 
         Prescription prescription = buildPrescription(request);
         Prescription savedPrescription = prescriptionRepository.save(prescription);
@@ -94,11 +93,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
                 .orElseThrow(() -> new ResourceNotFound("Prescription not found with id: " + id));
 
         validateDoctorOwnership(existingPrescription);
-
-        if (request.getMedicines() != null) {
-            List<String> medicineNames = getMedicineNames(request.getMedicines());
-            checkForCriticalInteractions(medicineNames);
-        }
 
         updatePrescriptionFields(existingPrescription, request);
         Prescription updatedPrescription = prescriptionRepository.save(existingPrescription);
@@ -166,15 +160,9 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     }
 
     @Override
-    public List<MedicineInteractionCheck> checkMedicineInteractions(List<String> medicineIds) {
-        log.debug("Checking interactions for medicines: {}", medicineIds);
-
-        List<Medicine> medicines = medicineRepository.findAllById(medicineIds);
-        List<String> medicineNames = medicines.stream()
-                .map(Medicine::getName)
-                .collect(Collectors.toList());
-
-        return checkInteractions(medicineNames);
+    public List<MedicineInteractionCheck> checkMedicineInteractions(List<String> medicines) {
+        log.debug("Checking interactions for medicines: {}", medicines);
+        return checkInteractions(medicines);
     }
 
     @Override
@@ -202,7 +190,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
                 .collect(Collectors.toList());
 
         existingMedicineNames.add(medicine.getName());
-        checkForCriticalInteractions(existingMedicineNames);
 
         PrescribedMedicine newMedicine = convertToPrescribedMedicine(request);
         prescription.addMedicine(newMedicine);
@@ -262,17 +249,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
         validateDoctorOwnership(existingPrescription);
 
-        if (updates.containsKey("medicines")) {
-            try {
-                @SuppressWarnings("unchecked")
-                List<PrescribedMedicineDto> medicineDtos = (List<PrescribedMedicineDto>) updates.get("medicines");
-                List<String> medicineNames = getMedicineNames(medicineDtos);
-                checkForCriticalInteractions(medicineNames);
-            } catch (ClassCastException e) {
-                throw new BadRequestException("Invalid format for medicines");
-            }
-        }
-
         applyPartialUpdate(existingPrescription, updates);
         Prescription updatedPrescription = prescriptionRepository.save(existingPrescription);
 
@@ -299,26 +275,29 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         }
     }
 
-    private void checkForCriticalInteractions(List<String> medicineNames) {
-        List<MedicineInteractionCheck> interactions = checkInteractions(medicineNames);
-
-        boolean hasCriticalInteraction = interactions.stream()
-                .anyMatch(interaction -> interaction.getSeverity() == Severity.CRITICAL);
-
-        if (hasCriticalInteraction) {
-            throw new BadRequestException("Critical medicine interaction detected");
-        }
-    }
-
     private List<MedicineInteractionCheck> checkInteractions(List<String> medicineNames) {
-        List<MedicineInteraction> interactions = interactionRepository.findInteractionsForDrugs(medicineNames);
+        log.info("Medicines: {}", medicineNames);
+
+        List<MedicineInteraction> interactions = new ArrayList<>();
+
+        for (int i = 0; i < medicineNames.size(); i++) {
+            for (int j = i + 1; j < medicineNames.size(); j++) {
+                String drugA = medicineNames.get(i);
+                String drugB = medicineNames.get(j);
+
+                interactionRepository.findInteractionBetween(drugA, drugB)
+                        .ifPresent(interactions::add);
+            }
+        }
+
+        log.info("Found interactions: {}", interactions);
 
         return interactions.stream()
                 .map(interaction -> {
                     Severity severity = determineInteractionSeverity(interaction.getInteractionDescription());
                     return MedicineInteractionCheck.builder()
-                            .medicineId1(getMedicineIdByName(interaction.getDrug1()))
-                            .medicineId2(getMedicineIdByName(interaction.getDrug2()))
+                            .medicine1(interaction.getDrug1())
+                            .medicine2(interaction.getDrug2())
                             .interactionDescription(interaction.getInteractionDescription())
                             .severity(severity)
                             .build();
@@ -326,11 +305,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
                 .collect(Collectors.toList());
     }
 
-    private String getMedicineIdByName(String medicineName) {
-        return medicineRepository.findByNameIgnoreCase(medicineName)
-                .map(Medicine::getId)
-                .orElse(null);
-    }
 
     private Severity determineInteractionSeverity(String description) {
         if (description.toLowerCase().contains("death") ||

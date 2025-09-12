@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MedicineInteractionCheck {
-    private String medicineId1;
-    private String medicineId2;
+    private String medicine1;
+    private String medicine2;
     private String interactionDescription;
     private Severity severity;
 }

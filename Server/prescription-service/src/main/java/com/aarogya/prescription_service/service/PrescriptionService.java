@@ -18,7 +18,7 @@ public interface PrescriptionService {
     List<PrescriptionResponse> getPrescriptionsByPatient(String patientId);
     Page<MedicineDto> searchMedicines(MedicineSearchRequest request, Pageable pageable);
     MedicineDto getMedicineDetails(String medicineId);
-    List<MedicineInteractionCheck> checkMedicineInteractions(List<String> medicineIds);
+    List<MedicineInteractionCheck> checkMedicineInteractions(List<String> medicines);
     PrescriptionResponse addMedicineToPrescription(String prescriptionId, AddMedicineRequest request);
     PrescriptionResponse removeMedicineFromPrescription(String prescriptionId, RemoveMedicineRequest request);
     PrescriptionResponse partialUpdatePrescription(String id, Map<String, Object> updates);

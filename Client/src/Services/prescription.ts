@@ -45,7 +45,7 @@ export const prescriptionService = {
     params.append("size", (request.size || 10).toString());
 
     const response = await api.get(`/medicines/search?${params.toString()}`);
-    return response.data;
+    return response.data.data;
   },
 
   // Get medicine details
@@ -59,7 +59,7 @@ export const prescriptionService = {
     medicineIds: string[]
   ): Promise<MedicineInteractionCheck[]> => {
     const response = await api.post("/check-interactions", medicineIds);
-    return response.data;
+    return response.data.data;
   },
 
   // Create prescription

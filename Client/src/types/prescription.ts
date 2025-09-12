@@ -78,8 +78,8 @@ export interface PrescribedMedicineDto {
 }
 
 export interface MedicineInteractionCheck {
-  medicineId1: string;
-  medicineId2: string;
+  medicine1: string;
+  medicine2: string;
   interactionDescription: string;
   severity: "LOW" | "MODERATE" | "HIGH" | "SEVERE";
 }

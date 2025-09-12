@@ -106,9 +106,9 @@ public class PrescriptionController {
 
     @PostMapping("/check-interactions")
     public ResponseEntity<List<MedicineInteractionCheck>> checkInteractions(
-            @RequestBody List<String> medicineIds) {
-        log.debug("Checking interactions for medicines: {}", medicineIds);
-        List<MedicineInteractionCheck> interactions = prescriptionService.checkMedicineInteractions(medicineIds);
+            @RequestBody List<String> medicines) {
+        log.debug("Checking interactions for medicines: {}", medicines);
+        List<MedicineInteractionCheck> interactions = prescriptionService.checkMedicineInteractions(medicines);
         return ResponseEntity.ok(interactions);
     }
 
