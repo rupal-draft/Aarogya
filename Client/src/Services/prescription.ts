@@ -1,14 +1,14 @@
 import axios from "axios";
-import {
-  type Prescription,
-  type PrescriptionResponse,
-  type MedicineDto,
-  type MedicineSearchRequest,
-  type MedicineSearchResponse,
-  type MedicineInteractionCheck,
-  type PrescriptionRequest,
-  type AddMedicineRequest,
-  type RemoveMedicineRequest,
+import type {
+  Prescription,
+  PrescriptionResponse,
+  MedicineDto,
+  MedicineSearchRequest,
+  MedicineSearchResponse,
+  MedicineInteractionCheck,
+  PrescriptionRequest,
+  AddMedicineRequest,
+  RemoveMedicineRequest,
 } from "../types/prescription";
 
 const API_BASE_URL = "http://localhost:8080/api/v1/prescription/core";
