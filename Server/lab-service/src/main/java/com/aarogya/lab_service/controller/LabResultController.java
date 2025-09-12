@@ -47,6 +47,20 @@ public class LabResultController {
         return ResponseEntity.ok(ApiResponse.success("Patient results retrieved successfully", results));
     }
 
+    @GetMapping("/patient-results/{patientId}")
+    @RateLimiter(name = "highRateEndpoints", fallbackMethod = "rateLimitFallback")
+    public ResponseEntity<ApiResponse<Page<LabResultResponse>>> getPatientResults(
+            @PathVariable String patientId,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size) {
+
+        log.info("GET /api/v1/lab/results/my-results - patient: {}, page: {}, size: {}",
+                patientId, page, size);
+
+        Page<LabResultResponse> results = labResultService.getPatientResults(patientId, page, size);
+        return ResponseEntity.ok(ApiResponse.success("Patient results retrieved successfully", results));
+    }
+
     @GetMapping("/doctor-results")
     @RateLimiter(name = "highRateEndpoints", fallbackMethod = "rateLimitFallback")
     public ResponseEntity<ApiResponse<Page<LabResultResponse>>> getDoctorResults(

@@ -20,6 +20,8 @@ import {
   BadgeInfo,
   CalendarDays,
   Stethoscope,
+  ArrowRight,
+  FileText,
 } from "lucide-react";
 import {
   getSpecializationIcon,
@@ -532,6 +534,37 @@ const DoctorAppointmentsDashboard = () => {
                                 {appointment.patientDetails.emergencyContact} (
                                 {appointment.patientDetails.emergencyPhone})
                               </div>
+                            </div>
+
+                            {/* Compact Navigation Buttons - Side by Side */}
+                            <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() =>
+                                  navigate(
+                                    `/patient-management/${appointment.patientDetails.id}`
+                                  )
+                                }
+                                className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all text-sm font-medium"
+                              >
+                                <User className="w-3.5 h-3.5" />
+                                <span>Demographics</span>
+                              </motion.button>
+
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() =>
+                                  navigate(
+                                    `/lab-history/${appointment.patientDetails.id}`
+                                  )
+                                }
+                                className="flex items-center gap-2 px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all text-sm font-medium"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                                <span>Lab History</span>
+                              </motion.button>
                             </div>
                           </div>
 

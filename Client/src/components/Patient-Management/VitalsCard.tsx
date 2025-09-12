@@ -16,48 +16,64 @@ interface VitalsCardProps {
 }
 
 export const VitalsCard: React.FC<VitalsCardProps> = ({ vitals }) => {
+  const safeValue = (val: any, fallback: string = "NA") =>
+    val !== undefined && val !== null ? val : fallback;
+
   const vitalsData = [
     {
       label: "Blood Pressure",
-      value: `${vitals.bloodPressureSystolic}/${vitals.bloodPressureDiastolic}`,
+      value:
+        vitals.bloodPressureSystolic !== undefined &&
+        vitals.bloodPressureDiastolic !== undefined
+          ? `${vitals.bloodPressureSystolic}/${vitals.bloodPressureDiastolic}`
+          : "-/-",
       unit: "mmHg",
       icon: Heart,
       color: "text-red-500",
       bgColor: "bg-red-50",
       normal:
+        vitals.bloodPressureSystolic !== undefined &&
+        vitals.bloodPressureDiastolic !== undefined &&
         vitals.bloodPressureSystolic <= 120 &&
         vitals.bloodPressureDiastolic <= 80,
     },
     {
       label: "Heart Rate",
-      value: vitals.heartRate,
+      value: safeValue(vitals.heartRate),
       unit: "bpm",
       icon: Activity,
       color: "text-pink-500",
       bgColor: "bg-pink-50",
-      normal: vitals.heartRate >= 60 && vitals.heartRate <= 100,
+      normal:
+        vitals.heartRate !== undefined &&
+        vitals.heartRate >= 60 &&
+        vitals.heartRate <= 100,
     },
     {
       label: "Temperature",
-      value: vitals.temperature,
+      value: safeValue(vitals.temperature),
       unit: "°C",
       icon: Thermometer,
       color: "text-orange-500",
       bgColor: "bg-orange-50",
-      normal: vitals.temperature >= 36.1 && vitals.temperature <= 37.2,
+      normal:
+        vitals.temperature !== undefined &&
+        vitals.temperature >= 36.1 &&
+        vitals.temperature <= 37.2,
     },
     {
       label: "Oxygen Saturation",
-      value: vitals.oxygenSaturation,
+      value: safeValue(vitals.oxygenSaturation),
       unit: "%",
       icon: Droplets,
       color: "text-blue-500",
       bgColor: "bg-blue-50",
-      normal: vitals.oxygenSaturation >= 95,
+      normal:
+        vitals.oxygenSaturation !== undefined && vitals.oxygenSaturation >= 95,
     },
     {
       label: "Weight",
-      value: vitals.weight,
+      value: safeValue(vitals.weight),
       unit: "kg",
       icon: Weight,
       color: "text-green-500",
@@ -66,12 +82,13 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({ vitals }) => {
     },
     {
       label: "BMI",
-      value: vitals.bmi,
+      value: safeValue(vitals.bmi),
       unit: "",
       icon: Ruler,
       color: "text-purple-500",
       bgColor: "bg-purple-50",
-      normal: vitals.bmi >= 18.5 && vitals.bmi <= 24.9,
+      normal:
+        vitals.bmi !== undefined && vitals.bmi >= 18.5 && vitals.bmi <= 24.9,
     },
   ];
 
@@ -123,7 +140,11 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({ vitals }) => {
                     suffix={vital.unit}
                   />
                 ) : (
-                  <span>{vital.value}</span>
+                  <span>
+                    {vital.value !== undefined && vital.value !== null
+                      ? `${vital.value}${vital.unit}`
+                      : "NA"}
+                  </span>
                 )}
               </div>
               <div className="text-sm text-gray-600">{vital.label}</div>
@@ -140,11 +161,16 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({ vitals }) => {
       >
         <h3 className="font-semibold text-gray-900 mb-2">Recorded by</h3>
         <p className="text-gray-600 text-sm">
-          {vitals.recordedBy} ({vitals.recordedByType})
+          {safeValue(vitals.recordedBy)} ({safeValue(vitals.recordedByType)})
         </p>
         <p className="text-gray-600 text-sm">
-          {new Date(vitals.recordedAt).toLocaleDateString()} at{" "}
-          {new Date(vitals.recordedAt).toLocaleTimeString()}
+          {vitals.recordedAt
+            ? `${new Date(
+                vitals.recordedAt
+              ).toLocaleDateString()} at ${new Date(
+                vitals.recordedAt
+              ).toLocaleTimeString()}`
+            : "NA"}
         </p>
         {vitals.notes && (
           <p className="text-gray-600 text-sm mt-2 italic">"{vitals.notes}"</p>
