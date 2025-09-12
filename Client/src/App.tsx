@@ -17,6 +17,7 @@ import PatientDashboard from "./pages/Dashboard/PatientDashboard";
 import DoctorDashboard from "./pages/Dashboard/DoctorDashboard";
 import DoctorAppointmentsDashboard from "./pages/Appointments/DoctorAppointments";
 import PatientManagement from "./pages/Patient-Management";
+import { ArticlesDashboard } from "./pages/Blog/ArticlesDashboard";
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
             path="/patient-management/:id"
             element={<PatientManagement />}
           />
+          <Route path="/doctor/articles" element={<ArticlesDashboard />} />
         </Route>
       </Routes>
     </Router>

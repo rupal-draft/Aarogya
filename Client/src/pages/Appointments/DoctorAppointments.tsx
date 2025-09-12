@@ -31,6 +31,7 @@ import { getDoctorAppointments } from "../../Services/appointment";
 import { AnimatedCounter } from "../../common/Counter/AnimatedCounter";
 import { FloatingElements } from "../../common/Floating Particles/floating-elements";
 import { UpdateAppointmentStatusModal } from "../../components/Dashboard/Doctor/UpdateAppointmentStatusModal";
+import { useNavigate } from "react-router-dom";
 
 const statusChangeVariants = {
   initial: { opacity: 0, scale: 0.8 },
@@ -54,7 +55,6 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-// Enhanced type badge
 const TypeBadge = ({ type }: { type: string }) => {
   const config = typeConfig[type] || typeConfig.REGULAR;
   const IconComponent = config.icon;
@@ -71,7 +71,6 @@ const TypeBadge = ({ type }: { type: string }) => {
   );
 };
 
-// Priority indicator with subtle animation
 const PriorityIndicator = ({ priority }: { priority: number }) => {
   const colors = [
     "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -109,6 +108,7 @@ const DoctorAppointmentsDashboard = () => {
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] =
     useState<AppointmentResponseDto | null>(null);
+  const navigate = useNavigate();
 
   const handleEditClick = (appointment: AppointmentResponseDto) => {
     setSelectedAppointment(appointment);
@@ -406,7 +406,14 @@ const DoctorAppointmentsDashboard = () => {
                     onClick={() => toggleExpand(appointment.id)}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
+                      <div
+                        className="flex items-center gap-4 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition"
+                        onClick={() =>
+                          navigate(
+                            `/patient-management/${appointment.patientDetails.id}`
+                          )
+                        }
+                      >
                         <div className="relative">
                           <img
                             src={appointment.patientDetails.imageUrl}

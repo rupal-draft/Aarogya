@@ -380,6 +380,16 @@ public class ArticleServiceImpl implements ArticleService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Cacheable(
+            value = "articles",
+            key = "T(com.aarogya.article_service.auth.UserContextHolder).getUserDetails().getUserId()"
+    )
+    public List<ArticleResponseDTO> getDoctorArticles() {
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        return getArticlesByAuthor(doctorId);
+    }
+
     private ArticleCommentResponseDTO mapToResponseDTO(ArticleComments comment) {
         try {
             UserResponseDto user = null;

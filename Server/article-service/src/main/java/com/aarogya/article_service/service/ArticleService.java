@@ -45,4 +45,6 @@ public interface ArticleService {
     void commentArticle(ArticleCommentRequestDTO articleCommentRequestDTO);
 
     List<ArticleCommentResponseDTO> getComments(String articleId);
+
+    List<ArticleResponseDTO> getDoctorArticles();
 }

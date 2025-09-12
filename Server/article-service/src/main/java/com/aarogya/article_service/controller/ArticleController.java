@@ -70,6 +70,12 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponse.success(articleService.getArticlesByAuthor(author)));
     }
 
+    @GetMapping("/doctor")
+    @RateLimiter(name = "article", fallbackMethod = "fallbackMethodGetArticlesByAuthor")
+    public ResponseEntity<ApiResponse<List<ArticleResponseDTO>>> getDoctorArticles() {
+        return ResponseEntity.ok(ApiResponse.success(articleService.getDoctorArticles()));
+    }
+
     @GetMapping("/title")
     @RateLimiter(name = "article", fallbackMethod = "fallbackMethodGetArticlesByTitle")
     public ResponseEntity<ApiResponse<List<ArticleResponseDTO>>> getArticlesByTitle(@RequestParam String title) {
