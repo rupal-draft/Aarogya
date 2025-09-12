@@ -19,6 +19,7 @@ import DoctorAppointmentsDashboard from "./pages/Appointments/DoctorAppointments
 import PatientManagement from "./pages/Patient-Management";
 import { ArticlesDashboard } from "./pages/Blog/ArticlesDashboard";
 import PrescriptionDashboard from "./pages/Prescription/PrescriptionDashboard";
+import { LabDashboard } from "./pages/Lab/LabDashboard";
 
 function App() {
   return (
@@ -58,6 +59,7 @@ function App() {
             path="/doctor/prescriptions/:patientId"
             element={<PrescriptionDashboard />}
           />
+          <Route path="/lab-history/:patientId" element={<LabDashboard />} />
         </Route>
       </Routes>
     </Router>
