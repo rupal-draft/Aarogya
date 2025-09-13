@@ -30,5 +30,4 @@ public class CreateJournalEntryRequest {
     private Boolean isEncrypted;
     private String encryptionKey;
     private LocalDateTime reminderDate;
-    private String parentEntryId;
 }

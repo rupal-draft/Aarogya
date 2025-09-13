@@ -38,12 +38,19 @@ public class JournalController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/entries/{entryId}")
-    public ResponseEntity<JournalEntryResponse> getEntry(@RequestBody DecryptRequest decryptRequest) {
-        log.debug("Fetching journal entry: {}", decryptRequest.getEntryId());
+    @GetMapping("/entries/{entryId}/{encryptionKey}")
+    public ResponseEntity<JournalEntryResponse> getEntry(
+            @PathVariable String entryId,
+            @PathVariable String encryptionKey) {
+        log.debug("Fetching journal entry: {} with encryption key", entryId);
+        DecryptRequest decryptRequest = new DecryptRequest();
+        decryptRequest.setEntryId(entryId);
+        decryptRequest.setEncryptionKey(encryptionKey);
+
         JournalEntryResponse response = journalService.getDecryptedEntry(decryptRequest);
         return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/entries")
     public ResponseEntity<Page<JournalEntrySummaryResponse>> getEntries(

@@ -581,7 +581,6 @@ public class JournalServiceImpl implements JournalService {
                 .encryptionKeyHash(encryptionKeyHash)
                 .wordCount(wordCount)
                 .version(1)
-                .parentEntryId(request.getParentEntryId())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .reminderDate(request.getReminderDate())

@@ -79,8 +79,6 @@ public class JournalEntry {
     @Builder.Default
     private Integer version = 1;
 
-    private String parentEntryId;
-
     @CreatedDate
     private LocalDateTime createdAt;
 

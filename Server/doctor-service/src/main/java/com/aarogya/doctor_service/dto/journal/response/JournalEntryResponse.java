@@ -28,7 +28,6 @@ public class JournalEntryResponse {
     private Boolean isEncrypted;
     private Integer wordCount;
     private Integer version;
-    private String parentEntryId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime reminderDate;
