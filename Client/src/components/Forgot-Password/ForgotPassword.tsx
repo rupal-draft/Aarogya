@@ -1,25 +1,28 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import InputField from "../../common/Fields/InputField"
-import axios from "axios"
+import type React from "react";
+import { useState } from "react";
+import InputField from "../../common/Fields/InputField";
+import axios from "axios";
 
 interface ForgotPasswordProps {
-  userType: "patient" | "doctor"
-  onSendOTP: (email: string) => void
+  userType: "patient" | "doctor";
+  onSendOTP: (email: string) => void;
 }
 
-const ForgotPassword: React.FC<ForgotPasswordProps> = ({ userType, onSendOTP }) => {
-  const [email, setEmail] = useState<string>("")
-  const [error, setError] = useState<string>("")
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isSuccess, setIsSuccess] = useState<boolean>(false)
+const ForgotPassword: React.FC<ForgotPasswordProps> = ({
+  userType,
+  onSendOTP,
+}) => {
+  const [email, setEmail] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
   const validateEmail = (email: string): boolean => {
-    const re = /\S+@\S+\.\S+/
-    return re.test(email)
-  }
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,13 +41,15 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ userType, onSendOTP }) 
     setIsLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:8080/api/v1/auth/core/forgot-password", {
-        email,
-        role:userType,
-      });
+      const response = await axios.post(
+        "http://localhost:8080/api/v1/auth/core/forgot-password",
+        {
+          email,
+          role: userType,
+        }
+      );
 
       if (response.status === 200 || response.status === 201) {
-        console.log("OTP sent successfully to:", email);
         setIsSuccess(true);
 
         setTimeout(() => {
@@ -56,7 +61,8 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ userType, onSendOTP }) 
     } catch (error: any) {
       console.error("Error sending OTP:", error);
       setError(
-        error.response?.data?.message || "Something went wrong. Please try again."
+        error.response?.data?.message ||
+          "Something went wrong. Please try again."
       );
     } finally {
       setIsLoading(false);
@@ -87,9 +93,12 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ userType, onSendOTP }) 
             />
           </svg>
         </div>
-        <p className="text-gray-600 mb-2">Don't worry! It happens to the best of us.</p>
+        <p className="text-gray-600 mb-2">
+          Don't worry! It happens to the best of us.
+        </p>
         <p className="text-gray-500 text-sm">
-          Enter your email address and we'll send you a verification code to reset your password.
+          Enter your email address and we'll send you a verification code to
+          reset your password.
         </p>
       </div>
 
@@ -125,8 +134,8 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ userType, onSendOTP }) 
             type="email"
             value={email}
             onChange={(e) => {
-              setEmail(e.target.value)
-              if (error) setError("")
+              setEmail(e.target.value);
+              if (error) setError("");
             }}
             error={error}
             required
@@ -151,7 +160,10 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ userType, onSendOTP }) 
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-500">
               Remember your password?{" "}
-              <a href="#" className="text-blue-600 hover:text-blue-500 font-medium">
+              <a
+                href="#"
+                className="text-blue-600 hover:text-blue-500 font-medium"
+              >
                 Sign in
               </a>
             </span>
@@ -172,7 +184,14 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ userType, onSendOTP }) 
                   fill="none"
                   viewBox="0 0 24 24"
                 >
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
                   <path
                     className="opacity-75"
                     fill="currentColor"
@@ -223,11 +242,12 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ userType, onSendOTP }) 
           Tip
         </h3>
         <p className="mt-1 text-sm text-blue-700">
-          If you don't receive the email within a few minutes, please check your spam folder or try again.
+          If you don't receive the email within a few minutes, please check your
+          spam folder or try again.
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ForgotPassword
+export default ForgotPassword;

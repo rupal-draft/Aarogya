@@ -34,8 +34,8 @@ export const ForumStats: React.FC<ForumStatsProps> = ({ stats }) => {
       borderColor: "border-green-200",
     },
     {
-      label: "Active Doctors",
-      value: stats.totalDoctors,
+      label: "My active threads",
+      value: stats.myTotalThreads,
       icon: Users,
       color: "text-purple-500",
       bgColor: "bg-purple-50",

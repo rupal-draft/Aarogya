@@ -64,7 +64,6 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
   currentUserId,
 }) => {
   const [showActions, setShowActions] = useState(false);
-
   const getTypeColor = (type: string) => {
     const colors = {
       QUESTION: "bg-blue-100 text-blue-800 border-blue-200",

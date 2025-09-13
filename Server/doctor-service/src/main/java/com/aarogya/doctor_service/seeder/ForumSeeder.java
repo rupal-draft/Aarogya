@@ -20,7 +20,7 @@ public class ForumSeeder implements CommandLineRunner {
     private final MongoTemplate mongoTemplate;
 
     private static final String DOCTOR_ID = "68a810b60474d478779e5c6d";
-    private static final String OTHER_DOCTOR = "68be8b448278f71c91f3e685";
+    private static final String OTHER_DOCTOR = "68c52b55207c2817c3e2e948";
 
     @Override
     public void run(String... args) {

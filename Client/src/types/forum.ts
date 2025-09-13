@@ -131,7 +131,7 @@ export interface ThreadSummaryResponse {
 export interface ForumStatsResponse {
   totalThreads: number;
   totalReplies: number;
-  totalDoctors: number;
+  myTotalThreads: number;
   activeThisWeek: number;
   popularTags: TagResponse[];
   trendingThreads: ThreadSummaryResponse[];

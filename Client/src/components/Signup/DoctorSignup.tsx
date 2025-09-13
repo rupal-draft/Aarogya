@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import InputField from "../../common/Fields/InputField"
-import SelectField from "../../common/Fields/SelectField"
-import { Specialization } from "../../Data/enums/Specialization"
-import { toast } from "react-toastify"
-import axios from "axios"
+import type React from "react";
+import { useState } from "react";
+import InputField from "../../common/Fields/InputField";
+import SelectField from "../../common/Fields/SelectField";
+import { Specialization } from "../../Data/enums/Specialization";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 interface DoctorFormData {
-  email: string
-  password: string
-  firstName: string
-  lastName: string
-  specialization: string
-  licenseNumber: string
-  experienceYears: string
-  phone: string
-  address: string
-  imageUrl: string
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  specialization: string;
+  licenseNumber: string;
+  experienceYears: string;
+  phone: string;
+  address: string;
+  imageUrl: string;
 }
 
 const DoctorSignup: React.FC = () => {
@@ -33,89 +33,97 @@ const DoctorSignup: React.FC = () => {
     phone: "",
     address: "",
     imageUrl: "",
-  })
+  });
 
-  const [errors, setErrors] = useState<Partial<DoctorFormData>>({})
-  const [step, setStep] = useState<number>(1)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [errors, setErrors] = useState<Partial<DoctorFormData>>({});
+  const [step, setStep] = useState<number>(1);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Clear error when user types
     if (errors[name as keyof DoctorFormData]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }))
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
-  }
+  };
 
   const validateStep = (currentStep: number): boolean => {
-    const newErrors: Partial<DoctorFormData> = {}
-    let isValid = true
+    const newErrors: Partial<DoctorFormData> = {};
+    let isValid = true;
 
     if (currentStep === 1) {
       if (!formData.email) {
-        newErrors.email = "Email is required"
-        isValid = false
+        newErrors.email = "Email is required";
+        isValid = false;
       } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-        newErrors.email = "Email is invalid"
-        isValid = false
+        newErrors.email = "Email is invalid";
+        isValid = false;
       }
 
       if (!formData.password) {
-        newErrors.password = "Password is required"
-        isValid = false
+        newErrors.password = "Password is required";
+        isValid = false;
       } else if (formData.password.length < 8) {
-        newErrors.password = "Password must be at least 8 characters"
-        isValid = false
+        newErrors.password = "Password must be at least 8 characters";
+        isValid = false;
       }
 
       if (!formData.firstName) {
-        newErrors.firstName = "First name is required"
-        isValid = false
+        newErrors.firstName = "First name is required";
+        isValid = false;
       }
 
       if (!formData.lastName) {
-        newErrors.lastName = "Last name is required"
-        isValid = false
+        newErrors.lastName = "Last name is required";
+        isValid = false;
       }
     }
 
     if (currentStep === 2) {
       if (!formData.specialization) {
-        newErrors.specialization = "Specialization is required"
-        isValid = false
+        newErrors.specialization = "Specialization is required";
+        isValid = false;
       }
 
       if (!formData.licenseNumber) {
-        newErrors.licenseNumber = "License number is required"
-        isValid = false
+        newErrors.licenseNumber = "License number is required";
+        isValid = false;
       }
 
-      if (formData.experienceYears && Number.parseInt(formData.experienceYears) < 0) {
-        newErrors.experienceYears = "Experience years must be a positive number"
-        isValid = false
+      if (
+        formData.experienceYears &&
+        Number.parseInt(formData.experienceYears) < 0
+      ) {
+        newErrors.experienceYears =
+          "Experience years must be a positive number";
+        isValid = false;
       }
 
       if (formData.phone && !/\+?[0-9]{7,15}/.test(formData.phone)) {
-        newErrors.phone = "Invalid phone number"
-        isValid = false
+        newErrors.phone = "Invalid phone number";
+        isValid = false;
       }
     }
 
-    setErrors(newErrors)
-    return isValid
-  }
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const nextStep = () => {
     if (validateStep(step)) {
-      setStep((prev) => prev + 1)
+      setStep((prev) => prev + 1);
     }
-  }
+  };
 
   const prevStep = () => {
-    setStep((prev) => prev - 1)
-  }
+    setStep((prev) => prev - 1);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,9 +131,10 @@ const DoctorSignup: React.FC = () => {
 
     try {
       setIsLoading(true);
-      // console.log(payload);
-      // return;
-      const response = await axios.post("http://localhost:8080/api/v1/auth/core/doctor/register", {...formData});
+      const response = await axios.post(
+        "http://localhost:8080/api/v1/auth/core/doctor/register",
+        { ...formData }
+      );
 
       if (response.status === 201) {
         console.log("Doctor Registered:", response.data);
@@ -156,7 +165,9 @@ const DoctorSignup: React.FC = () => {
         } else if (status === 500) {
           toast.error("Server error. Please try again.");
         } else {
-          toast.error("Registration failed: " + (data.message || "Unknown error"));
+          toast.error(
+            "Registration failed: " + (data.message || "Unknown error")
+          );
         }
       } else {
         toast.error("Network error. Please check your connection.");
@@ -169,11 +180,13 @@ const DoctorSignup: React.FC = () => {
   // Convert enum to options for select field
   const specializationOptions = Object.keys(Specialization).map((key) => ({
     value: key,
-    label: key.replace(/_/g, " ").replace(/\w\S*/g, (txt) => txt.charAt(0) + txt.substr(1).toLowerCase()),
-  }))
+    label: key
+      .replace(/_/g, " ")
+      .replace(/\w\S*/g, (txt) => txt.charAt(0) + txt.substr(1).toLowerCase()),
+  }));
 
   // Add empty option at the beginning
-  specializationOptions.unshift({ value: "", label: "Select Specialization" })
+  specializationOptions.unshift({ value: "", label: "Select Specialization" });
 
   return (
     <div className="w-full">
@@ -186,7 +199,12 @@ const DoctorSignup: React.FC = () => {
       <div className="mb-8">
         <div className="flex justify-between mb-2">
           {["Personal Info", "Professional Details"].map((label, index) => (
-            <div key={index} className={`text-xs font-medium ${step > index ? "text-blue-600" : "text-gray-500"}`}>
+            <div
+              key={index}
+              className={`text-xs font-medium ${
+                step > index ? "text-blue-600" : "text-gray-500"
+              }`}
+            >
               {label}
             </div>
           ))}
@@ -408,7 +426,9 @@ const DoctorSignup: React.FC = () => {
               }
             />
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Address
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg
@@ -484,8 +504,8 @@ const DoctorSignup: React.FC = () => {
                 Verification Notice
               </h3>
               <p className="mt-1 text-sm text-blue-700">
-                Your medical license will be verified before your account is activated. This process typically takes 1-2
-                business days.
+                Your medical license will be verified before your account is
+                activated. This process typically takes 1-2 business days.
               </p>
             </div>
           </div>
@@ -505,7 +525,12 @@ const DoctorSignup: React.FC = () => {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
               Back
             </button>
@@ -525,15 +550,22 @@ const DoctorSignup: React.FC = () => {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </button>
           ) : (
             <button
-            type="button"
-            onClick={handleSubmit}
+              type="button"
+              onClick={handleSubmit}
               disabled={isLoading}
-              className={`inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ml-auto transition-all duration-300 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+              className={`inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ml-auto transition-all duration-300 ${
+                isLoading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
               {isLoading ? (
                 <>
@@ -569,7 +601,12 @@ const DoctorSignup: React.FC = () => {
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </>
               )}
@@ -578,7 +615,7 @@ const DoctorSignup: React.FC = () => {
         </div>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default DoctorSignup
+export default DoctorSignup;

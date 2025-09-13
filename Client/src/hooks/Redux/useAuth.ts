@@ -12,6 +12,8 @@ export const useAuth = () => {
 
   const profileImage = userData?.imageUrl || "/default-avatar.png";
 
+  const userId = userData?.id || "";
+
   const handleLogout = () => {
     dispatch(logout());
   };
@@ -26,6 +28,7 @@ export const useAuth = () => {
     userData,
     userName,
     profileImage,
+    userId,
     handleLogout,
   };
 };

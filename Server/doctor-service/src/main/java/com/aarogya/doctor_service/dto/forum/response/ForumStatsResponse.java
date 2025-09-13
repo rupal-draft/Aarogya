@@ -14,7 +14,7 @@ import java.util.List;
 public class ForumStatsResponse {
     private Integer totalThreads;
     private Integer totalReplies;
-    private Integer totalDoctors;
+    private Integer myTotalThreads;
     private Integer activeThisWeek;
     private List<TagResponse> popularTags;
     private List<ThreadSummaryResponse> trendingThreads;

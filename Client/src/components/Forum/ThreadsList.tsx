@@ -44,7 +44,6 @@ export const ThreadsList: React.FC<ThreadsListProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState(filter.searchQuery || "");
   const [showFilters, setShowFilters] = useState(false);
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     onFilterChange({ searchQuery, page: 0 });

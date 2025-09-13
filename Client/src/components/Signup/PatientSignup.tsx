@@ -1,25 +1,23 @@
-
-import type React from "react"
-import { useState } from "react"
-import InputField from "../../common/Fields/InputField"
-import SelectField from "../../common/Fields/SelectField"
-import axios from "axios"
-import { toast } from "react-toastify"
-
+import type React from "react";
+import { useState } from "react";
+import InputField from "../../common/Fields/InputField";
+import SelectField from "../../common/Fields/SelectField";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 interface PatientFormData {
-  email: string
-  password: string
-  firstName: string
-  lastName: string
-  dateOfBirth: string
-  gender: string
-  bloodGroup: string
-  phone: string
-  address: string
-  imageUrl: string
-  emergencyContact: string
-  emergencyPhone: string
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  gender: string;
+  bloodGroup: string;
+  phone: string;
+  address: string;
+  imageUrl: string;
+  emergencyContact: string;
+  emergencyPhone: string;
 }
 
 const PatientSignup: React.FC = () => {
@@ -36,96 +34,109 @@ const PatientSignup: React.FC = () => {
     imageUrl: "",
     emergencyContact: "",
     emergencyPhone: "",
-  })
+  });
 
-  const [errors, setErrors] = useState<Partial<PatientFormData>>({})
-  const [step, setStep] = useState<number>(1)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [errors, setErrors] = useState<Partial<PatientFormData>>({});
+  const [step, setStep] = useState<number>(1);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Clear error when user types
     if (errors[name as keyof PatientFormData]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }))
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
-  }
+  };
 
   const validateStep = (currentStep: number): boolean => {
-    const newErrors: Partial<PatientFormData> = {}
-    let isValid = true
+    const newErrors: Partial<PatientFormData> = {};
+    let isValid = true;
 
     if (currentStep === 1) {
       if (!formData.email) {
-        newErrors.email = "Email is required"
-        isValid = false
+        newErrors.email = "Email is required";
+        isValid = false;
       } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-        newErrors.email = "Email is invalid"
-        isValid = false
+        newErrors.email = "Email is invalid";
+        isValid = false;
       }
 
       if (!formData.password) {
-        newErrors.password = "Password is required"
-        isValid = false
+        newErrors.password = "Password is required";
+        isValid = false;
       } else if (formData.password.length < 8) {
-        newErrors.password = "Password must be at least 8 characters"
-        isValid = false
+        newErrors.password = "Password must be at least 8 characters";
+        isValid = false;
       }
 
       if (!formData.firstName) {
-        newErrors.firstName = "First name is required"
-        isValid = false
+        newErrors.firstName = "First name is required";
+        isValid = false;
       }
 
       if (!formData.lastName) {
-        newErrors.lastName = "Last name is required"
-        isValid = false
+        newErrors.lastName = "Last name is required";
+        isValid = false;
       }
     }
 
     if (currentStep === 2) {
       if (!formData.dateOfBirth) {
-        newErrors.dateOfBirth = "Date of birth is required"
-        isValid = false
+        newErrors.dateOfBirth = "Date of birth is required";
+        isValid = false;
       }
 
-      if (formData.gender && !["Male", "Female", "Other"].includes(formData.gender)) {
-        newErrors.gender = "Gender must be Male, Female, or Other"
-        isValid = false
+      if (
+        formData.gender &&
+        !["Male", "Female", "Other"].includes(formData.gender)
+      ) {
+        newErrors.gender = "Gender must be Male, Female, or Other";
+        isValid = false;
       }
 
-      if (formData.bloodGroup && !/^(A|B|AB|O)[+-]?$/.test(formData.bloodGroup)) {
-        newErrors.bloodGroup = "Invalid blood group"
-        isValid = false
+      if (
+        formData.bloodGroup &&
+        !/^(A|B|AB|O)[+-]?$/.test(formData.bloodGroup)
+      ) {
+        newErrors.bloodGroup = "Invalid blood group";
+        isValid = false;
       }
 
       if (formData.phone && !/\+?[0-9]{7,15}/.test(formData.phone)) {
-        newErrors.phone = "Invalid phone number"
-        isValid = false
+        newErrors.phone = "Invalid phone number";
+        isValid = false;
       }
     }
 
     if (currentStep === 3) {
-      if (formData.emergencyPhone && !/\+?[0-9]{7,15}/.test(formData.emergencyPhone)) {
-        newErrors.emergencyPhone = "Invalid emergency phone number"
-        isValid = false
+      if (
+        formData.emergencyPhone &&
+        !/\+?[0-9]{7,15}/.test(formData.emergencyPhone)
+      ) {
+        newErrors.emergencyPhone = "Invalid emergency phone number";
+        isValid = false;
       }
     }
 
-    setErrors(newErrors)
-    return isValid
-  }
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const nextStep = () => {
     if (validateStep(step)) {
-      setStep((prev) => prev + 1)
+      setStep((prev) => prev + 1);
     }
-  }
+  };
 
   const prevStep = () => {
-    setStep((prev) => prev - 1)
-  }
+    setStep((prev) => prev - 1);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,9 +149,10 @@ const PatientSignup: React.FC = () => {
         ...formData,
         dateOfBirth: formData.dateOfBirth,
       };
-      // console.log(payload);
-      // return;
-      const response = await axios.post("http://localhost:8080/api/v1/auth/core/patient/register", payload);
+      const response = await axios.post(
+        "http://localhost:8080/api/v1/auth/core/patient/register",
+        payload
+      );
 
       if (response.status === 201) {
         console.log("Patient Registered:", response.data);
@@ -173,7 +185,9 @@ const PatientSignup: React.FC = () => {
         } else if (status === 500) {
           toast.error("Server error. Please try again.");
         } else {
-          toast.error("Registration failed: " + (data.message || "Unknown error"));
+          toast.error(
+            "Registration failed: " + (data.message || "Unknown error")
+          );
         }
       } else {
         toast.error("Network error. Please check your connection.");
@@ -193,11 +207,18 @@ const PatientSignup: React.FC = () => {
       {/* Progress bar */}
       <div className="mb-8">
         <div className="flex justify-between mb-2">
-          {["Personal Info", "Medical Details", "Emergency Contact"].map((label, index) => (
-            <div key={index} className={`text-xs font-medium ${step > index ? "text-blue-600" : "text-gray-500"}`}>
-              {label}
-            </div>
-          ))}
+          {["Personal Info", "Medical Details", "Emergency Contact"].map(
+            (label, index) => (
+              <div
+                key={index}
+                className={`text-xs font-medium ${
+                  step > index ? "text-blue-600" : "text-gray-500"
+                }`}
+              >
+                {label}
+              </div>
+            )
+          )}
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2.5">
           <div
@@ -430,7 +451,9 @@ const PatientSignup: React.FC = () => {
               }
             />
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Address
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg
@@ -558,8 +581,9 @@ const PatientSignup: React.FC = () => {
                 Privacy Notice
               </h3>
               <p className="mt-1 text-sm text-blue-700">
-                Your medical information is protected by our privacy policy and will only be used for medical purposes.
-                We comply with all healthcare data regulations.
+                Your medical information is protected by our privacy policy and
+                will only be used for medical purposes. We comply with all
+                healthcare data regulations.
               </p>
             </div>
           </div>
@@ -579,7 +603,12 @@ const PatientSignup: React.FC = () => {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
               Back
             </button>
@@ -599,15 +628,22 @@ const PatientSignup: React.FC = () => {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </button>
           ) : (
             <button
-            type="button"
-            onClick={handleSubmit}
+              type="button"
+              onClick={handleSubmit}
               disabled={isLoading}
-              className={`inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ml-auto transition-all duration-300 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+              className={`inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ml-auto transition-all duration-300 ${
+                isLoading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
               {isLoading ? (
                 <>
@@ -643,7 +679,12 @@ const PatientSignup: React.FC = () => {
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </>
               )}
@@ -652,7 +693,7 @@ const PatientSignup: React.FC = () => {
         </div>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default PatientSignup
+export default PatientSignup;

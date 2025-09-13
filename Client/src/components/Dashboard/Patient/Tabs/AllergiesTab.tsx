@@ -35,7 +35,6 @@ interface FormData {
 
 export default function AllergiesTab({ data }: AllergiesTabProps) {
   const [allergies, setAllergies] = useState(data || []);
-  console.log(data);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAllergy, setEditingAllergy] = useState<string>("");
   const [formData, setFormData] = useState<FormData>({

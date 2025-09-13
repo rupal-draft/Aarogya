@@ -201,7 +201,7 @@ public class ForumServiceImpl implements ForumService {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.debug("Fetching replies for thread: {}", threadId);
 
-        if (threadRepository.existsByIdAndIsActiveTrue(threadId)) {
+        if (!threadRepository.existsByIdAndIsActiveTrue(threadId)) {
             throw new ResourceNotFoundException("Thread not found with id: " + threadId);
         }
 
@@ -280,7 +280,7 @@ public class ForumServiceImpl implements ForumService {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.info("Bookmarking thread: {} by doctor: {}", threadId, doctorId);
 
-        if (threadRepository.existsByIdAndIsActiveTrue(threadId)) {
+        if (!threadRepository.existsByIdAndIsActiveTrue(threadId)) {
             throw new ResourceNotFoundException("Thread not found with id: " + threadId);
         }
 
@@ -350,7 +350,7 @@ public class ForumServiceImpl implements ForumService {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.info("Voting on thread: {} by doctor: {}", threadId, doctorId);
 
-        if (threadRepository.existsByIdAndIsActiveTrue(threadId)) {
+        if (!threadRepository.existsByIdAndIsActiveTrue(threadId)) {
             throw new ResourceNotFoundException("Thread not found with id: " + threadId);
         }
 
@@ -467,12 +467,6 @@ public class ForumServiceImpl implements ForumService {
         reply.setIsSolution(true);
         replyRepository.save(reply);
 
-        if (ThreadType.QUESTION.name().equals(thread.getType())) {
-            thread.setIsClosed(true);
-            thread.setClosedReason("Solution found");
-            threadRepository.save(thread);
-        }
-
         log.info("Reply marked as solution: {}", replyId);
     }
 
@@ -488,11 +482,13 @@ public class ForumServiceImpl implements ForumService {
 
         List<ForumThread> trendingThreads = threadRepository.findTop10ByIsActiveTrueOrderByReplyCountDesc();
 
+        Integer myTotalThreads = threadRepository.countByAuthorIdAndIsActiveTrue(UserContextHolder.getUserDetails().getUserId());
+
         return ForumStatsResponse.builder()
                 .totalThreads(totalThreads)
                 .totalReplies(totalReplies)
-                .totalDoctors(0)
-                .activeThisWeek(0)
+                .myTotalThreads(myTotalThreads)
+                .activeThisWeek(totalThreads)
                 .popularTags(popularTags.stream().map(this::convertToTagResponse).collect(Collectors.toList()))
                 .trendingThreads(trendingThreads.stream()
                         .map(thread -> convertToThreadSummaryResponse(thread, null))
