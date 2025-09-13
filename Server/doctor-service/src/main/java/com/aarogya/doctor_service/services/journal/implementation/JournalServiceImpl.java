@@ -27,6 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -324,11 +327,15 @@ public class JournalServiceImpl implements JournalService {
 
         reminderRepository.deleteByDoctorIdAndEntryId(doctorId, request.getEntryId());
 
+        // Convert reminderDate to UTC before saving
+        ZonedDateTime zonedReminderDate = request.getReminderDate().atZone(ZoneId.systemDefault());
+        LocalDateTime utcReminderDate = zonedReminderDate.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+
         JournalReminder reminder = JournalReminder.builder()
                 .doctorId(doctorId)
                 .entryId(request.getEntryId())
                 .title(request.getTitle())
-                .reminderDate(request.getReminderDate())
+                .reminderDate(utcReminderDate)
                 .notes(request.getNotes())
                 .isActive(true)
                 .isRecurring(Boolean.TRUE.equals(request.getIsRecurring()))
@@ -339,11 +346,12 @@ public class JournalServiceImpl implements JournalService {
 
         JournalReminder savedReminder = reminderRepository.save(reminder);
 
-        entry.setReminderDate(request.getReminderDate());
+        entry.setReminderDate(utcReminderDate);
         entryRepository.save(entry);
 
         return convertToReminderResponse(savedReminder);
     }
+
 
     @Override
     public List<ReminderResponse> getUpcomingReminders() {
@@ -352,10 +360,8 @@ public class JournalServiceImpl implements JournalService {
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime tomorrow = now.plusDays(1);
-
         List<JournalReminder> reminders = reminderRepository.findByDoctorIdAndReminderDateBetweenAndIsActiveTrue(
                 doctorId, now, tomorrow);
-
         return reminders.stream()
                 .map(this::convertToReminderResponse)
                 .collect(Collectors.toList());
