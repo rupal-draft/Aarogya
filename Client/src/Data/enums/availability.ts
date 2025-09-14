@@ -1,0 +1,29 @@
+export enum RecurrenceType {
+  DAILY = "DAILY",
+  WEEKLY = "WEEKLY",
+  MONTHLY = "MONTHLY",
+  YEARLY = "YEARLY",
+}
+
+export enum DayOfWeek {
+  MONDAY = "MONDAY",
+  TUESDAY = "TUESDAY",
+  WEDNESDAY = "WEDNESDAY",
+  THURSDAY = "THURSDAY",
+  FRIDAY = "FRIDAY",
+  SATURDAY = "SATURDAY",
+  SUNDAY = "SUNDAY",
+}
+
+export enum OverrideType {
+  BLOCK = "BLOCK",
+  EXTEND = "EXTEND",
+  MODIFY = "MODIFY",
+}
+
+export enum AvailabilityStatus {
+  AVAILABLE = "AVAILABLE",
+  UNAVAILABLE = "UNAVAILABLE",
+  FULLY_BOOKED = "FULLY_BOOKED",
+  PARTIALLY_AVAILABLE = "PARTIALLY_AVAILABLE",
+}
