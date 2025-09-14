@@ -56,13 +56,13 @@ export interface AvailabilityRangeRequest {
 }
 
 export interface AvailabilityRangeResponse {
+  doctorId: string;
+  startDate: string; // ISO date string from backend
+  endDate: string;
   availabilities: AvailabilityResponse[];
-  totalDays: number;
-  availableDays: number;
-  unavailableDays: number;
-  totalSlots: number;
-  bookedSlots: number;
-  availableSlots: number;
+  availabilitySummary: Record<string, AvailabilityStatus>; // Map<date, status>
+  totalAvailableDays: number;
+  totalUnavailableDays: number;
 }
 
 export interface ScheduleResponse {

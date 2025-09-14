@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -90,7 +91,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.debug("Fetching availability range for doctor {} from {} to {}", doctorId, request.getStartDate(), request.getEndDate());
 
-        validateDateRange(request.getStartDate(), request.getEndDate());
+        validateDateRange(request.getStartDate(), request.getEndDate(), true);
 
         List<DoctorAvailability> availabilities = new ArrayList<>();
         Map<LocalDate, AvailabilityStatus> summary = new LinkedHashMap<>();
@@ -313,7 +314,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.info("Generating availabilities for doctor {} from {} to {}", doctorId, startDate, endDate);
 
-        validateDateRange(startDate, endDate);
+        validateDateRange(startDate, endDate, false);
 
         LocalDate currentDate = startDate;
         while (!currentDate.isAfter(endDate)) {
@@ -405,20 +406,21 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         }
     }
 
-    private void validateDateRange(LocalDate startDate, LocalDate endDate) {
+    private void validateDateRange(LocalDate startDate, LocalDate endDate, boolean allowPast) {
         if (startDate.isAfter(endDate)) {
             throw new BadRequestException("Start date cannot be after end date");
         }
 
-        if (startDate.isBefore(LocalDate.now())) {
+        if (!allowPast && startDate.isBefore(LocalDate.now())) {
             throw new BadRequestException("Cannot query availability for past dates");
         }
 
-        long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate);
+        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
         if (daysBetween > 365) {
             throw new BadRequestException("Date range cannot exceed 365 days");
         }
     }
+
 
     private void validateScheduleRequest(ScheduleRequest request) {
         if (request.getWeeklySchedule() != null) {

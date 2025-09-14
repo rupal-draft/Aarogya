@@ -339,7 +339,7 @@ const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                     <label className="flex items-center gap-2">
                       <input
                         type="checkbox"
-                        checked={daySchedule.isAvailable}
+                        checked={daySchedule?.isAvailable}
                         onChange={(e) =>
                           handleDayScheduleChange(
                             dayKey,
@@ -351,7 +351,7 @@ const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                       />
                       <span className="text-sm text-gray-700">Available</span>
                     </label>
-                    {daySchedule.isAvailable && (
+                    {daySchedule?.isAvailable && (
                       <motion.button
                         type="button"
                         whileHover={{ scale: 1.05 }}
@@ -366,14 +366,14 @@ const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                   </div>
                 </div>
 
-                {!daySchedule.isAvailable && (
+                {!daySchedule?.isAvailable && (
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Reason for Unavailability
                     </label>
                     <input
                       type="text"
-                      value={daySchedule.reasonForUnavailability || ""}
+                      value={daySchedule?.reasonForUnavailability || ""}
                       onChange={(e) =>
                         handleDayScheduleChange(
                           dayKey,
@@ -387,7 +387,7 @@ const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                   </div>
                 )}
 
-                {daySchedule.isAvailable && (
+                {daySchedule?.isAvailable && (
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
@@ -641,7 +641,6 @@ const ScheduleManager: React.FC<ScheduleManagerProps> = ({
       </motion.div>
     );
   }
-
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100 p-6">
       <form onSubmit={handleSubmit}>

@@ -22,6 +22,7 @@ import PrescriptionDashboard from "./pages/Prescription/PrescriptionDashboard";
 import { LabDashboard } from "./pages/Lab/LabDashboard";
 import { ForumDashboard } from "./pages/Forum/ForumDashboard";
 import JournalDashboard from "./pages/Journal/JournalDashboard";
+import AvailabilityDashboard from "./pages/Availability/AvailabilityDashboard";
 
 function App() {
   return (
@@ -64,6 +65,10 @@ function App() {
           <Route path="/lab-history/:patientId" element={<LabDashboard />} />
           <Route path="/doctor/forum" element={<ForumDashboard />} />
           <Route path="/doctor/journal" element={<JournalDashboard />} />
+          <Route
+            path="/doctor/availability"
+            element={<AvailabilityDashboard />}
+          />
         </Route>
       </Routes>
     </Router>
