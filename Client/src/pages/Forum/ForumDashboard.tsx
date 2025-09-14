@@ -9,10 +9,41 @@ import { ThreadDetail } from "../../components/Forum/ThreadDetail";
 import { ForumStats } from "../../components/Forum/ForumStats";
 import { ThreadsList } from "../../components/Forum/ThreadsList";
 import { useAuth } from "../../hooks/Redux/useAuth";
+import type {
+  CreateReplyRequest,
+  CreateThreadRequest,
+  UpdateThreadRequest,
+} from "../../types/forum";
+import { CreateThreadModal } from "../../components/Forum/CreateThreadModal";
+import { ReplyModal } from "../../components/Forum/ReplyModal";
+import { EditThreadModal } from "../../components/Forum/EditThreadModal";
+import { EditReplyModal } from "../../components/Forum/EditReplyModal";
+import { ConfirmationModal } from "../../components/Forum/ConfirmationModal";
 
 export const ForumDashboard: React.FC = () => {
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const { userId } = useAuth();
+
+  // Modal states
+  const [showCreateThread, setShowCreateThread] = useState(false);
+  const [showReply, setShowReply] = useState(false);
+  const [showEditThread, setShowEditThread] = useState(false);
+  const [showEditReply, setShowEditReply] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Modal data
+  const [replyData, setReplyData] = useState<{
+    threadId: string;
+    parentReplyId?: string;
+    threadTitle?: string;
+    parentReplyContent?: string;
+  } | null>(null);
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [deleteData, setDeleteData] = useState<{
+    type: "thread" | "reply";
+    id: string;
+    title: string;
+  } | null>(null);
 
   // Hooks
   const {
@@ -36,6 +67,13 @@ export const ForumDashboard: React.FC = () => {
   } = useThreadDetail(selectedThreadId || "");
 
   const {
+    loading: actionLoading,
+    createThread,
+    updateThread,
+    deleteThread,
+    createReply,
+    updateReply,
+    deleteReply,
     voteThread,
     voteReply,
     bookmarkThread,
@@ -102,33 +140,116 @@ export const ForumDashboard: React.FC = () => {
   };
 
   const handleCreateThread = () => {
-    // TODO: Implement create thread modal/form
-    console.log("Create thread clicked");
+    setShowCreateThread(true);
   };
 
   const handleReply = (threadId: string, parentReplyId?: string) => {
-    // TODO: Implement reply modal/form
-    console.log("Reply clicked", { threadId, parentReplyId });
+    const threadTitle =
+      selectedThreadId && thread
+        ? thread.title
+        : threads?.content.find((t) => t.id === threadId)?.title;
+
+    let parentReplyContent;
+    if (parentReplyId && replies) {
+      const findReply = (replies: any[]): any => {
+        for (const reply of replies) {
+          if (reply.id === parentReplyId) return reply;
+          if (reply.childReplies) {
+            const found = findReply(reply.childReplies);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+      const parentReply = findReply(replies.content);
+      parentReplyContent = parentReply?.content;
+    }
+
+    setReplyData({
+      threadId,
+      parentReplyId,
+      threadTitle,
+      parentReplyContent,
+    });
+    setShowReply(true);
   };
 
   const handleEditThread = (threadId: string) => {
-    // TODO: Implement edit thread modal/form
-    console.log("Edit thread clicked", threadId);
+    setShowEditThread(true);
   };
 
   const handleDeleteThread = (threadId: string) => {
-    // TODO: Implement delete confirmation
-    console.log("Delete thread clicked", threadId);
+    const threadTitle =
+      selectedThreadId && thread
+        ? thread.title
+        : threads?.content.find((t) => t.id === threadId)?.title ||
+          "this thread";
+    setDeleteData({
+      type: "thread",
+      id: threadId,
+      title: threadTitle,
+    });
+    setShowDeleteConfirm(true);
   };
 
   const handleEditReply = (replyId: string) => {
-    // TODO: Implement edit reply modal/form
-    console.log("Edit reply clicked", replyId);
+    setEditingReplyId(replyId);
+    setShowEditReply(true);
   };
 
   const handleDeleteReply = (replyId: string) => {
-    // TODO: Implement delete confirmation
-    console.log("Delete reply clicked", replyId);
+    setDeleteData({
+      type: "reply",
+      id: replyId,
+      title: "this reply",
+    });
+    setShowDeleteConfirm(true);
+  };
+
+  // Modal handlers
+  const handleCreateThreadSubmit = async (data: CreateThreadRequest) => {
+    await createThread(data);
+    // Refresh threads list
+    window.location.reload(); // Simple refresh - you might want to implement proper state management
+  };
+
+  const handleReplySubmit = async (data: CreateReplyRequest) => {
+    if (!replyData) return;
+    await createReply(replyData.threadId, {
+      ...data,
+      parentReplyId: replyData.parentReplyId,
+    });
+    // Refresh if we're viewing the thread detail
+    if (selectedThreadId === replyData.threadId) {
+      window.location.reload();
+    }
+  };
+
+  const handleEditThreadSubmit = async (data: UpdateThreadRequest) => {
+    if (!selectedThreadId) return;
+    await updateThread(selectedThreadId, data);
+    window.location.reload();
+  };
+
+  const handleEditReplySubmit = async (data: CreateReplyRequest) => {
+    if (!editingReplyId) return;
+    await updateReply(editingReplyId, data);
+    window.location.reload();
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteData) return;
+
+    if (deleteData.type === "thread") {
+      await deleteThread(deleteData.id);
+      if (selectedThreadId === deleteData.id) {
+        setSelectedThreadId(null);
+      }
+    } else {
+      await deleteReply(deleteData.id);
+    }
+
+    window.location.reload();
   };
 
   // Loading state
@@ -206,6 +327,28 @@ export const ForumDashboard: React.FC = () => {
         onEditReply={handleEditReply}
         onDeleteReply={handleDeleteReply}
         currentUserId={userId}
+        // Modal handlers
+        onReplySubmit={handleReplySubmit}
+        onEditThreadSubmit={handleEditThreadSubmit}
+        onEditReplySubmit={handleEditReplySubmit}
+        onDeleteConfirm={handleDeleteConfirm}
+        actionLoading={actionLoading}
+        // Modal states
+        showReply={showReply}
+        setShowReply={setShowReply}
+        showEditThread={showEditThread}
+        setShowEditThread={setShowEditThread}
+        showEditReply={showEditReply}
+        setShowEditReply={setShowEditReply}
+        showDeleteConfirm={showDeleteConfirm}
+        setShowDeleteConfirm={setShowDeleteConfirm}
+        // Modal data
+        replyData={replyData}
+        setReplyData={setReplyData}
+        editingReplyId={editingReplyId}
+        setEditingReplyId={setEditingReplyId}
+        deleteData={deleteData}
+        setDeleteData={setDeleteData}
       />
     );
   }
@@ -235,6 +378,14 @@ export const ForumDashboard: React.FC = () => {
           />
         )}
       </motion.div>
+
+      {/* Modals */}
+      <CreateThreadModal
+        isOpen={showCreateThread}
+        onClose={() => setShowCreateThread(false)}
+        onSubmit={handleCreateThreadSubmit}
+        loading={actionLoading}
+      />
     </div>
   );
 };

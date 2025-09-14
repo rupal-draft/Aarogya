@@ -22,9 +22,16 @@ import type {
   ThreadResponse,
   ReplyResponse,
   PageResponse,
+  CreateReplyRequest,
+  UpdateThreadRequest,
+  CreateThreadRequest,
 } from "../../types/forum";
 import { ReplyCard } from "./ReplyCard";
 import { AnimatedCounter } from "../../common/Counter/AnimatedCounter2";
+import { ReplyModal } from "../../components/Forum/ReplyModal";
+import { EditThreadModal } from "../../components/Forum/EditThreadModal";
+import { EditReplyModal } from "../../components/Forum/EditReplyModal";
+import { ConfirmationModal } from "../../components/Forum/ConfirmationModal";
 
 interface ThreadDetailProps {
   thread: ThreadResponse;
@@ -46,6 +53,37 @@ interface ThreadDetailProps {
   onEditReply: (replyId: string) => void;
   onDeleteReply: (replyId: string) => void;
   currentUserId?: string;
+  // Modal handlers
+  onReplySubmit: (data: CreateReplyRequest) => Promise<void>;
+  onEditThreadSubmit: (data: UpdateThreadRequest) => Promise<void>;
+  onEditReplySubmit: (data: CreateReplyRequest) => Promise<void>;
+  onDeleteConfirm: () => Promise<void>;
+  actionLoading: boolean;
+  // Modal states
+  showReply: boolean;
+  setShowReply: (show: boolean) => void;
+  showEditThread: boolean;
+  setShowEditThread: (show: boolean) => void;
+  showEditReply: boolean;
+  setShowEditReply: (show: boolean) => void;
+  showDeleteConfirm: boolean;
+  setShowDeleteConfirm: (show: boolean) => void;
+  // Modal data
+  replyData: {
+    threadId: string;
+    parentReplyId?: string;
+    threadTitle?: string;
+    parentReplyContent?: string;
+  } | null;
+  setReplyData: (data: any) => void;
+  editingReplyId: string | null;
+  setEditingReplyId: (id: string | null) => void;
+  deleteData: {
+    type: "thread" | "reply";
+    id: string;
+    title: string;
+  } | null;
+  setDeleteData: (data: any) => void;
 }
 
 export const ThreadDetail: React.FC<ThreadDetailProps> = ({
@@ -62,6 +100,25 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
   onEditReply,
   onDeleteReply,
   currentUserId,
+  onReplySubmit,
+  onEditThreadSubmit,
+  onEditReplySubmit,
+  onDeleteConfirm,
+  actionLoading,
+  showReply,
+  setShowReply,
+  showEditThread,
+  setShowEditThread,
+  showEditReply,
+  setShowEditReply,
+  showDeleteConfirm,
+  setShowDeleteConfirm,
+  replyData,
+  setReplyData,
+  editingReplyId,
+  setEditingReplyId,
+  deleteData,
+  setDeleteData,
 }) => {
   const [showActions, setShowActions] = useState(false);
   const getTypeColor = (type: string) => {
@@ -437,6 +494,58 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
           </div>
         </div>
       </motion.div>
+
+      {/* Modals */}
+      <ReplyModal
+        isOpen={showReply}
+        onClose={() => {
+          setShowReply(false);
+          setReplyData(null);
+        }}
+        onSubmit={onReplySubmit}
+        loading={actionLoading}
+        threadTitle={replyData?.threadTitle}
+        parentReplyId={replyData?.parentReplyId}
+        parentReplyContent={replyData?.parentReplyContent}
+      />
+
+      <EditThreadModal
+        isOpen={showEditThread}
+        onClose={() => setShowEditThread(false)}
+        onSubmit={onEditThreadSubmit}
+        loading={actionLoading}
+        thread={thread || undefined}
+      />
+
+      <EditReplyModal
+        isOpen={showEditReply}
+        onClose={() => {
+          setShowEditReply(false);
+          setEditingReplyId(null);
+        }}
+        onSubmit={onEditReplySubmit}
+        loading={actionLoading}
+        reply={
+          replies?.content.find((r) => r.id === editingReplyId) ||
+          replies?.content
+            .flatMap((r) => r.childReplies || [])
+            .find((r) => r.id === editingReplyId)
+        }
+      />
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setDeleteData(null);
+        }}
+        onConfirm={onDeleteConfirm}
+        loading={actionLoading}
+        title={`Delete ${deleteData?.type || "item"}`}
+        message={`Are you sure you want to delete ${deleteData?.title}? This action cannot be undone.`}
+        confirmText="Delete"
+        type="danger"
+      />
     </div>
   );
 };

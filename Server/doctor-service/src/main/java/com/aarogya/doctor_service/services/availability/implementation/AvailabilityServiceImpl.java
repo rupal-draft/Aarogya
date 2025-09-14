@@ -14,6 +14,7 @@ import com.aarogya.doctor_service.repositories.availability.*;
 import com.aarogya.doctor_service.services.availability.AvailabilityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -38,6 +39,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     private final RecurringUnavailabilityRepository recurringUnavailabilityRepository;
     private final SpecialAvailabilityRepository specialAvailabilityRepository;
     private final AvailabilityOverrideRepository overrideRepository;
+    private final ModelMapper modelMapper;
 
     private static final String AVAILABILITY_CACHE = "doctorAvailability";
     private static final String SCHEDULE_CACHE = "doctorSchedule";
@@ -161,7 +163,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
     @Override
     @Transactional
-    public RecurringUnavailability createRecurringUnavailability(RecurringUnavailabilityRequest request) {
+    public RecurringUnavailabilityResponseDTO createRecurringUnavailability(RecurringUnavailabilityRequest request) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.info("Creating recurring unavailability for doctor {}", doctorId);
 
@@ -173,15 +175,22 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         regenerateFutureAvailabilities(doctorId);
 
         log.info("Recurring unavailability created successfully with ID: {}", savedUnavailability.getId());
-        return savedUnavailability;
+        return modelMapper.map(savedUnavailability, RecurringUnavailabilityResponseDTO.class);
     }
 
     @Override
-    public List<RecurringUnavailability> getRecurringUnavailabilities() {
+    public List<RecurringUnavailabilityResponseDTO> getRecurringUnavailabilities() {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.debug("Fetching recurring unavailability for doctor {}", doctorId);
 
-        return recurringUnavailabilityRepository.findByDoctorIdAndIsActiveTrue(doctorId);
+        return recurringUnavailabilityRepository
+                .findByDoctorIdAndIsActiveTrue(doctorId)
+                .stream()
+                .map(
+                        recurringUnavailability ->
+                                modelMapper
+                                        .map(recurringUnavailability, RecurringUnavailabilityResponseDTO.class))
+                .toList();
     }
 
     @Override
@@ -200,7 +209,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
     @Override
     @Transactional
-    public SpecialAvailability createSpecialAvailability(SpecialAvailabilityRequest request) {
+    public SpecialAvailabilityResponseDTO createSpecialAvailability(SpecialAvailabilityRequest request) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.info("Creating special availability for doctor {} on date {}", doctorId, request.getDate());
 
@@ -217,20 +226,23 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         updateDailyAvailabilityWithSpecial(doctorId, request.getDate(), savedSpecial);
 
         log.info("Special availability created successfully with ID: {}", savedSpecial.getId());
-        return savedSpecial;
+        return modelMapper.map(savedSpecial, SpecialAvailabilityResponseDTO.class);
     }
 
     @Override
-    public List<SpecialAvailability> getSpecialAvailabilities() {
+    public List<SpecialAvailabilityResponseDTO> getSpecialAvailabilities() {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.debug("Fetching special availabilities for doctor {}", doctorId);
 
-        return specialAvailabilityRepository.findByDoctorIdAndIsActiveTrue(doctorId);
+        return specialAvailabilityRepository.findByDoctorIdAndIsActiveTrue(doctorId)
+                .stream()
+                .map(specialAvailability -> modelMapper.map(specialAvailability,SpecialAvailabilityResponseDTO.class))
+                .toList();
     }
 
     @Override
     @Transactional
-    public AvailabilityOverride createOverride(AvailabilityOverrideRequest request) {
+    public AvailabilityOverrideResponseDTO createOverride(AvailabilityOverrideRequest request) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.info("Creating availability override for doctor {} on date {}", doctorId, request.getDate());
 
@@ -247,7 +259,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         updateDailyAvailabilityWithOverride(doctorId, request.getDate(), savedOverride);
 
         log.info("Availability override created successfully with ID: {}", savedOverride.getId());
-        return savedOverride;
+        return modelMapper.map(savedOverride, AvailabilityOverrideResponseDTO.class);
     }
 
     @Override

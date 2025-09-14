@@ -1,10 +1,7 @@
 package com.aarogya.doctor_service.controller;
 
 import com.aarogya.doctor_service.dto.availability.request.*;
-import com.aarogya.doctor_service.dto.availability.response.AvailabilityRangeResponse;
-import com.aarogya.doctor_service.dto.availability.response.AvailabilityResponse;
-import com.aarogya.doctor_service.dto.availability.response.ScheduleResponse;
-import com.aarogya.doctor_service.dto.availability.response.SlotAvailabilityResponse;
+import com.aarogya.doctor_service.dto.availability.response.*;
 import com.aarogya.doctor_service.models.availability.AvailabilityOverride;
 import com.aarogya.doctor_service.models.availability.RecurringUnavailability;
 import com.aarogya.doctor_service.models.availability.SpecialAvailability;
@@ -74,16 +71,16 @@ public class AvailabilityController {
 
     @PostMapping("/recurring-unavailability")
     @CircuitBreaker(name = "availabilityController", fallbackMethod = "createRecurringUnavailabilityFallback")
-    public ResponseEntity<RecurringUnavailability> createRecurringUnavailability(@Valid @RequestBody RecurringUnavailabilityRequest request) {
+    public ResponseEntity<RecurringUnavailabilityResponseDTO> createRecurringUnavailability(@Valid @RequestBody RecurringUnavailabilityRequest request) {
         log.info("Creating recurring unavailability");
-        RecurringUnavailability response = availabilityService.createRecurringUnavailability(request);
+        RecurringUnavailabilityResponseDTO response = availabilityService.createRecurringUnavailability(request);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/recurring-unavailability")
-    public ResponseEntity<List<RecurringUnavailability>> getRecurringUnavailabilities() {
+    public ResponseEntity<List<RecurringUnavailabilityResponseDTO>> getRecurringUnavailabilities() {
         log.debug("Fetching recurring unavailabilities");
-        List<RecurringUnavailability> response = availabilityService.getRecurringUnavailabilities();
+        List<RecurringUnavailabilityResponseDTO> response = availabilityService.getRecurringUnavailabilities();
         return ResponseEntity.ok(response);
     }
 
@@ -96,24 +93,24 @@ public class AvailabilityController {
 
     @PostMapping("/special")
     @CircuitBreaker(name = "availabilityController", fallbackMethod = "createSpecialAvailabilityFallback")
-    public ResponseEntity<SpecialAvailability> createSpecialAvailability(@Valid @RequestBody SpecialAvailabilityRequest request) {
+    public ResponseEntity<SpecialAvailabilityResponseDTO> createSpecialAvailability(@Valid @RequestBody SpecialAvailabilityRequest request) {
         log.info("Creating special availability for date: {}", request.getDate());
-        SpecialAvailability response = availabilityService.createSpecialAvailability(request);
+        SpecialAvailabilityResponseDTO response = availabilityService.createSpecialAvailability(request);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/special")
-    public ResponseEntity<List<SpecialAvailability>> getSpecialAvailabilities() {
+    public ResponseEntity<List<SpecialAvailabilityResponseDTO>> getSpecialAvailabilities() {
         log.debug("Fetching special availabilities");
-        List<SpecialAvailability> response = availabilityService.getSpecialAvailabilities();
+        List<SpecialAvailabilityResponseDTO> response = availabilityService.getSpecialAvailabilities();
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/override")
     @CircuitBreaker(name = "availabilityController", fallbackMethod = "createOverrideFallback")
-    public ResponseEntity<AvailabilityOverride> createOverride(@Valid @RequestBody AvailabilityOverrideRequest request) {
+    public ResponseEntity<AvailabilityOverrideResponseDTO> createOverride(@Valid @RequestBody AvailabilityOverrideRequest request) {
         log.info("Creating availability override for date: {}", request.getDate());
-        AvailabilityOverride response = availabilityService.createOverride(request);
+        AvailabilityOverrideResponseDTO response = availabilityService.createOverride(request);
         return ResponseEntity.ok(response);
     }
 

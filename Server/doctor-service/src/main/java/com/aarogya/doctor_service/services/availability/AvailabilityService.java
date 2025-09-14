@@ -1,10 +1,7 @@
 package com.aarogya.doctor_service.services.availability;
 
 import com.aarogya.doctor_service.dto.availability.request.*;
-import com.aarogya.doctor_service.dto.availability.response.AvailabilityRangeResponse;
-import com.aarogya.doctor_service.dto.availability.response.AvailabilityResponse;
-import com.aarogya.doctor_service.dto.availability.response.ScheduleResponse;
-import com.aarogya.doctor_service.dto.availability.response.SlotAvailabilityResponse;
+import com.aarogya.doctor_service.dto.availability.response.*;
 import com.aarogya.doctor_service.models.availability.AvailabilityOverride;
 import com.aarogya.doctor_service.models.availability.RecurringUnavailability;
 import com.aarogya.doctor_service.models.availability.SpecialAvailability;
@@ -19,12 +16,12 @@ public interface AvailabilityService {
     AvailabilityRangeResponse getAvailabilityRange(AvailabilityRangeRequest request);
     ScheduleResponse getSchedule();
     ScheduleResponse updateSchedule(ScheduleRequest request);
-    RecurringUnavailability createRecurringUnavailability(RecurringUnavailabilityRequest request);
-    List<RecurringUnavailability> getRecurringUnavailabilities();
+    RecurringUnavailabilityResponseDTO createRecurringUnavailability(RecurringUnavailabilityRequest request);
+    List<RecurringUnavailabilityResponseDTO> getRecurringUnavailabilities();
     void deleteRecurringUnavailability(String id);
-    SpecialAvailability createSpecialAvailability(SpecialAvailabilityRequest request);
-    List<SpecialAvailability> getSpecialAvailabilities();
-    AvailabilityOverride createOverride(AvailabilityOverrideRequest request);
+    SpecialAvailabilityResponseDTO createSpecialAvailability(SpecialAvailabilityRequest request);
+    List<SpecialAvailabilityResponseDTO> getSpecialAvailabilities();
+    AvailabilityOverrideResponseDTO createOverride(AvailabilityOverrideRequest request);
     SlotAvailabilityResponse checkSlotAvailability(SlotAvailabilityRequest request);
     void generateAvailabilities(LocalDate startDate, LocalDate endDate);
     void updateSlotBooking(String appointmentId, LocalDate date, LocalTime startTime, int delta);
