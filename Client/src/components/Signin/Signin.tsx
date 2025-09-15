@@ -1,88 +1,97 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { use, useState } from "react"
-import InputField from "../../common/Fields/InputField"
-import { toast } from "react-toastify"
-import axios from "axios"
-import { useNavigate } from "react-router-dom"
-import { loginUser } from "../../redux/slices/authSlice"
-import { useAppDispatch } from "../../redux/store"
+import type React from "react";
+import { useState } from "react";
+import InputField from "../../common/Fields/InputField";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../redux/slices/authSlice";
+import { useAppDispatch } from "../../redux/store";
 
 interface SignInProps {
-  userType: "patient" | "doctor"
-  setUserType: React.Dispatch<React.SetStateAction<"patient" | "doctor">>
-  onForgotPassword?: () => void
+  userType: "patient" | "doctor";
+  setUserType: React.Dispatch<React.SetStateAction<"patient" | "doctor">>;
+  onForgotPassword?: () => void;
 }
 
-const SignIn: React.FC<SignInProps> = ({ userType, setUserType, onForgotPassword }) => {
+const SignIn: React.FC<SignInProps> = ({
+  userType,
+  setUserType,
+  onForgotPassword,
+}) => {
   const [formData, setFormData] = useState<{
-    email: string
-    password: string
+    email: string;
+    password: string;
   }>({
     email: "",
     password: "",
-  })
+  });
 
-  const [errors, setErrors] = useState<Partial<{ email: string; password: string }>>({})
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [rememberMe, setRememberMe] = useState<boolean>(false)
-  const navigate = useNavigate()
-  const dispatch = useAppDispatch()
+  const [errors, setErrors] = useState<
+    Partial<{ email: string; password: string }>
+  >({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }))
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
-  }
+  };
 
   const validate = (): boolean => {
-    const newErrors: Partial<{ email: string; password: string }> = {}
-    let isValid = true
+    const newErrors: Partial<{ email: string; password: string }> = {};
+    let isValid = true;
 
     if (!formData.email) {
-      newErrors.email = "Email is required"
-      isValid = false
+      newErrors.email = "Email is required";
+      isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid"
-      isValid = false
+      newErrors.email = "Email is invalid";
+      isValid = false;
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required"
-      isValid = false
+      newErrors.password = "Password is required";
+      isValid = false;
     }
 
-    setErrors(newErrors)
-    return isValid
-  }
+    setErrors(newErrors);
+    return isValid;
+  };
 
+  // In your SignIn component, update the handleSubmit function
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (validate()) {
-      setIsLoading(true)
+      setIsLoading(true);
 
       try {
-        const resultAction = await dispatch(loginUser({ formData, userType }))
+        const resultAction = await dispatch(loginUser({ formData, userType }));
 
         if (loginUser.fulfilled.match(resultAction)) {
-          toast.success(`${userType.charAt(0).toUpperCase() + userType.slice(1)} signed in successfully!`)
-          navigate("/")
+          toast.success(
+            `${
+              userType.charAt(0).toUpperCase() + userType.slice(1)
+            } signed in successfully!`
+          );
         } else if (loginUser.rejected.match(resultAction)) {
-          console.error("Login error:", resultAction.error.message)
-          toast.error(resultAction.error.message || "Login failed")
+          console.error("Login error:", resultAction.error.message);
+          toast.error(resultAction.error.message || "Login failed");
         }
       } catch (error: any) {
-        console.error("Login error:", error)
-        setErrors(error.message || "Login failed")
+        console.error("Login error:", error);
+        setErrors(error.message || "Login failed");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
-  }
+  };
 
   return (
     <div className="w-full">
@@ -91,7 +100,10 @@ const SignIn: React.FC<SignInProps> = ({ userType, setUserType, onForgotPassword
         <div className="h-1 w-20 bg-blue-500 mx-auto mt-2 rounded-full"></div>
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6 animate-fadeIn animation-delay-200">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 animate-fadeIn animation-delay-200"
+      >
         <InputField
           label="Email"
           name="email"
@@ -153,13 +165,20 @@ const SignIn: React.FC<SignInProps> = ({ userType, setUserType, onForgotPassword
               onChange={(e) => setRememberMe(e.target.checked)}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+            <label
+              htmlFor="remember-me"
+              className="ml-2 block text-sm text-gray-700"
+            >
               Remember me
             </label>
           </div>
 
           <div className="text-sm">
-            <button type="button" onClick={onForgotPassword} className="font-medium text-blue-600 hover:text-blue-500">
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
               Forgot your password?
             </button>
           </div>
@@ -168,7 +187,9 @@ const SignIn: React.FC<SignInProps> = ({ userType, setUserType, onForgotPassword
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+          className={`w-full flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 ${
+            isLoading ? "opacity-70 cursor-not-allowed" : ""
+          }`}
         >
           {isLoading ? (
             <>
@@ -178,7 +199,14 @@ const SignIn: React.FC<SignInProps> = ({ userType, setUserType, onForgotPassword
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
                 <path
                   className="opacity-75"
                   fill="currentColor"
@@ -197,7 +225,12 @@ const SignIn: React.FC<SignInProps> = ({ userType, setUserType, onForgotPassword
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M14 5l7 7m0 0l-7 7m7-7H3"
+                />
               </svg>
             </>
           )}
@@ -213,7 +246,7 @@ const SignIn: React.FC<SignInProps> = ({ userType, setUserType, onForgotPassword
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SignIn
+export default SignIn;

@@ -1,44 +1,63 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Link } from "react-router-dom"
-import Logo from "../../assets/images/Logo.png"
-import { doctorNavItems, patientNavItems, publicNavItems } from "../../Data/navigation"
-import { useAuth } from "../../hooks/Redux/useAuth"
-import { useCart } from "../../context/Cart/CartContext"
-import { Bell, Heart, LogOut, Menu, Settings, ShoppingCart, Star, User, X } from "lucide-react"
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
+import Logo from "../../assets/images/Logo.png";
+import {
+  doctorNavItems,
+  patientNavItems,
+  publicNavItems,
+} from "../../Data/navigation";
+import { useAuth } from "../../hooks/Redux/useAuth";
+import { useCart } from "../../context/Cart/CartContext";
+import {
+  Bell,
+  Heart,
+  LogOut,
+  Menu,
+  Settings,
+  ShoppingCart,
+  Star,
+  User,
+  X,
+} from "lucide-react";
 
 const Header = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const { isAuthenticated, userType, profileImage, userName, handleLogout } = useAuth()
-  const [showProfileMenu, setShowProfileMenu] = useState(false)
-  const { cart } = useCart()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { isAuthenticated, userType, profileImage, userName, handleLogout } =
+    useAuth();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { cart } = useCart();
 
-  const itemCount = cart?.totalItems || 0
-  const navItems = isAuthenticated ? (userType === "doctor" ? doctorNavItems : patientNavItems) : publicNavItems
+  const itemCount = cart?.totalItems || 0;
+  const navItems = isAuthenticated
+    ? userType === "doctor"
+      ? doctorNavItems
+      : patientNavItems
+    : publicNavItems;
 
   const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen)
-  }
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
 
   const toggleProfileMenu = () => {
-    setShowProfileMenu(!showProfileMenu)
-  }
+    setShowProfileMenu(!showProfileMenu);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 50) {
-        setScrolled(true)
+        setScrolled(true);
       } else {
-        setScrolled(false)
+        setScrolled(false);
       }
-    }
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Icon mapping function
   const getIcon = (iconName: string) => {
@@ -59,7 +78,7 @@ const Header = () => {
               d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
             />
           </svg>
-        )
+        );
       case "calendar":
         return (
           <svg
@@ -76,7 +95,7 @@ const Header = () => {
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-        )
+        );
       case "star":
         return (
           <svg
@@ -93,7 +112,7 @@ const Header = () => {
               d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
             />
           </svg>
-        )
+        );
       case "edit":
         return (
           <svg
@@ -110,7 +129,7 @@ const Header = () => {
               d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
             />
           </svg>
-        )
+        );
       case "virus":
         return (
           <svg
@@ -127,7 +146,7 @@ const Header = () => {
               d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
             />
           </svg>
-        )
+        );
       case "shopping-bag":
         return (
           <svg
@@ -144,7 +163,7 @@ const Header = () => {
               d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
             />
           </svg>
-        )
+        );
       case "pill":
         return (
           <svg
@@ -161,7 +180,7 @@ const Header = () => {
               d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
             />
           </svg>
-        )
+        );
       case "shield":
         return (
           <svg
@@ -178,7 +197,7 @@ const Header = () => {
               d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
             />
           </svg>
-        )
+        );
       case "utensils":
         return (
           <svg
@@ -195,7 +214,7 @@ const Header = () => {
               d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
             />
           </svg>
-        )
+        );
       case "home":
         return (
           <svg
@@ -212,7 +231,7 @@ const Header = () => {
               d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
             />
           </svg>
-        )
+        );
       case "medical-services":
         return (
           <svg
@@ -229,7 +248,7 @@ const Header = () => {
               d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
             />
           </svg>
-        )
+        );
       case "info":
         return (
           <svg
@@ -246,7 +265,7 @@ const Header = () => {
               d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-        )
+        );
       case "phone":
         return (
           <svg
@@ -263,11 +282,11 @@ const Header = () => {
               d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
             />
           </svg>
-        )
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   // Enhanced Cart Icon Component
   const CartIconComponent = () => (
@@ -279,7 +298,11 @@ const Header = () => {
       >
         <motion.div
           animate={itemCount > 0 ? { rotate: [0, -10, 10, -10, 0] } : {}}
-          transition={{ duration: 0.5, repeat: itemCount > 0 ? Number.POSITIVE_INFINITY : 0, repeatDelay: 3 }}
+          transition={{
+            duration: 0.5,
+            repeat: itemCount > 0 ? Number.POSITIVE_INFINITY : 0,
+            repeatDelay: 3,
+          }}
         >
           <ShoppingCart className="h-6 w-6 text-teal-600" />
         </motion.div>
@@ -309,7 +332,11 @@ const Header = () => {
           <motion.div
             className="absolute inset-0 bg-teal-400 rounded-2xl opacity-20"
             animate={{ scale: [1, 1.5], opacity: [0.2, 0] }}
-            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, repeatDelay: 2 }}
+            transition={{
+              duration: 1,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatDelay: 2,
+            }}
           />
         )}
 
@@ -331,7 +358,7 @@ const Header = () => {
         </motion.div>
       </motion.div>
     </Link>
-  )
+  );
 
   return (
     <motion.header
@@ -364,7 +391,11 @@ const Header = () => {
         <div className="flex justify-between items-center">
           {/* Enhanced Logo */}
           <div className="flex items-center">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="relative">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative"
+            >
               <Link to="/" className="flex items-center group">
                 <div className="relative">
                   <motion.img
@@ -379,7 +410,10 @@ const Header = () => {
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-blue-400 to-teal-400 rounded-full blur-lg opacity-20"
                     animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                    transition={{
+                      duration: 2,
+                      repeat: Number.POSITIVE_INFINITY,
+                    }}
                   />
                 </div>
                 <div className="ml-3">
@@ -463,17 +497,17 @@ const Header = () => {
                 </motion.li>
               ))}
             </ul>
-
             {/* Enhanced Cart Icon for Desktop */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: navItems.length * 0.1 }}
-              className="ml-6"
-            >
-              <CartIconComponent />
-            </motion.div>
-
+            {isAuthenticated && userType === "patient" && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: navItems.length * 0.1 }}
+                className="ml-6"
+              >
+                <CartIconComponent />
+              </motion.div>
+            )}
             {/* Auth buttons or profile */}
             {isAuthenticated ? (
               <div className="relative ml-6">
@@ -493,24 +527,35 @@ const Header = () => {
                         "0 0 0 0 rgba(59, 130, 246, 0)",
                       ],
                     }}
-                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                    transition={{
+                      duration: 2,
+                      repeat: Number.POSITIVE_INFINITY,
+                    }}
                   >
                     <img
-                      src={profileImage || "/placeholder.svg?height=48&width=48"}
+                      src={
+                        profileImage || "/placeholder.svg?height=48&width=48"
+                      }
                       alt={userName}
                       className="w-full h-full object-cover"
                     />
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 via-purple-500/20 to-transparent"
                       animate={{ opacity: [0, 0.5, 0] }}
-                      transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                      transition={{
+                        duration: 2,
+                        repeat: Number.POSITIVE_INFINITY,
+                      }}
                     />
 
                     {/* Online status indicator */}
                     <motion.div
                       className="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"
                       animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                      transition={{
+                        duration: 2,
+                        repeat: Number.POSITIVE_INFINITY,
+                      }}
                     />
                   </motion.div>
 
@@ -518,7 +563,9 @@ const Header = () => {
                     <motion.span className="block font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
                       {userName}
                     </motion.span>
-                    <motion.span className="block text-sm text-gray-500 capitalize">{userType}</motion.span>
+                    <motion.span className="block text-sm text-gray-500 capitalize">
+                      {userType}
+                    </motion.span>
                   </div>
 
                   <motion.svg
@@ -530,7 +577,12 @@ const Header = () => {
                     animate={{ rotate: showProfileMenu ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </motion.svg>
                 </motion.div>
 
@@ -548,13 +600,20 @@ const Header = () => {
                       <div className="px-4 py-3 border-b border-gray-100">
                         <div className="flex items-center space-x-3">
                           <img
-                            src={profileImage || "/placeholder.svg?height=40&width=40"}
+                            src={
+                              profileImage ||
+                              "/placeholder.svg?height=40&width=40"
+                            }
                             alt={userName}
                             className="w-10 h-10 rounded-xl object-cover"
                           />
                           <div>
-                            <p className="font-semibold text-gray-800">{userName}</p>
-                            <p className="text-sm text-gray-500 capitalize">{userType}</p>
+                            <p className="font-semibold text-gray-800">
+                              {userName}
+                            </p>
+                            <p className="text-sm text-gray-500 capitalize">
+                              {userType}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -606,7 +665,10 @@ const Header = () => {
               </div>
             ) : (
               <div className="flex items-center ml-6 space-x-3">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <Link
                     to="/auth"
                     className="px-6 py-3 text-blue-600 border-2 border-blue-600 rounded-xl hover:bg-blue-50 transition-all duration-300 font-medium shadow-sm hover:shadow-md"
@@ -614,7 +676,10 @@ const Header = () => {
                     Sign In
                   </Link>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <Link
                     to="/auth/register"
                     className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
@@ -629,8 +694,7 @@ const Header = () => {
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-3">
             {/* Cart Icon for Mobile */}
-            <CartIconComponent />
-
+            {isAuthenticated && userType === "patient" && <CartIconComponent />}
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -680,15 +744,21 @@ const Header = () => {
                   <div className="flex items-center space-x-4">
                     <div className="relative">
                       <img
-                        src={profileImage || "/placeholder.svg?height=48&width=48"}
+                        src={
+                          profileImage || "/placeholder.svg?height=48&width=48"
+                        }
                         alt={userName}
                         className="w-12 h-12 rounded-xl object-cover border-2 border-white shadow-md"
                       />
                       <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-800 text-lg">{userName}</p>
-                      <p className="text-sm text-gray-600 capitalize bg-white/50 px-2 py-1 rounded-full">{userType}</p>
+                      <p className="font-semibold text-gray-800 text-lg">
+                        {userName}
+                      </p>
+                      <p className="text-sm text-gray-600 capitalize bg-white/50 px-2 py-1 rounded-full">
+                        {userType}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -705,7 +775,9 @@ const Header = () => {
                     <Link to={item.url}>
                       <motion.div
                         className="flex items-center px-6 py-4 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 transition-all duration-200 border-l-4 border-transparent hover:border-blue-400"
-                        whileTap={{ backgroundColor: "rgba(59, 130, 246, 0.1)" }}
+                        whileTap={{
+                          backgroundColor: "rgba(59, 130, 246, 0.1)",
+                        }}
                       >
                         <div className="p-2 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 mr-4">
                           {getIcon(item.icon)}
@@ -721,12 +793,17 @@ const Header = () => {
                     <motion.li
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: navItems.length * 0.05 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: navItems.length * 0.05,
+                      }}
                     >
                       <Link to="/profile">
                         <motion.div
                           className="flex items-center px-6 py-4 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 transition-all duration-200 border-l-4 border-transparent hover:border-blue-400"
-                          whileTap={{ backgroundColor: "rgba(59, 130, 246, 0.1)" }}
+                          whileTap={{
+                            backgroundColor: "rgba(59, 130, 246, 0.1)",
+                          }}
                         >
                           <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 mr-4">
                             <User className="h-5 w-5 text-blue-600" />
@@ -739,7 +816,10 @@ const Header = () => {
                     <motion.li
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: (navItems.length + 1) * 0.05 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: (navItems.length + 1) * 0.05,
+                      }}
                     >
                       <motion.button
                         onClick={handleLogout}
@@ -757,7 +837,10 @@ const Header = () => {
                   <motion.li
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: navItems.length * 0.05 }}
+                    transition={{
+                      duration: 0.3,
+                      delay: navItems.length * 0.05,
+                    }}
                     className="px-6 py-4"
                   >
                     <div className="flex flex-col space-y-3">
@@ -782,7 +865,7 @@ const Header = () => {
         </AnimatePresence>
       </div>
     </motion.header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

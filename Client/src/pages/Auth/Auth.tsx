@@ -1,59 +1,67 @@
-import React, { useEffect, useState } from 'react';
-import PatientSignup from '../../components/Signup/PatientSignup';
-import DoctorSignup from '../../components/Signup/DoctorSignup';
-import { motion } from "framer-motion"
-import TopBar from '../../components/TopBar/TopBar';
-import Header from '../../components/Header/Header';
-import Footer from '../../components/Footer/Footer';
-import SignIn from '../../components/Signin/Signin';
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import ForgotPassword from '../../components/Forgot-Password/ForgotPassword';
-import ResetPassword from '../../components/Reset-Password/ResetPassword';
-
+import React, { useEffect, useState } from "react";
+import PatientSignup from "../../components/Signup/PatientSignup";
+import DoctorSignup from "../../components/Signup/DoctorSignup";
+import SignIn from "../../components/Signin/Signin";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import ForgotPassword from "../../components/Forgot-Password/ForgotPassword";
+import ResetPassword from "../../components/Reset-Password/ResetPassword";
+import { useAuth } from "../../hooks/Redux/useAuth";
 
 interface AuthPagesProps {
-  initialPage?: "signup" | "signin" | "forgot" | "reset"
+  initialPage?: "signup" | "signin" | "forgot" | "reset";
 }
 
 const Auth: React.FC<AuthPagesProps> = ({ initialPage = "signin" }) => {
-  const [userType, setUserType] = useState<"patient" | "doctor">("patient")
-  const [page, setPage] = useState<"signup" | "signin" | "forgot" | "reset">(initialPage)
-  const navigate = useNavigate()
-  const location = useLocation()
+  const [userType, setUserType] = useState<"patient" | "doctor">("patient");
+  const [page, setPage] = useState<"signup" | "signin" | "forgot" | "reset">(
+    initialPage
+  );
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, userType: authUserType } = useAuth();
 
-  // Handle page changes and URL updates
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search)
-    const email = searchParams.get("email")
+    if (isAuthenticated) {
+      const from =
+        location.state?.from?.pathname ||
+        (authUserType === "doctor" ? "/dashboard" : "/profile");
 
-    if (location.pathname === "/forgot-password") {
-      setPage("forgot")
-    } else if (location.pathname === "/reset-password") {
-      setPage("reset")
+      navigate(from, { replace: true });
     }
-  }, [location])
+  }, [isAuthenticated, authUserType, navigate, location]);
+
+  useEffect(() => {
+    if (location.pathname === "/forgot-password") {
+      setPage("forgot");
+    } else if (location.pathname === "/reset-password") {
+      setPage("reset");
+    }
+  }, [location]);
 
   // Navigate to different pages
-  const navigateToPage = (newPage: "signup" | "signin" | "forgot" | "reset", params?: Record<string, string>) => {
-    setPage(newPage)
+  const navigateToPage = (
+    newPage: "signup" | "signin" | "forgot" | "reset",
+    params?: Record<string, string>
+  ) => {
+    setPage(newPage);
 
-    let path = "/auth"
+    let path = "/auth";
     if (newPage === "forgot") {
-      path = "/auth/forgot-password"
+      path = "/auth/forgot-password";
     } else if (newPage === "reset") {
-      path = "/auth/reset-password"
+      path = "/auth/reset-password";
     }
 
     if (params) {
-      const searchParams = new URLSearchParams()
+      const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
-        searchParams.append(key, value)
-      })
-      path += `?${searchParams.toString()}`
+        searchParams.append(key, value);
+      });
+      path += `?${searchParams.toString()}`;
     }
 
-    navigate(path)
-  }
+    navigate(path);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 flex flex-col items-center justify-center p-4">
@@ -88,8 +96,12 @@ const Auth: React.FC<AuthPagesProps> = ({ initialPage = "signin" }) => {
           {/* Content overlay */}
           <div className="relative z-10 p-8 h-full flex flex-col justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2 animate-slideInLeft">Aarogya</h1>
-              <p className="text-blue-100 text-lg mb-8 animate-slideInLeft animation-delay-200">Care. Cure. Comfort</p>
+              <h1 className="text-4xl font-bold text-white mb-2 animate-slideInLeft">
+                Aarogya
+              </h1>
+              <p className="text-blue-100 text-lg mb-8 animate-slideInLeft animation-delay-200">
+                Care. Cure. Comfort
+              </p>
 
               <div className="flex space-x-4 mb-8 animate-slideInLeft animation-delay-400">
                 <div className="bg-white/20 p-4 rounded-lg backdrop-blur-sm">
@@ -191,7 +203,9 @@ const Auth: React.FC<AuthPagesProps> = ({ initialPage = "signin" }) => {
                   type="button"
                   onClick={() => navigateToPage("signup")}
                   className={`px-6 py-3 text-sm font-medium ${
-                    page === "signup" ? "bg-blue-600 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
+                    page === "signup"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
                   } border border-gray-200 rounded-l-lg focus:z-10 focus:ring-2 focus:ring-blue-500 transition-all duration-300`}
                 >
                   Sign Up
@@ -200,8 +214,12 @@ const Auth: React.FC<AuthPagesProps> = ({ initialPage = "signin" }) => {
                   type="button"
                   onClick={() => navigateToPage("signin")}
                   className={`px-6 py-3 text-sm font-medium ${
-                    page === "signin" ? "bg-blue-600 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
-                  } border border-gray-200 ${page === "forgot" ? "rounded-r-lg" : ""} focus:z-10 focus:ring-2 focus:ring-blue-500 transition-all duration-300`}
+                    page === "signin"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
+                  } border border-gray-200 ${
+                    page === "forgot" ? "rounded-r-lg" : ""
+                  } focus:z-10 focus:ring-2 focus:ring-blue-500 transition-all duration-300`}
                 >
                   Sign In
                 </button>
@@ -224,7 +242,9 @@ const Auth: React.FC<AuthPagesProps> = ({ initialPage = "signin" }) => {
                   type="button"
                   onClick={() => setUserType("patient")}
                   className={`px-6 py-3 text-sm font-medium rounded-l-lg ${
-                    userType === "patient" ? "bg-blue-600 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
+                    userType === "patient"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
                   } border border-gray-200 focus:z-10 focus:ring-2 focus:ring-blue-500 transition-all duration-300`}
                 >
                   <svg
@@ -247,7 +267,9 @@ const Auth: React.FC<AuthPagesProps> = ({ initialPage = "signin" }) => {
                   type="button"
                   onClick={() => setUserType("doctor")}
                   className={`px-6 py-3 text-sm font-medium rounded-r-lg ${
-                    userType === "doctor" ? "bg-blue-600 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
+                    userType === "doctor"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
                   } border border-gray-200 focus:z-10 focus:ring-2 focus:ring-blue-500 transition-all duration-300`}
                 >
                   <svg
@@ -271,30 +293,37 @@ const Auth: React.FC<AuthPagesProps> = ({ initialPage = "signin" }) => {
           )}
 
           <div className="animate-fadeIn animation-delay-400">
-            {page === "signup" && (userType === "patient" ? <PatientSignup /> : <DoctorSignup />)}
+            {page === "signup" &&
+              (userType === "patient" ? <PatientSignup /> : <DoctorSignup />)}
             {page === "signin" && (
-              <SignIn userType={userType} setUserType={setUserType} onForgotPassword={() => navigateToPage("forgot")} />
+              <SignIn
+                userType={userType}
+                setUserType={setUserType}
+                onForgotPassword={() => navigateToPage("forgot")}
+              />
             )}
             {page === "forgot" && (
-              <ForgotPassword userType={userType} onSendOTP={(email) => navigateToPage("reset", { email })} />
+              <ForgotPassword
+                userType={userType}
+                onSendOTP={(email) => navigateToPage("reset", { email })}
+              />
             )}
-            {page === "reset" && <ResetPassword onSuccess={() => navigateToPage("signin")} />}
+            {page === "reset" && (
+              <ResetPassword onSuccess={() => navigateToPage("signin")} />
+            )}
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default function AuthPage() {
   return (
-
-
-          <Routes>
-            <Route path="/" element={<Auth />} />
-            <Route path="/forgot-password" element={<Auth initialPage="forgot" />} />
-            <Route path="/reset-password" element={<Auth initialPage="reset" />} />
-          </Routes>
-
+    <Routes>
+      <Route path="/" element={<Auth />} />
+      <Route path="/forgot-password" element={<Auth initialPage="forgot" />} />
+      <Route path="/reset-password" element={<Auth initialPage="reset" />} />
+    </Routes>
   );
 }

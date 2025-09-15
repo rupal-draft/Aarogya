@@ -1,27 +1,31 @@
+// Data/navigation.ts
 // Doctor navigation items
 export const doctorNavItems = [
-  { name: "Dashboard", url: "/doctor/dashboard", icon: "dashboard" },
+  { name: "Dashboard", url: "/dashboard", icon: "dashboard" },
   { name: "Appointments", url: "/doctor/appointments", icon: "calendar" },
-  { name: "Reviews", url: "/doctor/reviews", icon: "star" },
-  { name: "Blogs", url: "/blogs", icon: "edit" },
+  { name: "Patients", url: "/patient-management", icon: "medical-services" },
+  { name: "Articles", url: "/doctor/articles", icon: "edit" },
+  { name: "Forum", url: "/doctor/forum", icon: "info" },
+  { name: "Journal", url: "/doctor/journal", icon: "edit" },
+  { name: "Availability", url: "/doctor/availability", icon: "calendar" },
 ];
 
 // Patient navigation items
 export const patientNavItems = [
-  { name: "Lab", url: "/lab", icon: "virus" },
-  { name: "Shop", url: "/shop", icon: "shopping-bag" },
-  { name: "Drugs", url: "/drugs", icon: "pill" },
-  { name: "Insurance", url: "/insurance", icon: "shield" },
-  { name: "Dashboard", url: "/patient/dashboard", icon: "dashboard" },
-  { name: "Blogs", url: "/blogs", icon: "edit" },
-  { name: "Food", url: "/food", icon: "utensils" },
-  { name: "Appointment", url: "/appointments", icon: "calendar" },
+  { name: "Home", url: "/", icon: "home" },
+  { name: "Appointments", url: "/appointment", icon: "calendar" },
+  { name: "Pharmacy", url: "/pharmacy/medicines", icon: "shopping-bag" },
+  { name: "Lab Tests", url: "/lab", icon: "virus" },
+  { name: "Health Blog", url: "/blogs", icon: "edit" },
+  { name: "AI Assistant", url: "/assistant", icon: "shield" },
+  { name: "Profile", url: "/profile", icon: "user" },
 ];
 
 // Public navigation items (when not logged in)
 export const publicNavItems = [
   { name: "Home", url: "/", icon: "home" },
-  { name: "Services", url: "/services", icon: "medical-services" },
-  { name: "About", url: "/about", icon: "info" },
-  { name: "Contact", url: "/contact", icon: "phone" },
+  { name: "Services", url: "/#services", icon: "medical-services" },
+  { name: "Doctors", url: "/#doctors", icon: "user" },
+  { name: "Health Blog", url: "/blogs", icon: "edit" },
+  { name: "Contact", url: "/#contact", icon: "phone" },
 ];

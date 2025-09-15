@@ -23,51 +23,168 @@ import { LabDashboard } from "./pages/Lab/LabDashboard";
 import { ForumDashboard } from "./pages/Forum/ForumDashboard";
 import JournalDashboard from "./pages/Journal/JournalDashboard";
 import AvailabilityDashboard from "./pages/Availability/AvailabilityDashboard";
+import ProtectedRoute from "./ProtectedRoute";
+import Unauthorized from "./components/Unauthorized";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route element={<MainLayout />}>
+          <Route path="*" element={<Unauthorized />} />
+
+          {/* Global routes - accessible to everyone */}
           <Route path="/" element={<Home />} />
           <Route path="/auth/*" element={<AuthPage />} />
           <Route path="/blogs" element={<BlogPage />} />
           <Route path="/blogs/:id" element={<BlogDetailPage />} />
-          <Route path="/pharmacy/medicines" element={<MedicineListPage />} />
+
+          {/* Patient protected routes */}
+          <Route
+            path="/pharmacy/medicines"
+            element={
+              <ProtectedRoute allowedRoles={["patient"]}>
+                <MedicineListPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/pharmacy/medicines/:id"
-            element={<MedicineDetailPage />}
+            element={
+              <ProtectedRoute allowedRoles={["patient"]}>
+                <MedicineDetailPage />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/pharmacy/cart" element={<CartPage />} />
-          <Route path="/pharmacy/checkout" element={<CheckoutPage />} />
+          <Route
+            path="/pharmacy/cart"
+            element={
+              <ProtectedRoute allowedRoles={["patient"]}>
+                <CartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pharmacy/checkout"
+            element={
+              <ProtectedRoute allowedRoles={["patient"]}>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/pharmacy/order-confirmation/:orderId"
-            element={<OrderConfirmationPage />}
+            element={
+              <ProtectedRoute allowedRoles={["patient"]}>
+                <OrderConfirmationPage />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/appointments" element={<AppointmentBooking />} />
-          <Route path="/assistant" element={<Assistant />} />
-          <Route path="/lab" element={<LabManagement />} />
-          <Route path="/profile" element={<PatientDashboard />} />
-          <Route path="/dashboard" element={<DoctorDashboard />} />
+          <Route
+            path="/appointment"
+            element={
+              <ProtectedRoute allowedRoles={["patient"]}>
+                <AppointmentBooking />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/assistant"
+            element={
+              <ProtectedRoute allowedRoles={["patient"]}>
+                <Assistant />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/lab"
+            element={
+              <ProtectedRoute allowedRoles={["patient"]}>
+                <LabManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute allowedRoles={["patient"]}>
+                <PatientDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Doctor protected routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["doctor"]}>
+                <DoctorDashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/doctor/appointments"
-            element={<DoctorAppointmentsDashboard />}
+            element={
+              <ProtectedRoute allowedRoles={["doctor"]}>
+                <DoctorAppointmentsDashboard />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/patient-management/:id"
-            element={<PatientManagement />}
+            element={
+              <ProtectedRoute allowedRoles={["doctor"]}>
+                <PatientManagement />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/doctor/articles" element={<ArticlesDashboard />} />
+          <Route
+            path="/doctor/articles"
+            element={
+              <ProtectedRoute allowedRoles={["doctor"]}>
+                <ArticlesDashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/doctor/prescriptions/:patientId"
-            element={<PrescriptionDashboard />}
+            element={
+              <ProtectedRoute allowedRoles={["doctor"]}>
+                <PrescriptionDashboard />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/lab-history/:patientId" element={<LabDashboard />} />
-          <Route path="/doctor/forum" element={<ForumDashboard />} />
-          <Route path="/doctor/journal" element={<JournalDashboard />} />
+          <Route
+            path="/lab-history/:patientId"
+            element={
+              <ProtectedRoute allowedRoles={["doctor"]}>
+                <LabDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/doctor/forum"
+            element={
+              <ProtectedRoute allowedRoles={["doctor"]}>
+                <ForumDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/doctor/journal"
+            element={
+              <ProtectedRoute allowedRoles={["doctor"]}>
+                <JournalDashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/doctor/availability"
-            element={<AvailabilityDashboard />}
+            element={
+              <ProtectedRoute allowedRoles={["doctor"]}>
+                <AvailabilityDashboard />
+              </ProtectedRoute>
+            }
           />
         </Route>
       </Routes>
