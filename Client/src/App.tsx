@@ -13,7 +13,7 @@ import OrderConfirmationPage from "./pages/Pharmacy/Order/OrderConfirmationPage"
 import AppointmentBooking from "./pages/Appointments/AppointmentBooking";
 import Assistant from "./pages/AiAssistant";
 import LabManagement from "./pages/Lab/LabManagement";
-import PatientDashboard from "./pages/Dashboard/PatientDashboard";
+// import PatientDashboard from "./pages/Dashboard/PatientDashboard";
 import DoctorDashboard from "./pages/Dashboard/DoctorDashboard";
 import DoctorAppointmentsDashboard from "./pages/Appointments/DoctorAppointments";
 import PatientManagement from "./pages/Patient-Management";
@@ -25,6 +25,7 @@ import JournalDashboard from "./pages/Journal/JournalDashboard";
 import AvailabilityDashboard from "./pages/Availability/AvailabilityDashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import Unauthorized from "./components/Unauthorized";
+import { PatientDashboard } from "./pages/Dashboard/PatientDashboard";
 
 function App() {
   return (

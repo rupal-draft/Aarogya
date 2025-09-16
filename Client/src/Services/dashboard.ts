@@ -1,4 +1,5 @@
 import type { DoctorDashboardData } from "../types/doctorDashboard";
+import type { PatientProfile } from "../types/patient";
 import type {
   ApiResponse,
   PatientDashboardResponse,
@@ -18,9 +19,9 @@ export class DashboardService {
     }
   }
 
-  async getPatientDashboard(): Promise<PatientDashboardResponse> {
+  async getPatientDashboard(): Promise<PatientProfile> {
     try {
-      const response = await api.get<ApiResponse<PatientDashboardResponse>>(
+      const response = await api.get<ApiResponse<PatientProfile>>(
         `${ENDPOINTS.PATIENT}/dashboard/complete-profile`
       );
       return response.data.data;

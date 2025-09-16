@@ -1,250 +1,392 @@
-"use client";
-
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
-import DashboardOverview from "../../components/Dashboard/Patient/Tabs/Overview";
-import GlassCard from "../../common/Cards/GlassCard";
-import { DashboardTabs } from "../../Data/tabs";
-import type { PatientDashboardData } from "../../types/patientDashboard";
-import LoadingSpinner from "../../common/Spinners/LoadingSpinner";
-import ErrorState from "../../common/Error/ErrorState";
-import TabNavigation from "../../components/Dashboard/Patient/Components/TabNavigation";
-import DiseaseHistoryTab from "../../components/Dashboard/Patient/Tabs/DiseaseHistoryTab";
-import AllergiesTab from "../../components/Dashboard/Patient/Tabs/AllergiesTab";
-import MedicationsTab from "../../components/Dashboard/Patient/Tabs/MedicationTab";
-import AnalyticsTab from "../../components/Dashboard/Patient/Tabs/AnalyticsTab";
-import SymptomsTab from "../../components/Dashboard/Patient/Tabs/SymptomsTab";
-import HealthGoalTab from "../../components/Dashboard/Patient/Tabs/HealthGoalTab";
-import MedicalHistoryTab from "../../components/Dashboard/Patient/Tabs/MedicalHistoryTab";
-import DoctorNotesTab from "../../components/Dashboard/Patient/Tabs/DoctorNotesTab";
-import EmergencyContactsTab from "../../components/Dashboard/Patient/Tabs/EmergancyContactsTab";
-import VitalsTab from "../../components/Dashboard/Patient/Tabs/VitalsTab";
+import {
+  User,
+  Heart,
+  Activity,
+  Pill,
+  Target,
+  FileText,
+  Shield,
+  AlertTriangle,
+  TrendingUp,
+  Calendar,
+  RefreshCw,
+  BarChart3,
+} from "lucide-react";
 
-export const AnimatedCounter = ({ value }: { value: number }) => {
-  const [count, setCount] = useState(0);
+import type { PatientProfile } from "../../types/patient";
+import { HealthOverviewCard } from "../../components/Dashboard/Patient/HealthOverviewCard";
+import { VitalsCard } from "../../components/Dashboard/Patient/VitalsCard";
+import { MedicalConditionsCard } from "../../components/Dashboard/Patient/MedicalConditionsCard";
+import { HealthGoalsCard } from "../../components/Dashboard/Patient/HealthGoalsCard";
+import { MedicationsCard } from "../../components/Dashboard/Patient/MedicationsCard";
+import { DoctorNotesCard } from "../../components/Dashboard/Patient/DoctorNotesCard";
+import { AllergiesCard } from "../../components/Dashboard/Patient/AllergiesCard";
+import { LoadingSpinner } from "../../common/Spinners/LoadingSpinner2";
+import { DashboardService } from "../../Services/dashboard";
+import { StatsCard } from "../../components/Lab/StatsCard";
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (count < value) {
-        setCount(count + 1);
-      }
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [count, value]);
-
-  return <span>{count}</span>;
-};
-
-const TabContent = ({
-  activeTab,
-  data,
-  onRefresh,
-}: {
-  activeTab: string;
-  data: any;
-  onRefresh: () => void;
-}) => {
-  if (activeTab === "overview") {
-    return <DashboardOverview data={data} />;
-  }
-
-  if (activeTab === "diseases") {
-    return (
-      <DiseaseHistoryTab
-        diseases={data.data.diseaseHistory}
-        onRefresh={onRefresh} // ✅ now properly passing it
-      />
-    );
-  }
-
-  if (activeTab === "allergies") {
-    return <AllergiesTab data={data.data.allergies} />;
-  }
-
-  if (activeTab === "medications") {
-    return <MedicationsTab data={data.data.medications} />;
-  }
-
-  if (activeTab === "vitals") {
-    return <VitalsTab data={data.data.vitalsStats} />;
-  }
-
-  if (activeTab === "analytics") {
-    const mergedData = {
-      ...data.data.statistics,
-      ...data.data.analytics,
-    };
-
-    return <AnalyticsTab data={mergedData} />;
-  }
-
-  if (activeTab === "symptoms") {
-    return <SymptomsTab data={data.data.symptomStatsResponse} />;
-  }
-
-  if (activeTab === "goals") {
-    return (
-      <HealthGoalTab
-        goalStats={data.data.goalStats}
-        goalsData={data.data.healthGoals}
-      />
-    );
-  }
-
-  if (activeTab === "history") {
-    return <MedicalHistoryTab conditionsData={data.data.medicalHistory} />;
-  }
-
-  if (activeTab === "notes") {
-    return <DoctorNotesTab notesData={data.data.doctorNotes} />;
-  }
-
-  if (activeTab === "contacts") {
-    return <EmergencyContactsTab contactsData={data.data.emergencyContacts} />;
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="text-center py-20"
-    >
-      <GlassCard className="p-12 max-w-md mx-auto">
-        <motion.div
-          animate={{
-            rotate: [0, 360],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-          }}
-          className="p-6 bg-gradient-to-r from-sky-500 to-blue-600 rounded-full w-fit mx-auto mb-6"
-        >
-          {DashboardTabs.find((tab) => tab.id === activeTab)?.icon &&
-            React.createElement(
-              DashboardTabs.find((tab) => tab.id === activeTab)!.icon,
-              {
-                className: "w-12 h-12 text-white",
-              }
-            )}
-        </motion.div>
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-sky-700 to-blue-800 bg-clip-text text-transparent mb-4">
-          {DashboardTabs.find((tab) => tab.id === activeTab)?.label}
-        </h2>
-        <p className="text-sky-600 text-lg">
-          This section is coming soon! We're working hard to bring you
-          comprehensive{" "}
-          {DashboardTabs.find(
-            (tab) => tab.id === activeTab
-          )?.label.toLowerCase()}{" "}
-          management.
-        </p>
-      </GlassCard>
-    </motion.div>
-  );
-};
-
-export default function PatientDashboard() {
-  const [data, setData] = useState<PatientDashboardData | null>(null);
+export const PatientDashboard: React.FC = () => {
+  const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "details" | "analytics"
+  >("overview");
+  const dashboardService = new DashboardService();
 
-  const fetchPatientData = async () => {
+  const loadProfile = async () => {
     setLoading(true);
     setError(null);
-
     try {
-      const response = await axios.get(
-        "http://localhost:8080/api/v1/patient/dashboard/complete-profile",
-        {
-          withCredentials: true,
-        }
-      );
-      setData(response.data);
-    } catch (err: any) {
-      console.error("Failed to load mock data:", err);
-      setError("Failed to load dashboard data");
+      const response = await dashboardService.getPatientDashboard();
+      setProfile(response);
+    } catch (err) {
+      setError("Failed to load patient profile");
+      console.error("Error loading profile:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPatientData();
+    loadProfile();
   }, []);
 
-  if (loading) return <LoadingSpinner />;
-  if (error && !data)
-    return <ErrorState error={error} onRetry={fetchPatientData} />;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <LoadingSpinner text="Loading patient dashboard..." size={48} />
+      </div>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Error Loading Dashboard
+          </h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={loadProfile}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = [
+    {
+      title: "Health Score",
+      value: profile.healthOverview.healthScore,
+      icon: Heart,
+      color: "from-red-500 to-red-600",
+      suffix: "/10",
+    },
+    {
+      title: "Active Conditions",
+      value: profile.healthOverview.activeConditions,
+      icon: Activity,
+      color: "from-orange-500 to-orange-600",
+    },
+    {
+      title: "Active Medications",
+      value: profile.healthOverview.activeMedications,
+      icon: Pill,
+      color: "from-blue-500 to-blue-600",
+    },
+    {
+      title: "Critical Allergies",
+      value: profile.healthOverview.criticalAllergies,
+      icon: Shield,
+      color: "from-purple-500 to-purple-600",
+    },
+    {
+      title: "Active Goals",
+      value: profile.goalStats.activeGoals,
+      icon: Target,
+      color: "from-green-500 to-green-600",
+    },
+    {
+      title: "Adherence Rate",
+      value: profile.healthOverview.medicationSummary.adherenceRate,
+      icon: TrendingUp,
+      color: "from-indigo-500 to-indigo-600",
+      suffix: "%",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-100 to-indigo-200 relative overflow-hidden">
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{
-            x: [0, 100, 0],
-            y: [0, -100, 0],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "linear",
-          }}
-          className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-r from-sky-300/20 to-blue-400/20 rounded-full blur-xl"
-        />
-        <motion.div
-          animate={{
-            x: [0, -150, 0],
-            y: [0, 100, 0],
-            rotate: [360, 180, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "linear",
-          }}
-          className="absolute top-1/3 right-20 w-48 h-48 bg-gradient-to-r from-indigo-300/20 to-purple-400/20 rounded-full blur-xl"
-        />
-        <motion.div
-          animate={{
-            x: [0, 80, 0],
-            y: [0, -80, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "linear",
-          }}
-          className="absolute bottom-20 left-1/4 w-24 h-24 bg-gradient-to-r from-cyan-300/20 to-teal-400/20 rounded-full blur-xl"
-        />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white shadow-sm border-b border-gray-100"
+      >
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", duration: 0.8 }}
+                className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center"
+              >
+                <User className="text-white" size={28} />
+              </motion.div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Patient Dashboard
+                </h1>
+                <p className="text-gray-600">
+                  Overall Status: {profile.healthOverview.overallHealthStatus} •
+                  Last Updated:{" "}
+                  {new Date(
+                    profile.statistics.lastUpdated
+                  ).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
 
-      <div className="container mx-auto px-4 relative z-10">
-        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={loadProfile}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <RefreshCw size={18} />
+              Refresh
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <TabContent
-              activeTab={activeTab}
-              data={data}
-              onRefresh={fetchPatientData}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+          {stats.map((stat, index) => (
+            <StatsCard
+              key={stat.title}
+              title={stat.title}
+              value={stat.value}
+              icon={stat.icon}
+              color={stat.color}
+              index={index}
+              suffix={stat.suffix}
             />
-          </motion.div>
+          ))}
+        </div>
+
+        {/* Tab Navigation */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white rounded-xl shadow-sm border border-gray-100 p-2 mb-8"
+        >
+          <div className="flex gap-2">
+            {[
+              { key: "overview", label: "Health Overview", icon: Heart },
+              { key: "details", label: "Medical Details", icon: FileText },
+              { key: "analytics", label: "Analytics", icon: BarChart3 },
+            ].map((tab) => (
+              <motion.button
+                key={tab.key}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                  activeTab === tab.key
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <tab.icon size={18} />
+                {tab.label}
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === "overview" && (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <HealthOverviewCard
+                  healthOverview={profile.healthOverview}
+                  index={0}
+                />
+                <VitalsCard vitals={profile.dashboard.latestVitals} index={1} />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <MedicalConditionsCard
+                  conditions={profile.dashboard.activeMedicalConditions}
+                  index={2}
+                />
+                <AllergiesCard
+                  allergies={profile.dashboard.criticalAllergies}
+                  index={3}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === "details" && (
+            <motion.div
+              key="details"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <MedicationsCard
+                  medications={profile.dashboard.activeMedications}
+                  index={0}
+                />
+                <HealthGoalsCard
+                  goals={profile.dashboard.activeGoals}
+                  index={1}
+                />
+              </div>
+
+              <DoctorNotesCard
+                notes={profile.dashboard.recentDoctorNotes}
+                index={2}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === "analytics" && (
+            <motion.div
+              key="analytics"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">
+                  Health Analytics
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  <div className="bg-blue-50 p-4 rounded-xl text-center">
+                    <BarChart3 className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-blue-900">
+                      {profile.analytics.overallHealthScore}
+                    </div>
+                    <p className="text-sm text-blue-600">Health Score</p>
+                  </div>
+
+                  <div className="bg-green-50 p-4 rounded-xl text-center">
+                    <Activity className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-green-900">
+                      {profile.analytics.vitalsAnalytics.totalVitalsRecords}
+                    </div>
+                    <p className="text-sm text-green-600">Vitals Records</p>
+                  </div>
+
+                  <div className="bg-purple-50 p-4 rounded-xl text-center">
+                    <Target className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-purple-900">
+                      {Math.round(
+                        profile.analytics.goalAnalytics.averageProgress
+                      )}
+                      %
+                    </div>
+                    <p className="text-sm text-purple-600">Avg Goal Progress</p>
+                  </div>
+
+                  <div className="bg-orange-50 p-4 rounded-xl text-center">
+                    <Calendar className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-orange-900">
+                      {profile.analytics.analysisPeriodDays}
+                    </div>
+                    <p className="text-sm text-orange-600">Days Analyzed</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <h4 className="font-semibold text-gray-900 mb-3">
+                      Symptom Analytics
+                    </h4>
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">
+                        Total Symptoms:{" "}
+                        {profile.analytics.symptomAnalytics.totalSymptoms}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Trend: {profile.analytics.symptomAnalytics.symptomTrend}
+                      </p>
+                      <div className="mt-3">
+                        <p className="text-xs font-medium text-gray-700 mb-2">
+                          Most Common:
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {profile.analytics.symptomAnalytics.mostCommonSymptoms
+                            .slice(0, 3)
+                            .map((symptom, index) => (
+                              <span
+                                key={index}
+                                className="px-2 py-1 bg-white rounded text-xs text-gray-600"
+                              >
+                                {symptom}
+                              </span>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <h4 className="font-semibold text-gray-900 mb-3">
+                      Medication Analytics
+                    </h4>
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">
+                        Adherence Rate:{" "}
+                        {profile.analytics.medicationAnalytics.adherenceRate}%
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Missed Doses:{" "}
+                        {profile.analytics.medicationAnalytics.missedDoses}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Active Medications:{" "}
+                        {
+                          profile.analytics.medicationAnalytics
+                            .activeMedications
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
     </div>
   );
-}
+};

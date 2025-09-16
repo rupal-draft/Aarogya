@@ -1,94 +1,74 @@
-"use client";
-
-import type React from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
-import type { HTMLMotionProps } from "framer-motion";
+import { cn } from "../../utils/cn";
 
-interface ButtonProps extends HTMLMotionProps<"button"> {
-  variant?:
-    | "primary"
-    | "secondary"
-    | "danger"
-    | "ghost"
-    | "glass"
-    | "outline"
-    | "destructive";
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "destructive";
   size?: "sm" | "md" | "lg";
   loading?: boolean;
   children: React.ReactNode;
-  icon?: React.ReactNode;
-  glow?: boolean;
 }
 
-const Button: React.FC<ButtonProps> = ({
-  variant = "primary",
-  size = "md",
-  loading = false,
-  disabled,
-  children,
-  className = "",
-  icon,
-  glow = false,
-  ...props
-}) => {
-  const baseClasses =
-    "font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden";
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      className,
+      variant = "primary",
+      size = "md",
+      loading = false,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const baseStyles =
+      "relative inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden";
 
-  const variantClasses = {
-    primary: `medical-gradient text-white shadow-lg hover:shadow-xl focus:ring-medical-500 ${
-      glow ? "shadow-glow hover:shadow-glow-lg" : ""
-    }`,
-    secondary: "glass-card text-gray-700 hover:bg-white/90 focus:ring-gray-500",
-    danger:
-      "danger-gradient text-white shadow-lg hover:shadow-xl focus:ring-danger-500",
-    ghost: "bg-transparent hover:bg-white/10 text-gray-700 focus:ring-gray-500",
-    glass: "glass-button text-gray-700 hover:text-gray-900",
-  };
+    const variants = {
+      primary:
+        "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl focus:ring-blue-200",
+      secondary:
+        "bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 shadow-md hover:shadow-lg focus:ring-slate-200",
+      outline:
+        "border-2 border-blue-200 hover:border-blue-400 text-blue-600 hover:bg-blue-50 focus:ring-blue-200",
+      ghost: "hover:bg-blue-50 text-blue-600 focus:ring-blue-200",
+      destructive:
+        "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl focus:ring-red-200",
+    };
 
-  const sizeClasses = {
-    sm: "px-4 py-2 text-sm",
-    md: "px-6 py-3 text-sm",
-    lg: "px-8 py-4 text-base",
-  };
+    const sizes = {
+      sm: "px-3 py-2 text-sm",
+      md: "px-6 py-3 text-base",
+      lg: "px-8 py-4 text-lg",
+    };
 
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
-
-  return (
-    <motion.button
-      className={classes}
-      disabled={disabled || loading}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      {...props}
-    >
-      <motion.div
-        className="flex items-center justify-center space-x-2"
-        initial={false}
-        animate={loading ? { opacity: 0.7 } : { opacity: 1 }}
+    return (
+      <motion.button
+        ref={ref}
+        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        whileHover={{ scale: 1.02, y: -2 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        disabled={loading || props.disabled}
+        {...props}
       >
-        {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          icon && <span>{icon}</span>
-        )}
-        <span>{loading ? "Loading..." : children}</span>
-      </motion.div>
-
-      {/* Shimmer effect */}
-      {!loading && (
         <motion.div
-          className="absolute inset-0 -top-1 -bottom-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-          initial={{ x: "-100%" }}
-          whileHover={{ x: "100%" }}
-          transition={{ duration: 0.6 }}
+          className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"
+          layoutId={`button-shine-${variant}`}
         />
-      )}
-    </motion.button>
-  );
-};
+        {loading ? (
+          <motion.div
+            className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+        ) : null}
+        <span className="relative z-10">{children}</span>
+      </motion.button>
+    );
+  }
+);
+
+Button.displayName = "Button";
 
 export default Button;

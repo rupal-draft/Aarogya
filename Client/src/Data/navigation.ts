@@ -15,9 +15,9 @@ export const patientNavItems = [
   { name: "Home", url: "/", icon: "home" },
   { name: "Appointments", url: "/appointment", icon: "calendar" },
   { name: "Pharmacy", url: "/pharmacy/medicines", icon: "shopping-bag" },
-  { name: "Lab Tests", url: "/lab", icon: "virus" },
-  { name: "Health Blog", url: "/blogs", icon: "edit" },
-  { name: "AI Assistant", url: "/assistant", icon: "shield" },
+  { name: "Lab", url: "/lab", icon: "virus" },
+  { name: "Blogs", url: "/blogs", icon: "edit" },
+  { name: "Assistant", url: "/assistant", icon: "shield" },
   { name: "Profile", url: "/profile", icon: "user" },
 ];
 
