@@ -39,11 +39,11 @@ public class AvailabilityController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{date}")
-    public ResponseEntity<AvailabilityResponse> getAvailability(
+    @GetMapping("/{doctorId}/{date}")
+    public ResponseEntity<AvailabilityResponse> getAvailability(@PathVariable String doctorId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         log.debug("Fetching availability for date: {}", date);
-        AvailabilityResponse response = availabilityService.getAvailability(date);
+        AvailabilityResponse response = availabilityService.getAvailability(doctorId,date);
         return ResponseEntity.ok(response);
     }
 

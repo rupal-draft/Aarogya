@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface AvailabilityService {
     AvailabilityResponse setAvailability(AvailabilityRequest request);
-    AvailabilityResponse getAvailability(LocalDate date);
+    AvailabilityResponse getAvailability(String doctorId, LocalDate date);
     AvailabilityRangeResponse getAvailabilityRange(AvailabilityRangeRequest request);
     ScheduleResponse getSchedule();
     ScheduleResponse updateSchedule(ScheduleRequest request);

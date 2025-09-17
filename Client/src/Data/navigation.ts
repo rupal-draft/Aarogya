@@ -25,7 +25,6 @@ export const patientNavItems = [
 export const publicNavItems = [
   { name: "Home", url: "/", icon: "home" },
   { name: "Services", url: "/#services", icon: "medical-services" },
-  { name: "Doctors", url: "/#doctors", icon: "user" },
   { name: "Health Blog", url: "/blogs", icon: "edit" },
   { name: "Contact", url: "/#contact", icon: "phone" },
 ];

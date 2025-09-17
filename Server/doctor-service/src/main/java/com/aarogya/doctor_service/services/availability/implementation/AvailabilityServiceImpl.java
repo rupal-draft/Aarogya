@@ -75,8 +75,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
     @Override
     @Cacheable(value = AVAILABILITY_CACHE, key = "#date.toString()")
-    public AvailabilityResponse getAvailability(LocalDate date) {
-        String doctorId = UserContextHolder.getUserDetails().getUserId();
+    public AvailabilityResponse getAvailability(String doctorId, LocalDate date) {
         log.debug("Fetching availability for doctor {} on date {}", doctorId, date);
 
         DoctorAvailability availability = availabilityRepository.findByDoctorIdAndDate(doctorId, date)
