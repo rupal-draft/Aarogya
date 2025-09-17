@@ -26,13 +26,19 @@ import { AllergiesCard } from "../../components/Dashboard/Patient/AllergiesCard"
 import { LoadingSpinner } from "../../common/Spinners/LoadingSpinner2";
 import { DashboardService } from "../../Services/dashboard";
 import { StatsCard } from "../../components/Lab/StatsCard";
+import { DiseaseHistoryCard } from "../../components/Dashboard/Patient/DiseaseHistoryCard";
+import { EmergencyContactsCard } from "../../components/Dashboard/Patient/EmergencyContactsCard";
+import { SymptomsCard } from "../../components/Dashboard/Patient/SymptomsCard";
+import { VitalsStatsCard } from "../../components/Dashboard/Patient/VitalsStatsCard";
+import { AnalyticsCard } from "../../components/Dashboard/Patient/AnalyticsCard";
+import { StatisticsCard } from "../../components/Dashboard/Patient/StatisticsCard";
 
 export const PatientDashboard: React.FC = () => {
   const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "overview" | "details" | "analytics"
+    "overview" | "details" | "history" | "analytics"
   >("overview");
   const dashboardService = new DashboardService();
 
@@ -49,11 +55,10 @@ export const PatientDashboard: React.FC = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     loadProfile();
   }, []);
-
+  console.log(profile);
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
@@ -131,7 +136,7 @@ export const PatientDashboard: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white shadow-sm border-b border-gray-100"
       >
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-[1600px] mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <motion.div
@@ -169,7 +174,7 @@ export const PatientDashboard: React.FC = () => {
         </div>
       </motion.div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-[1600px] mx-auto px-6 py-8">
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
           {stats.map((stat, index) => (
@@ -196,6 +201,7 @@ export const PatientDashboard: React.FC = () => {
             {[
               { key: "overview", label: "Health Overview", icon: Heart },
               { key: "details", label: "Medical Details", icon: FileText },
+              { key: "history", label: "Medical History", icon: Calendar },
               { key: "analytics", label: "Analytics", icon: BarChart3 },
             ].map((tab) => (
               <motion.button
@@ -232,13 +238,14 @@ export const PatientDashboard: React.FC = () => {
                   healthOverview={profile.healthOverview}
                   index={0}
                 />
-                <VitalsCard vitals={profile.dashboard.latestVitals} index={1} />
+                <VitalsCard vitals={profile.vitalsStats} index={1} />
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <MedicalConditionsCard
                   conditions={profile.dashboard.activeMedicalConditions}
                   index={2}
+                  maxItems={4}
                 />
                 <AllergiesCard
                   allergies={profile.dashboard.criticalAllergies}
@@ -275,114 +282,47 @@ export const PatientDashboard: React.FC = () => {
             </motion.div>
           )}
 
-          {activeTab === "analytics" && (
+          {activeTab === "history" && (
             <motion.div
-              key="analytics"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              key="history"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
               transition={{ duration: 0.3 }}
               className="space-y-8"
             >
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">
-                  Health Analytics
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  <div className="bg-blue-50 p-4 rounded-xl text-center">
-                    <BarChart3 className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-blue-900">
-                      {profile.analytics.overallHealthScore}
-                    </div>
-                    <p className="text-sm text-blue-600">Health Score</p>
-                  </div>
-
-                  <div className="bg-green-50 p-4 rounded-xl text-center">
-                    <Activity className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-green-900">
-                      {profile.analytics.vitalsAnalytics.totalVitalsRecords}
-                    </div>
-                    <p className="text-sm text-green-600">Vitals Records</p>
-                  </div>
-
-                  <div className="bg-purple-50 p-4 rounded-xl text-center">
-                    <Target className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-purple-900">
-                      {Math.round(
-                        profile.analytics.goalAnalytics.averageProgress
-                      )}
-                      %
-                    </div>
-                    <p className="text-sm text-purple-600">Avg Goal Progress</p>
-                  </div>
-
-                  <div className="bg-orange-50 p-4 rounded-xl text-center">
-                    <Calendar className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-orange-900">
-                      {profile.analytics.analysisPeriodDays}
-                    </div>
-                    <p className="text-sm text-orange-600">Days Analyzed</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="bg-gray-50 p-4 rounded-xl">
-                    <h4 className="font-semibold text-gray-900 mb-3">
-                      Symptom Analytics
-                    </h4>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600">
-                        Total Symptoms:{" "}
-                        {profile.analytics.symptomAnalytics.totalSymptoms}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Trend: {profile.analytics.symptomAnalytics.symptomTrend}
-                      </p>
-                      <div className="mt-3">
-                        <p className="text-xs font-medium text-gray-700 mb-2">
-                          Most Common:
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {profile.analytics.symptomAnalytics.mostCommonSymptoms
-                            .slice(0, 3)
-                            .map((symptom, index) => (
-                              <span
-                                key={index}
-                                className="px-2 py-1 bg-white rounded text-xs text-gray-600"
-                              >
-                                {symptom}
-                              </span>
-                            ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 p-4 rounded-xl">
-                    <h4 className="font-semibold text-gray-900 mb-3">
-                      Medication Analytics
-                    </h4>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600">
-                        Adherence Rate:{" "}
-                        {profile.analytics.medicationAnalytics.adherenceRate}%
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Missed Doses:{" "}
-                        {profile.analytics.medicationAnalytics.missedDoses}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Active Medications:{" "}
-                        {
-                          profile.analytics.medicationAnalytics
-                            .activeMedications
-                        }
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <DiseaseHistoryCard
+                  diseases={profile.diseaseHistory}
+                  index={0}
+                />
+                <EmergencyContactsCard
+                  contacts={profile.emergencyContacts}
+                  index={1}
+                />
               </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <SymptomsCard
+                  symptoms={profile.symptomStatsResponse.recentSymptoms}
+                  index={2}
+                />
+                <VitalsStatsCard vitalsStats={profile.vitalsStats} index={3} />
+              </div>
+            </motion.div>
+          )}
+          {activeTab === "analytics" && (
+            <motion.div
+              key="analytics"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              <AnalyticsCard analytics={profile.analytics} index={0} />
+
+              <StatisticsCard statistics={profile.statistics} index={1} />
             </motion.div>
           )}
         </AnimatePresence>
