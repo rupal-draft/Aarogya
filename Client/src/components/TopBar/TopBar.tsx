@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
 const TopBar = () => {
-  const [language, setLanguage] = useState("En")
+  const [language, setLanguage] = useState("En");
 
   return (
     <section className="bg-blue-600 text-white py-2">
@@ -11,7 +11,10 @@ const TopBar = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <ul className="flex flex-wrap gap-6">
             <li className="flex items-center">
-              <a href="mailto:help@example.com" className="flex items-center hover:text-blue-200 transition-colors">
+              <a
+                href="mailto:aarogya@seeva.com"
+                className="flex items-center hover:text-blue-200 transition-colors"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2"
@@ -26,11 +29,14 @@ const TopBar = () => {
                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                   />
                 </svg>
-                help@example.com
+                aarogya@seeva.com{" "}
               </a>
             </li>
             <li className="flex items-center">
-              <a href="tel:123456789101" className="flex items-center hover:text-blue-200 transition-colors">
+              <a
+                href="tel:8617756189"
+                className="flex items-center hover:text-blue-200 transition-colors"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2"
@@ -45,7 +51,7 @@ const TopBar = () => {
                     d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                   />
                 </svg>
-                1234 5678 9101
+                8617756189{" "}
               </a>
             </li>
           </ul>
@@ -70,7 +76,7 @@ const TopBar = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default TopBar
+export default TopBar;

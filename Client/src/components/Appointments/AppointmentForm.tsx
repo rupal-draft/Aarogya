@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import type { DoctorResponseDTO } from "../../types/doctor"
-import type { AppointmentRequestDto } from "../../types/appointment"
-import {AppointmentType} from "../../Data/enums/Appointment"
-import { requestAppointment } from "../../Services/appointment"
-import { motion, AnimatePresence } from "framer-motion"
+import type React from "react";
+import { useState } from "react";
+import type { DoctorResponseDTO } from "../../types/doctor";
+import type { AppointmentRequestDto } from "../../types/appointment";
+import { AppointmentType } from "../../Data/enums/Appointment";
+import { requestAppointment } from "../../Services/appointment";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Calendar,
@@ -21,18 +21,24 @@ import {
   CheckCircle,
   Loader,
   Activity,
-} from "lucide-react"
-import { commonSymptoms } from "../../Data/appointment"
+} from "lucide-react";
+import { commonSymptoms } from "../../Data/appointment";
 
 interface AppointmentFormProps {
-  doctor: DoctorResponseDTO
-  date: string
-  slot: { startTime: string; endTime: string }
-  onComplete: () => void
-  onBack: () => void
+  doctor: DoctorResponseDTO;
+  date: string;
+  slot: { startTime: string; endTime: string };
+  onComplete: () => void;
+  onBack: () => void;
 }
 
-const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, onComplete, onBack }) => {
+const AppointmentForm: React.FC<AppointmentFormProps> = ({
+  doctor,
+  date,
+  slot,
+  onComplete,
+  onBack,
+}) => {
   const [formData, setFormData] = useState<AppointmentRequestDto>({
     doctorId: doctor.id,
     appointmentDate: date,
@@ -43,89 +49,103 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
     symptoms: [],
     priority: 1,
     isVirtual: false,
-  })
+  });
 
-  const [currentSymptom, setCurrentSymptom] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [currentSymptom, setCurrentSymptom] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value, type } = e.target;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-    }))
-  }
+      [name]:
+        type === "checkbox"
+          ? (e.target as HTMLInputElement).checked
+          : name === "priority"
+          ? Number(value)
+          : value,
+    }));
+  };
 
   const addSymptom = (symptom: string) => {
-    if (symptom.trim() && !formData.symptoms?.includes(symptom.trim()) && (formData.symptoms?.length || 0) < 10) {
+    if (
+      symptom.trim() &&
+      !formData.symptoms?.includes(symptom.trim()) &&
+      (formData.symptoms?.length || 0) < 10
+    ) {
       setFormData((prev) => ({
         ...prev,
         symptoms: [...(prev.symptoms || []), symptom.trim()],
-      }))
-      setCurrentSymptom("")
+      }));
+      setCurrentSymptom("");
     }
-  }
+  };
 
   const removeSymptom = (symptom: string) => {
     setFormData((prev) => ({
       ...prev,
       symptoms: prev.symptoms?.filter((s) => s !== symptom) || [],
-    }))
-  }
+    }));
+  };
 
   const validateForm = (): string | null => {
     if (!formData.reason?.trim()) {
-      return "Please provide a reason for the appointment"
+      return "Please provide a reason for the appointment";
     }
     if (formData.reason.length > 500) {
-      return "Reason cannot exceed 500 characters"
+      return "Reason cannot exceed 500 characters";
     }
     if ((formData.symptoms?.length || 0) > 10) {
-      return "Maximum 10 symptoms allowed"
+      return "Maximum 10 symptoms allowed";
     }
     if (formData.priority < 1 || formData.priority > 5) {
-      return "Priority must be between 1 and 5"
+      return "Priority must be between 1 and 5";
     }
-    return null
-  }
+    return null;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const validationError = validateForm()
+    const validationError = validateForm();
     if (validationError) {
-      setError(validationError)
-      return
+      setError(validationError);
+      return;
     }
 
     try {
-      setLoading(true)
-      setError(null)
-
-      await requestAppointment(formData)
-      setSuccess(true)
+      setLoading(true);
+      setError(null);
+      console.log(formData);
+      return;
+      await requestAppointment(formData);
+      setSuccess(true);
 
       setTimeout(() => {
-        onComplete()
-      }, 3000)
+        onComplete();
+      }, 3000);
     } catch (err) {
-      setError("Failed to book appointment. Please try again.")
-      console.error("Error booking appointment:", err)
+      setError("Failed to book appointment. Please try again.");
+      console.error("Error booking appointment:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const formatTime = (timeString: string) => {
     return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
-    })
-  }
+    });
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -136,7 +156,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -145,11 +165,15 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
       opacity: 1,
       transition: { duration: 0.5 },
     },
-  }
+  };
 
   if (success) {
     return (
-      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl mx-auto">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-2xl mx-auto"
+      >
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
           <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-8 text-white text-center">
             <motion.div
@@ -159,9 +183,12 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
             >
               ✅
             </motion.div>
-            <h2 className="text-3xl font-bold mb-4">Appointment Booked Successfully!</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              Appointment Booked Successfully!
+            </h2>
             <p className="text-green-100 text-lg">
-              Your appointment with Dr. {doctor.firstName} {doctor.lastName} has been scheduled.
+              Your appointment with Dr. {doctor.firstName} {doctor.lastName} has
+              been scheduled.
             </p>
           </div>
 
@@ -177,12 +204,14 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
                     <strong>Date:</strong> {new Date(date).toLocaleDateString()}
                   </p>
                   <p>
-                    <strong>Time:</strong> {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                    <strong>Time:</strong> {formatTime(slot.startTime)} -{" "}
+                    {formatTime(slot.endTime)}
                   </p>
                 </div>
                 <div>
                   <p>
-                    <strong>Doctor:</strong> Dr. {doctor.firstName} {doctor.lastName}
+                    <strong>Doctor:</strong> Dr. {doctor.firstName}{" "}
+                    {doctor.lastName}
                   </p>
                   <p>
                     <strong>Specialization:</strong> {doctor.specialization}
@@ -194,21 +223,32 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
             <div className="text-center">
               <motion.div
                 animate={{ rotate: [0, 360] }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                transition={{
+                  duration: 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "linear",
+                }}
                 className="inline-block text-blue-500 mb-4"
               >
                 <Loader className="w-6 h-6" />
               </motion.div>
-              <p className="text-gray-500">Redirecting to your appointments...</p>
+              <p className="text-gray-500">
+                Redirecting to your appointments...
+              </p>
             </div>
           </div>
         </div>
       </motion.div>
-    )
+    );
   }
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-4xl mx-auto">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="max-w-4xl mx-auto"
+    >
       <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
         {/* Header */}
         <motion.div
@@ -220,12 +260,20 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
           {/* Floating Background Elements */}
           <motion.div
             animate={{ rotate: 360, scale: [1, 1.1, 1] }}
-            transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            transition={{
+              duration: 20,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "linear",
+            }}
             className="absolute -top-10 -right-10 w-20 h-20 bg-white/10 rounded-full"
           />
           <motion.div
             animate={{ rotate: -360, scale: [1, 1.2, 1] }}
-            transition={{ duration: 25, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            transition={{
+              duration: 25,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "linear",
+            }}
             className="absolute -bottom-8 -left-8 w-16 h-16 bg-white/5 rounded-full"
           />
 
@@ -248,7 +296,8 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
                   <div className="flex items-center">
                     <User className="w-4 h-4 mr-2" />
                     <span>
-                      <strong>Doctor:</strong> Dr. {doctor.firstName} {doctor.lastName}
+                      <strong>Doctor:</strong> Dr. {doctor.firstName}{" "}
+                      {doctor.lastName}
                     </span>
                   </div>
                   <div className="flex items-center">
@@ -262,13 +311,15 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-2" />
                     <span>
-                      <strong>Date:</strong> {new Date(date).toLocaleDateString()}
+                      <strong>Date:</strong>{" "}
+                      {new Date(date).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-2" />
                     <span>
-                      <strong>Time:</strong> {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                      <strong>Time:</strong> {formatTime(slot.startTime)} -{" "}
+                      {formatTime(slot.endTime)}
                     </span>
                   </div>
                 </div>
@@ -324,7 +375,10 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
 
           {/* Reason */}
           <motion.div variants={itemVariants}>
-            <label htmlFor="reason" className="block text-sm font-bold text-gray-700 mb-4 flex items-center">
+            <label
+              htmlFor="reason"
+              className="block text-sm font-bold text-gray-700 mb-4 flex items-center"
+            >
               <FileText className="w-5 h-5 mr-2 text-blue-500" />
               Reason for Visit <span className="text-red-500 ml-1">*</span>
             </label>
@@ -341,8 +395,16 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
               required
             />
             <div className="flex justify-between items-center mt-2">
-              <p className="text-sm text-gray-500">{formData.reason?.length || 0}/500 characters</p>
-              <div className={`text-sm ${formData.reason?.length > 450 ? "text-red-500" : "text-gray-400"}`}>
+              <p className="text-sm text-gray-500">
+                {formData.reason?.length || 0}/500 characters
+              </p>
+              <div
+                className={`text-sm ${
+                  formData.reason?.length > 450
+                    ? "text-red-500"
+                    : "text-gray-400"
+                }`}
+              >
                 {500 - (formData.reason?.length || 0)} remaining
               </div>
             </div>
@@ -357,11 +419,13 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
 
             {/* Common Symptoms */}
             <div className="mb-6">
-              <p className="text-sm text-gray-600 mb-3">Quick add common symptoms:</p>
+              <p className="text-sm text-gray-600 mb-3">
+                Quick add common symptoms:
+              </p>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 {commonSymptoms.map((symptom) => {
-                  const Icon = symptom.icon
-                  const isSelected = formData.symptoms?.includes(symptom.name)
+                  const Icon = symptom.icon;
+                  const isSelected = formData.symptoms?.includes(symptom.name);
 
                   return (
                     <motion.button
@@ -379,10 +443,12 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
                     >
                       <div className="flex flex-col items-center space-y-1">
                         <Icon className="w-4 h-4" />
-                        <span className="text-xs leading-tight">{symptom.name}</span>
+                        <span className="text-xs leading-tight">
+                          {symptom.name}
+                        </span>
                       </div>
                     </motion.button>
-                  )
+                  );
                 })}
               </div>
             </div>
@@ -398,8 +464,8 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
                 className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
                 onKeyPress={(e) => {
                   if (e.key === "Enter") {
-                    e.preventDefault()
-                    addSymptom(currentSymptom)
+                    e.preventDefault();
+                    addSymptom(currentSymptom);
                   }
                 }}
               />
@@ -423,7 +489,9 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                 >
-                  <p className="text-sm text-gray-600 mb-3">Selected symptoms:</p>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Selected symptoms:
+                  </p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {formData.symptoms.map((symptom) => (
                       <motion.span
@@ -446,7 +514,9 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
                       </motion.span>
                     ))}
                   </div>
-                  <p className="text-sm text-gray-500">{formData.symptoms.length}/10 symptoms</p>
+                  <p className="text-sm text-gray-500">
+                    {formData.symptoms.length}/10 symptoms
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -456,7 +526,10 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
           <motion.div variants={itemVariants}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <label htmlFor="priority" className="block text-sm font-bold text-gray-700 mb-4 flex items-center">
+                <label
+                  htmlFor="priority"
+                  className="block text-sm font-bold text-gray-700 mb-4 flex items-center"
+                >
                   <Star className="w-5 h-5 mr-2 text-blue-500" />
                   Priority Level
                 </label>
@@ -493,8 +566,12 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
                       <Video className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <span className="font-bold text-gray-700">Virtual Appointment</span>
-                      <p className="text-sm text-gray-500">Conduct appointment via video call</p>
+                      <span className="font-bold text-gray-700">
+                        Virtual Appointment
+                      </span>
+                      <p className="text-sm text-gray-500">
+                        Conduct appointment via video call
+                      </p>
                     </div>
                   </div>
                 </motion.label>
@@ -519,7 +596,11 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
                 <div className="flex items-center justify-center space-x-3">
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Number.POSITIVE_INFINITY,
+                      ease: "linear",
+                    }}
                   >
                     <Loader className="w-6 h-6" />
                   </motion.div>
@@ -536,7 +617,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctor, date, slot, o
         </form>
       </div>
     </motion.div>
-  )
-}
+  );
+};
 
-export default AppointmentForm
+export default AppointmentForm;
