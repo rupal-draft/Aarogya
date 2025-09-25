@@ -123,8 +123,6 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
     try {
       setLoading(true);
       setError(null);
-      console.log(formData);
-      return;
       await requestAppointment(formData);
       setSuccess(true);
 

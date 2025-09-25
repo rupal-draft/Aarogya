@@ -9,5 +9,5 @@ public interface KafkaConsumerService {
 
     void handleArticleNotification(NotificationEvent event);
 
-    void handlePharmacyNotification(pharmacy_service.events.NotificationEvent event, String userId);
+    void handlePharmacyNotification(com.aarogya.pharmacy_service.events.NotificationEvent event, String userId);
 }

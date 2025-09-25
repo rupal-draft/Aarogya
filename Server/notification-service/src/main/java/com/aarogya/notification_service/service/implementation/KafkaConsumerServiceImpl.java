@@ -114,7 +114,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
     @Override
     @KafkaListener(topics = {"order-creation", "order-status-update"}, groupId = "notification-service-group")
     @Transactional
-    public void handlePharmacyNotification(@Payload pharmacy_service.events.NotificationEvent event,
+    public void handlePharmacyNotification(@Payload com.aarogya.pharmacy_service.events.NotificationEvent event,
                                            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         try {
             String userId = extractUserIdFromPharmacyEvent(event);
@@ -254,7 +254,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         }
     }
 
-    private String extractUserIdFromPharmacyEvent(pharmacy_service.events.NotificationEvent event) {
+    private String extractUserIdFromPharmacyEvent(com.aarogya.pharmacy_service.events.NotificationEvent event) {
         if (event.getData() != null && event.getData().containsKey("userId")) {
             return (String) event.getData().get("userId");
         }
