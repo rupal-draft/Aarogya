@@ -146,6 +146,8 @@ public class UserGrpcClient {
                 .experienceYears(doctorResponse.getExperienceYears())
                 .phone(doctorResponse.getPhone())
                 .address(doctorResponse.getAddress())
+                .currency(doctorResponse.getCurrency())
+                .consultationFee((double) doctorResponse.getConsultationFee())
                 .imageUrl(doctorResponse.getImageUrl())
                 .createdAt(fromTimestamp(doctorResponse.getCreatedAt()))
                 .build();

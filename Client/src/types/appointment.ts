@@ -2,6 +2,7 @@ import type {
   AppointmentStatus,
   AppointmentType,
 } from "../Data/enums/Appointment";
+import type { DoctorResponseDTO } from "./doctor";
 
 export interface AppointmentRequestDto {
   doctorId: string;
@@ -70,7 +71,8 @@ export interface AppointmentResponseDto {
   startTime: string;
   endTime: string;
   status: AppointmentStatus;
-  type: string;
+  type: AppointmentType;
+  paymentId: string;
   reason: string;
   symptoms: string[];
   notes: string;
@@ -82,6 +84,7 @@ export interface AppointmentResponseDto {
   createdAt: string;
   updatedAt: string;
   patientDetails: PatientResponseDTO;
+  doctor: DoctorResponseDTO;
 }
 
 export interface ApiResponse<T> {

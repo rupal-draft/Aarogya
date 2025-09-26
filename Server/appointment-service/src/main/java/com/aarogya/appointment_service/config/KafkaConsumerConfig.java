@@ -1,7 +1,7 @@
 package com.aarogya.appointment_service.config;
 
-import com.aarogya.events.AppointmentApproveEvent;
-import com.aarogya.events.AppointmentRejectEvent;
+import com.aarogya.payment_service.events.AppointmentApproveEvent;
+import com.aarogya.payment_service.events.AppointmentRejectEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;

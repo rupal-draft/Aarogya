@@ -1,5 +1,6 @@
 package com.aarogya.payment_service.controller;
 
+import com.aarogya.payment_service.advices.ApiResponse;
 import com.aarogya.payment_service.dto.request.InitiateAppointmentPaymentRequest;
 import com.aarogya.payment_service.dto.request.InitiatePharmacyPaymentRequest;
 import com.aarogya.payment_service.dto.request.VerifyPaymentRequest;
@@ -59,10 +60,10 @@ public class PaymentController {
 
 
     @PostMapping("/confirm/appointment")
-    public ResponseEntity<Void> confirmPaymentWithoutWebhook(@Valid @RequestBody VerifyPaymentRequest request) {
+    public ResponseEntity<ApiResponse<String>> confirmPaymentWithoutWebhook(@Valid @RequestBody VerifyPaymentRequest request) {
         log.debug("Verifying payment status for order: {}", request.getRazorpayOrderId());
         boolean processed = paymentService.confirmPaymentWithoutWebhook(request);
-        return processed ? ResponseEntity.ok().build()
+        return processed ? ResponseEntity.ok(ApiResponse.success("Payment confirmed!"))
                 : ResponseEntity.status(HttpStatus.ALREADY_REPORTED).build();
     }
 

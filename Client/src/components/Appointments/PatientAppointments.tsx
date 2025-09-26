@@ -1,12 +1,15 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
+import type React from "react";
+import { useState, useEffect } from "react";
 
-import AppointmentCard from "./AppointmentCard"
-import type { AppointmentResponseDto } from "../../types/appointment"
-import { getPatientAppointments } from "../../Services/appointment"
-import { motion, AnimatePresence } from "framer-motion"
+import AppointmentCard from "./AppointmentCard";
+import type {
+  AppointmentResponseDto,
+  PageResponse,
+} from "../../types/appointment";
+import { getPatientAppointments } from "../../Services/appointment";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Calendar,
@@ -18,91 +21,96 @@ import {
   Plus,
   CheckCircle,
   XCircle,
-} from "lucide-react"
-import { AppointmentStatus } from "../../Data/enums/Appointment"
+} from "lucide-react";
+import { AppointmentStatus } from "../../Data/enums/Appointment";
 
 interface PatientAppointmentsProps {
-  onBack: () => void
+  onBack: () => void;
 }
 
-const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => {
-  const [appointments, setAppointments] = useState<AppointmentResponseDto[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
+  onBack,
+}) => {
+  const [appointments, setAppointments] = useState<AppointmentResponseDto[]>(
+    []
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     status: "",
     date: "",
     page: 0,
     size: 10,
-  })
-  const [totalPages, setTotalPages] = useState(0)
-  const [totalElements, setTotalElements] = useState(0)
-  const [showFilters, setShowFilters] = useState(false)
+  });
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    fetchAppointments()
-  }, [filters])
+    fetchAppointments();
+  }, [filters]);
 
   const fetchAppointments = async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
-      const response = await getPatientAppointments(
-        filters.status || undefined,
-        filters.date || undefined,
-        filters.page,
-        filters.size,
-      )
+      const response: PageResponse<AppointmentResponseDto> =
+        await getPatientAppointments(
+          filters.status || undefined,
+          filters.date || undefined,
+          filters.page,
+          filters.size
+        );
 
-      setAppointments(response.content)
-      setTotalPages(response.totalPages)
-      setTotalElements(response.totalElements)
+      setAppointments(response.content);
+      setTotalPages(response.totalPages);
+      setTotalElements(response.totalElements);
     } catch (err) {
-      setError("Failed to fetch appointments. Please try again.")
-      console.error("Error fetching appointments:", err)
+      setError("Failed to fetch appointments. Please try again.");
+      console.error("Error fetching appointments:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleFilterChange = (key: string, value: string | number) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
       page: key === "page" ? Number(value) : 0,
-    }))
-  }
+    }));
+  };
 
   const getStatusColor = (status: AppointmentStatus) => {
     switch (status) {
       case AppointmentStatus.PENDING:
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case AppointmentStatus.CONFIRMED:
-        return "bg-green-100 text-green-800 border-green-200"
+        return "bg-green-100 text-green-800 border-green-200";
       case AppointmentStatus.CANCELLED:
-        return "bg-red-100 text-red-800 border-red-200"
+        return "bg-red-100 text-red-800 border-red-200";
       case AppointmentStatus.COMPLETED:
-        return "bg-blue-100 text-blue-800 border-blue-200"
+        return "bg-blue-100 text-blue-800 border-blue-200";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  }
+  };
 
   const getStatusIcon = (status: AppointmentStatus) => {
     switch (status) {
       case AppointmentStatus.PENDING:
-        return Clock
+        return Clock;
       case AppointmentStatus.CONFIRMED:
-        return CheckCircle
+        return CheckCircle;
       case AppointmentStatus.CANCELLED:
-        return XCircle
+        return XCircle;
       case AppointmentStatus.COMPLETED:
-        return CheckCircle
+        return CheckCircle;
       default:
-        return Calendar
+        return Calendar;
     }
-  }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -113,7 +121,7 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -122,29 +130,42 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
       opacity: 1,
       transition: { duration: 0.5 },
     },
-  }
+  };
 
   if (loading && appointments.length === 0) {
     return (
       <div className="flex justify-center items-center h-96">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          transition={{
+            duration: 1,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
           className="relative"
         >
           <div className="w-20 h-20 border-4 border-blue-200 border-t-blue-500 rounded-full"></div>
           <motion.div
             animate={{ rotate: -360 }}
-            transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            transition={{
+              duration: 1.5,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "linear",
+            }}
             className="absolute inset-0 w-20 h-20 border-4 border-transparent border-t-purple-500 rounded-full"
           />
         </motion.div>
       </div>
-    )
+    );
   }
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-8"
+    >
       {/* Header */}
       <motion.div
         variants={itemVariants}
@@ -155,12 +176,20 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
         {/* Floating Background Elements */}
         <motion.div
           animate={{ rotate: 360, scale: [1, 1.1, 1] }}
-          transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          transition={{
+            duration: 20,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
           className="absolute -top-20 -right-20 w-40 h-40 bg-white/10 rounded-full"
         />
         <motion.div
           animate={{ rotate: -360, scale: [1, 1.2, 1] }}
-          transition={{ duration: 25, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          transition={{
+            duration: 25,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
           className="absolute -bottom-16 -left-16 w-32 h-32 bg-white/5 rounded-full"
         />
 
@@ -192,7 +221,8 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
                 transition={{ delay: 0.3 }}
                 className="text-green-100 text-lg"
               >
-                {totalElements} appointment{totalElements !== 1 ? "s" : ""} found
+                {totalElements} appointment{totalElements !== 1 ? "s" : ""}{" "}
+                found
               </motion.p>
             </div>
 
@@ -209,22 +239,29 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
       </motion.div>
 
       {/* Quick Stats */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <motion.div
+        variants={itemVariants}
+        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+      >
         {Object.values(AppointmentStatus).map((status) => {
-          const Icon = getStatusIcon(status)
-          const count = appointments.filter((apt) => apt.status === status).length
+          const Icon = getStatusIcon(status);
+          const count = appointments.filter(
+            (apt) => apt.status === status
+          ).length;
 
           return (
             <motion.div
               key={status}
               whileHover={{ scale: 1.05, y: -5 }}
-              className={`p-6 rounded-2xl border-2 ${getStatusColor(status)} text-center`}
+              className={`p-6 rounded-2xl border-2 ${getStatusColor(
+                status
+              )} text-center`}
             >
               <Icon className="w-8 h-8 mx-auto mb-2" />
               <div className="text-2xl font-bold">{count}</div>
               <div className="text-sm font-medium">{status}</div>
             </motion.div>
-          )
+          );
         })}
       </motion.div>
 
@@ -263,30 +300,35 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* Status Filter */}
                 <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="status"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Status
                   </label>
                   <select
                     id="status"
                     value={filters.status}
-                    onChange={(e) => handleFilterChange("status", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("status", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">All Statuses</option>
-                    {Object.values(AppointmentStatus).map((status) => {
-                      const Icon = getStatusIcon(status)
-                      return (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      )
-                    })}
+                    {Object.values(AppointmentStatus).map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 {/* Date Filter */}
                 <div>
-                  <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="date"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Date
                   </label>
                   <input
@@ -300,13 +342,21 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
 
                 {/* Page Size */}
                 <div>
-                  <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="size"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Items per page
                   </label>
                   <select
                     id="size"
                     value={filters.size}
-                    onChange={(e) => handleFilterChange("size", Number.parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleFilterChange(
+                        "size",
+                        Number.parseInt(e.target.value)
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value={5}>5</option>
@@ -338,10 +388,15 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
                     <motion.span
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className={`px-3 py-1 rounded-full text-sm border ${getStatusColor(filters.status as AppointmentStatus)} flex items-center space-x-1`}
+                      className={`px-3 py-1 rounded-full text-sm border ${getStatusColor(
+                        filters.status as AppointmentStatus
+                      )} flex items-center space-x-1`}
                     >
                       <span>{filters.status}</span>
-                      <button onClick={() => handleFilterChange("status", "")} className="hover:text-red-600 ml-1">
+                      <button
+                        onClick={() => handleFilterChange("status", "")}
+                        className="hover:text-red-600 ml-1"
+                      >
                         ×
                       </button>
                     </motion.span>
@@ -354,7 +409,10 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
                     >
                       <Calendar className="w-3 h-3" />
                       <span>{new Date(filters.date).toLocaleDateString()}</span>
-                      <button onClick={() => handleFilterChange("date", "")} className="hover:text-red-600 ml-1">
+                      <button
+                        onClick={() => handleFilterChange("date", "")}
+                        className="hover:text-red-600 ml-1"
+                      >
                         ×
                       </button>
                     </motion.span>
@@ -380,7 +438,9 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
           >
             ⚠️
           </motion.div>
-          <h3 className="text-xl font-bold text-red-800 mb-2">Error Loading Appointments</h3>
+          <h3 className="text-xl font-bold text-red-800 mb-2">
+            Error Loading Appointments
+          </h3>
           <p className="text-red-600 mb-6">{error}</p>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -409,7 +469,9 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
               >
                 📅
               </motion.div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">No appointments found</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                No appointments found
+              </h3>
               <p className="text-gray-600 mb-8 max-w-md mx-auto">
                 {filters.status || filters.date
                   ? "Try adjusting your filters or book a new appointment"
@@ -429,17 +491,26 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
             <>
               <motion.div variants={containerVariants} className="space-y-6">
                 {appointments.map((appointment, index) => (
-                  <AppointmentCard key={appointment.id} appointment={appointment} index={index} />
+                  <AppointmentCard
+                    key={appointment.id}
+                    appointment={appointment}
+                    index={index}
+                  />
                 ))}
               </motion.div>
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <motion.div variants={itemVariants} className="flex justify-center items-center space-x-4 mt-12">
+                <motion.div
+                  variants={itemVariants}
+                  className="flex justify-center items-center space-x-4 mt-12"
+                >
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => handleFilterChange("page", Math.max(0, filters.page - 1))}
+                    onClick={() =>
+                      handleFilterChange("page", Math.max(0, filters.page - 1))
+                    }
                     disabled={filters.page === 0 || loading}
                     className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2"
                   >
@@ -449,7 +520,11 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
 
                   <div className="flex space-x-2">
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      const pageNum = Math.max(0, Math.min(totalPages - 5, filters.page - 2)) + i
+                      const pageNum =
+                        Math.max(
+                          0,
+                          Math.min(totalPages - 5, filters.page - 2)
+                        ) + i;
                       return (
                         <motion.button
                           key={pageNum}
@@ -464,14 +539,19 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
                         >
                           {pageNum + 1}
                         </motion.button>
-                      )
+                      );
                     })}
                   </div>
 
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => handleFilterChange("page", Math.min(totalPages - 1, filters.page + 1))}
+                    onClick={() =>
+                      handleFilterChange(
+                        "page",
+                        Math.min(totalPages - 1, filters.page + 1)
+                      )
+                    }
                     disabled={filters.page >= totalPages - 1 || loading}
                     className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2"
                   >
@@ -492,7 +572,11 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
                   >
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                      transition={{
+                        duration: 1,
+                        repeat: Number.POSITIVE_INFINITY,
+                        ease: "linear",
+                      }}
                     >
                       <RefreshCw className="w-8 h-8 text-blue-500" />
                     </motion.div>
@@ -504,7 +588,7 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ onBack }) => 
         </div>
       )}
     </motion.div>
-  )
-}
+  );
+};
 
-export default PatientAppointments
+export default PatientAppointments;

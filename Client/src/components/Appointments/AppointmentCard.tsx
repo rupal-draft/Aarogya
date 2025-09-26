@@ -1,436 +1,654 @@
-import type React from "react"
-import type { AppointmentResponseDto } from "../../types/appointment"
-import {AppointmentStatus,AppointmentType } from "../../Data/enums/Appointment"
-import { motion } from "framer-motion"
+import type React from "react";
+import type { AppointmentResponseDto } from "../../types/appointment";
+import {
+  AppointmentStatus,
+  AppointmentType,
+} from "../../Data/enums/Appointment";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Calendar,
   Clock,
   Video,
-  Star,
-  Heart,
   CheckCircle,
   XCircle,
   AlertCircle,
-  Sparkles,
+  User,
+  IndianRupee,
+  FileText,
+  CreditCard,
+  Eye,
+  EyeOff,
   Award,
-} from "lucide-react"
-import { useScrollAnimation } from "../../hooks/Animation/useScrollAnimation"
+} from "lucide-react";
+import { useState } from "react";
+import { paymentService } from "../../Services/payment";
+import { PaymentModal } from "../Payment/PaymentModal";
 
 interface AppointmentCardProps {
-  appointment: AppointmentResponseDto
-  index: number
+  appointment: AppointmentResponseDto;
+  index: number;
 }
 
-const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, index }) => {
-  const [cardRef, cardVisible] = useScrollAnimation<HTMLDivElement>()
-
+const AppointmentCard: React.FC<AppointmentCardProps> = ({
+  appointment,
+  index,
+}) => {
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPaymentDetails, setShowPaymentDetails] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  const [loadingPaymentDetails, setLoadingPaymentDetails] = useState(false);
   const getStatusColor = (status: AppointmentStatus) => {
     switch (status) {
       case AppointmentStatus.PENDING:
-        return "from-yellow-400 to-orange-500"
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case AppointmentStatus.CONFIRMED:
-        return "from-green-400 to-emerald-500"
+        return "bg-green-100 text-green-800 border-green-200";
       case AppointmentStatus.CANCELLED:
-        return "from-red-400 to-pink-500"
+        return "bg-red-100 text-red-800 border-red-200";
       case AppointmentStatus.COMPLETED:
-        return "from-blue-400 to-indigo-500"
+        return "bg-blue-100 text-blue-800 border-blue-200";
       default:
-        return "from-gray-400 to-gray-500"
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  }
+  };
 
   const getStatusIcon = (status: AppointmentStatus) => {
     switch (status) {
       case AppointmentStatus.PENDING:
-        return <AlertCircle className="h-5 w-5" />
+        return Clock;
       case AppointmentStatus.CONFIRMED:
-        return <CheckCircle className="h-5 w-5" />
+        return CheckCircle;
       case AppointmentStatus.CANCELLED:
-        return <XCircle className="h-5 w-5" />
+        return XCircle;
       case AppointmentStatus.COMPLETED:
-        return <Award className="h-5 w-5" />
+        return CheckCircle;
       default:
-        return <Calendar className="h-5 w-5" />
+        return Calendar;
     }
-  }
+  };
 
-  const getTypeIcon = (type: AppointmentType) => {
-    switch (type) {
-      case AppointmentType.EMERGENCY:
-        return "🚨"
-      case AppointmentType.FOLLOW_UP:
-        return "🔄"
-      default:
-        return "📋"
+  const isPaymentRequired = () => {
+    return (
+      appointment.status === AppointmentStatus.PENDING &&
+      (!appointment.paymentId || appointment.paymentId === "Not paid yet")
+    );
+  };
+
+  const isPaid = () => {
+    return appointment.paymentId && appointment.paymentId !== "Not paid yet";
+  };
+
+  const handlePaymentSuccess = (details: any) => {
+    setPaymentDetails(details);
+    setShowPaymentModal(false);
+  };
+
+  const handlePaymentFailure = (error: string) => {
+    console.error("Payment failed:", error);
+  };
+
+  const loadPaymentDetails = async () => {
+    if (!appointment.paymentId || appointment.paymentId === "Not paid yet")
+      return;
+
+    try {
+      setLoadingPaymentDetails(true);
+      const details = await paymentService.getPaymentDetails(
+        appointment.paymentId
+      );
+      setPaymentDetails(details);
+      setShowPaymentDetails(true);
+    } catch (error) {
+      console.error("Failed to load payment details:", error);
+    } finally {
+      setLoadingPaymentDetails(false);
     }
-  }
+  };
 
-  const formatTime = (timeString: string) => {
-    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  }
-
-  const isUpcoming = () => {
-    const appointmentDateTime = new Date(`${appointment.appointmentDate}T${appointment.startTime}`)
-    return appointmentDateTime > new Date() && appointment.status !== AppointmentStatus.CANCELLED
-  }
-
-  const isPast = () => {
-    const appointmentDateTime = new Date(`${appointment.appointmentDate}T${appointment.endTime}`)
-    return appointmentDateTime < new Date()
-  }
+  const StatusIcon = getStatusIcon(appointment.status);
 
   return (
-    <div
-      ref={cardRef}
-      className={`transition-all duration-700 ${
-        cardVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-      }`}
-      style={{ transitionDelay: `${index * 100}ms` }}
-    >
+    <>
       <motion.div
-        className={`bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden border-l-8 ${
-          appointment.type === AppointmentType.EMERGENCY
-            ? "border-l-red-500"
-            : isUpcoming()
-              ? "border-l-green-500"
-              : isPast()
-                ? "border-l-gray-400"
-                : "border-l-blue-500"
-        } hover:scale-[1.02] group relative`}
-        whileHover={{ y: -5 }}
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: index * 0.1 }}
+        transition={{
+          duration: 0.6,
+          delay: index * 0.1,
+          type: "spring",
+          stiffness: 100,
+        }}
+        whileHover={{
+          scale: 1.02,
+          y: -5,
+          transition: { duration: 0.2 },
+        }}
+        className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300"
       >
-        {/* Floating decorative elements */}
-        <motion.div
-          className="absolute top-4 right-4 text-yellow-400 z-10"
-          animate={{
-            rotate: [0, 360],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
-        >
-          <Sparkles className="h-5 w-5" />
-        </motion.div>
-
-        {/* Background gradient animation */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/30 to-pink-50/30">
+        {/* Header with gradient background */}
+        <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white p-6">
+          {/* Floating background elements */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-            animate={{
-              x: ["-100%", "100%"],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Number.POSITIVE_INFINITY,
-              ease: "linear",
-            }}
+            animate={{ rotate: 360, scale: [1, 1.1, 1] }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute -top-4 -right-4 w-20 h-20 bg-white/10 rounded-full"
           />
-        </div>
+          <motion.div
+            animate={{ rotate: -360, scale: [1, 1.2, 1] }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+            className="absolute -bottom-2 -left-2 w-16 h-16 bg-white/5 rounded-full"
+          />
 
-        <div className="p-8 relative z-10">
-          {/* Header Section */}
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              {/* Doctor Avatar */}
-              <motion.div
-                className="relative w-16 h-16 rounded-2xl overflow-hidden border-4 border-white shadow-lg"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-              >
-                {appointment.doctor?.imageUrl ? (
-                  <img
-                    src={appointment.doctor.imageUrl || "/placeholder.svg?height=64&width=64"}
-                    alt={`Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName}`}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-2xl">
-                    👨‍⚕️
+          <div className="relative z-10 flex justify-between items-start">
+            <div className="flex-1">
+              <div className="flex items-center space-x-3 mb-3">
+                <motion.div
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.5 }}
+                  className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center"
+                >
+                  <StatusIcon className="w-5 h-5" />
+                </motion.div>
+                <div>
+                  <h3 className="text-xl font-bold">
+                    Dr. {appointment.doctor.firstName}{" "}
+                    {appointment.doctor.lastName}
+                  </h3>
+                  <p className="text-blue-100 text-sm">
+                    {appointment.doctor.specialization}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-4 text-sm text-blue-100">
+                <div className="flex items-center space-x-1">
+                  <Award className="w-4 h-4" />
+                  <span>{appointment.doctor.experienceYears} years</span>
+                </div>
+                {appointment.isVirtual && (
+                  <div className="flex items-center space-x-1">
+                    <Video className="w-4 h-4" />
+                    <span>Virtual</span>
                   </div>
                 )}
-
-                {/* Online status indicator */}
-                <motion.div
-                  className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-white"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                />
-              </motion.div>
-
-              <div>
-                <motion.h3 className="text-xl font-bold text-gray-900 mb-1" whileHover={{ scale: 1.02 }}>
-                  Dr. {appointment.doctor?.firstName} {appointment.doctor?.lastName}
-                </motion.h3>
-                <motion.div
-                  className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  {appointment.doctor?.specialization}
-                </motion.div>
               </div>
             </div>
 
-            <div className="flex flex-col items-end space-y-2">
-              {/* Status Badge */}
-              <motion.div
-                className={`px-4 py-2 rounded-full text-white font-semibold text-sm shadow-lg bg-gradient-to-r ${getStatusColor(appointment.status)} flex items-center space-x-2`}
-                whileHover={{ scale: 1.05 }}
-                animate={{
-                  boxShadow: [
-                    "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                    "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                    "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                  ],
-                }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-              >
-                {getStatusIcon(appointment.status)}
-                <span>{appointment.status}</span>
-              </motion.div>
-
-              {/* Type Badge */}
-              {appointment.type !== AppointmentType.REGULAR && (
-                <motion.div
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    appointment.type === AppointmentType.EMERGENCY
-                      ? "bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-300"
-                      : "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300"
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <span className="mr-1">{getTypeIcon(appointment.type)}</span>
-                  {appointment.type}
-                </motion.div>
-              )}
-            </div>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: index * 0.1 + 0.3 }}
+              className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                appointment.status
+              )}`}
+            >
+              {appointment.status}
+            </motion.div>
           </div>
+        </div>
 
+        {/* Main Content */}
+        <div className="p-6 space-y-6">
           {/* Appointment Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* Date and Time */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <motion.div
-              className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-2xl border border-blue-200"
               whileHover={{ scale: 1.02 }}
+              className="bg-gray-50 rounded-2xl p-4 space-y-3"
             >
-              <div className="flex items-center mb-3">
-                <div className="p-2 bg-blue-500 rounded-lg mr-3">
-                  <Calendar className="h-5 w-5 text-white" />
+              <h4 className="font-semibold text-gray-900 flex items-center">
+                <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+                Appointment Details
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Date:</span>
+                  <span className="font-medium">
+                    {new Date(appointment.appointmentDate).toLocaleDateString(
+                      "en-US",
+                      {
+                        weekday: "short",
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      }
+                    )}
+                  </span>
                 </div>
-                <h4 className="font-semibold text-blue-800">Date & Time</h4>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Time:</span>
+                  <span className="font-medium">
+                    {appointment.startTime} - {appointment.endTime}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Type:</span>
+                  <span className="font-medium capitalize">
+                    {appointment.type.toLowerCase()}
+                  </span>
+                </div>
+                {appointment.priority && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Priority:</span>
+                    <span
+                      className={`font-medium ${
+                        appointment.priority > 3
+                          ? "text-red-600"
+                          : appointment.priority > 1
+                          ? "text-yellow-600"
+                          : "text-green-600"
+                      }`}
+                    >
+                      {appointment.priority > 3
+                        ? "High"
+                        : appointment.priority > 1
+                        ? "Medium"
+                        : "Low"}
+                    </span>
+                  </div>
+                )}
               </div>
-              <p className="font-bold text-gray-900 text-lg mb-1">{formatDate(appointment.appointmentDate)}</p>
-              <p className="text-blue-600 font-medium">
-                {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
-              </p>
             </motion.div>
 
-            {/* Additional Info */}
-            <div className="space-y-3">
-              {appointment.isVirtual && (
-                <motion.div
-                  className="flex items-center p-3 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200"
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <div className="p-2 bg-green-500 rounded-lg mr-3">
-                    <Video className="h-4 w-4 text-white" />
-                  </div>
-                  <span className="text-green-800 font-medium">Virtual Appointment</span>
-                </motion.div>
-              )}
-
-              <motion.div
-                className="flex items-center p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200"
-                whileHover={{ scale: 1.02 }}
-              >
-                <div className="p-2 bg-purple-500 rounded-lg mr-3">
-                  <Star className="h-4 w-4 text-white" />
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="bg-gray-50 rounded-2xl p-4 space-y-3"
+            >
+              <h4 className="font-semibold text-gray-900 flex items-center">
+                <User className="w-4 h-4 mr-2 text-purple-500" />
+                Doctor Information
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">License:</span>
+                  <span className="font-mono text-xs">
+                    {appointment.doctor.licenseNumber}
+                  </span>
                 </div>
-                <span className="text-purple-800 font-medium">Priority: {appointment.priority}/5</span>
-              </motion.div>
-            </div>
+                {appointment.doctor.phone && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Phone:</span>
+                    <span className="font-medium">
+                      {appointment.doctor.phone}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Fee:</span>
+                  <span className="font-bold text-green-600 flex items-center">
+                    <IndianRupee className="w-3 h-3" />
+                    {appointment.doctor.consultationFee}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Reason Section */}
-          {appointment.reason && (
+          {/* Reason and Symptoms */}
+          {(appointment.reason || appointment.symptoms?.length) && (
             <motion.div
-              className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl border border-gray-200"
               whileHover={{ scale: 1.01 }}
+              className="bg-blue-50 rounded-2xl p-4 space-y-3"
             >
-              <h4 className="text-sm font-bold text-gray-800 mb-2 flex items-center">
-                <div className="p-1 bg-gray-500 rounded mr-2">
-                  <Heart className="h-3 w-3 text-white" />
-                </div>
-                Reason for Visit:
+              <h4 className="font-semibold text-gray-900 flex items-center">
+                <FileText className="w-4 h-4 mr-2 text-green-500" />
+                Medical Information
               </h4>
-              <p className="text-gray-700 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
-                {appointment.reason}
-              </p>
+              {appointment.reason && (
+                <div>
+                  <span className="text-sm text-gray-600 block mb-1">
+                    Reason:
+                  </span>
+                  <p className="text-sm font-medium text-gray-800">
+                    {appointment.reason}
+                  </p>
+                </div>
+              )}
+              {appointment.symptoms?.length > 0 && (
+                <div>
+                  <span className="text-sm text-gray-600 block mb-2">
+                    Symptoms:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {appointment.symptoms.map((symptom, idx) => (
+                      <motion.span
+                        key={idx}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium"
+                      >
+                        {symptom}
+                      </motion.span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
 
-          {/* Symptoms */}
-          {appointment.symptoms && appointment.symptoms.length > 0 && (
-            <motion.div className="mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-              <h4 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
-                <div className="p-1 bg-orange-500 rounded mr-2">
-                  <AlertCircle className="h-3 w-3 text-white" />
-                </div>
-                Symptoms:
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {appointment.symptoms.map((symptom, idx) => (
-                  <motion.span
-                    key={idx}
-                    className="px-3 py-2 bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 rounded-full text-sm font-medium border border-orange-300 shadow-sm"
-                    whileHover={{ scale: 1.05 }}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.1 }}
-                  >
-                    {symptom}
-                  </motion.span>
-                ))}
+          {/* Payment Section */}
+          <motion.div
+            whileHover={{ scale: 1.01 }}
+            className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-4 border border-green-100"
+          >
+            <h4 className="font-semibold text-gray-900 flex items-center mb-3">
+              <CreditCard className="w-4 h-4 mr-2 text-green-500" />
+              Payment Information
+            </h4>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Consultation Fee:</span>
+                <span className="font-bold text-xl text-green-600 flex items-center">
+                  <IndianRupee className="w-4 h-4" />
+                  {appointment.doctor.consultationFee}
+                </span>
               </div>
-            </motion.div>
-          )}
 
-          {/* Notes Section */}
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Payment Status:</span>
+                <div className="flex items-center space-x-2">
+                  {isPaid() ? (
+                    <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium flex items-center space-x-1">
+                      <CheckCircle className="w-3 h-3" />
+                      <span>Paid</span>
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium flex items-center space-x-1">
+                      <XCircle className="w-3 h-3" />
+                      <span>Pending</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Payment Actions */}
+              <div className="flex space-x-3 pt-2">
+                {isPaymentRequired() && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowPaymentModal(true)}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    <span>Pay Now</span>
+                  </motion.button>
+                )}
+
+                {isPaid() && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={loadPaymentDetails}
+                    disabled={loadingPaymentDetails}
+                    className="flex-1 bg-green-600 text-white py-3 px-4 rounded-xl font-semibold hover:bg-green-700 transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50"
+                  >
+                    {loadingPaymentDetails ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                        className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                      />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                    <span>
+                      {loadingPaymentDetails ? "Loading..." : "View Receipt"}
+                    </span>
+                  </motion.button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Notes */}
           {(appointment.notes || appointment.doctorNotes) && (
-            <div className="mb-6 space-y-3">
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              className="bg-yellow-50 rounded-2xl p-4 space-y-3 border border-yellow-100"
+            >
+              <h4 className="font-semibold text-gray-900 flex items-center">
+                <FileText className="w-4 h-4 mr-2 text-yellow-500" />
+                Notes
+              </h4>
               {appointment.notes && (
-                <motion.div
-                  className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl border border-blue-200"
-                  whileHover={{ scale: 1.01 }}
-                >
-                  <h4 className="text-sm font-bold text-blue-800 mb-2">Patient Notes:</h4>
-                  <p className="text-blue-700 bg-white p-3 rounded-xl shadow-sm">{appointment.notes}</p>
-                </motion.div>
+                <div>
+                  <span className="text-sm text-gray-600 block mb-1">
+                    Patient Notes:
+                  </span>
+                  <p className="text-sm text-gray-800">{appointment.notes}</p>
+                </div>
               )}
               {appointment.doctorNotes && (
-                <motion.div
-                  className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-2xl border border-green-200"
-                  whileHover={{ scale: 1.01 }}
-                >
-                  <h4 className="text-sm font-bold text-green-800 mb-2">Doctor Notes:</h4>
-                  <p className="text-green-700 bg-white p-3 rounded-xl shadow-sm">{appointment.doctorNotes}</p>
-                </motion.div>
+                <div>
+                  <span className="text-sm text-gray-600 block mb-1">
+                    Doctor Notes:
+                  </span>
+                  <p className="text-sm text-gray-800">
+                    {appointment.doctorNotes}
+                  </p>
+                </div>
               )}
-            </div>
+            </motion.div>
+          )}
+
+          {/* Meeting Link */}
+          {appointment.isVirtual && appointment.meetingLink && (
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="bg-purple-50 rounded-2xl p-4 border border-purple-100"
+            >
+              <h4 className="font-semibold text-gray-900 flex items-center mb-3">
+                <Video className="w-4 h-4 mr-2 text-purple-500" />
+                Virtual Meeting
+              </h4>
+              <motion.a
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                href={appointment.meetingLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 font-semibold"
+              >
+                <Video className="w-4 h-4" />
+                <span>Join Meeting</span>
+              </motion.a>
+            </motion.div>
           )}
 
           {/* Cancellation Reason */}
-          {appointment.status === AppointmentStatus.CANCELLED && appointment.cancellationReason && (
-            <motion.div
-              className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-2xl border border-red-200"
-              whileHover={{ scale: 1.01 }}
-            >
-              <h4 className="text-sm font-bold text-red-800 mb-2">Cancellation Reason:</h4>
-              <p className="text-red-700 bg-white p-3 rounded-xl shadow-sm">{appointment.cancellationReason}</p>
-            </motion.div>
-          )}
-
-          {/* Actions Section */}
-          <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-            <div className="text-xs text-gray-500 space-y-1">
-              <p className="flex items-center">
-                <Clock className="h-3 w-3 mr-1" />
-                Created: {new Date(appointment.createdAt).toLocaleDateString()}
-              </p>
-              {appointment.updatedAt !== appointment.createdAt && (
-                <p className="flex items-center">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Updated: {new Date(appointment.updatedAt).toLocaleDateString()}
+          {appointment.status === AppointmentStatus.CANCELLED &&
+            appointment.cancellationReason && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-red-50 rounded-2xl p-4 border border-red-100"
+              >
+                <h4 className="font-semibold text-gray-900 flex items-center mb-2">
+                  <AlertCircle className="w-4 h-4 mr-2 text-red-500" />
+                  Cancellation Reason
+                </h4>
+                <p className="text-sm text-gray-800">
+                  {appointment.cancellationReason}
                 </p>
-              )}
-            </div>
-
-            <div className="flex space-x-3">
-              {appointment.isVirtual && appointment.meetingLink && isUpcoming() && (
-                <motion.a
-                  href={appointment.meetingLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 shadow-lg flex items-center space-x-2"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Video className="h-4 w-4" />
-                  <span>Join Meeting</span>
-                </motion.a>
-              )}
-
-              {isUpcoming() && appointment.status === AppointmentStatus.CONFIRMED && (
-                <motion.button
-                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg flex items-center space-x-2"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Calendar className="h-4 w-4" />
-                  <span>Reschedule</span>
-                </motion.button>
-              )}
-
-              {appointment.status === AppointmentStatus.PENDING && (
-                <motion.button
-                  className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-lg flex items-center space-x-2"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <XCircle className="h-4 w-4" />
-                  <span>Cancel</span>
-                </motion.button>
-              )}
-            </div>
-          </div>
+              </motion.div>
+            )}
         </div>
-
-        {/* Decorative floating elements */}
-        <motion.div
-          className="absolute -top-3 -left-3 w-16 h-16 bg-gradient-to-br from-blue-300 to-purple-400 rounded-full opacity-20 blur-xl"
-          animate={{
-            scale: [1, 1.3, 1],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "linear",
-          }}
-        />
-
-        <motion.div
-          className="absolute -bottom-3 -right-3 w-12 h-12 bg-gradient-to-br from-pink-300 to-yellow-400 rounded-full opacity-20 blur-xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [360, 180, 0],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "linear",
-          }}
-        />
       </motion.div>
-    </div>
-  )
-}
 
-export default AppointmentCard
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        appointment={appointment}
+        onPaymentSuccess={handlePaymentSuccess}
+        onPaymentFailure={handlePaymentFailure}
+      />
+
+      {/* Payment Details Modal */}
+      <AnimatePresence>
+        {showPaymentDetails && paymentDetails && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={(e) =>
+              e.target === e.currentTarget && setShowPaymentDetails(false)
+            }
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden"
+            >
+              {/* Header */}
+              <div className="relative bg-gradient-to-r from-green-600 to-blue-600 text-white p-6">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowPaymentDetails(false)}
+                  className="absolute right-4 top-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+                >
+                  <EyeOff className="w-4 h-4" />
+                </motion.button>
+
+                <div className="text-center">
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4"
+                  >
+                    <FileText className="w-8 h-8" />
+                  </motion.div>
+                  <h2 className="text-2xl font-bold mb-2">Payment Receipt</h2>
+                  <p className="text-green-100">Transaction Details</p>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-6">
+                {/* Payment Status */}
+                <div className="text-center">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", duration: 0.5 }}
+                    className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                  >
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-green-600 mb-1">
+                    Payment Successful
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Transaction completed successfully
+                  </p>
+                </div>
+
+                {/* Payment Details */}
+                <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
+                    <h4 className="font-semibold text-gray-900">
+                      Transaction Details
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Payment ID:</span>
+                        <span className="font-mono text-xs break-all">
+                          {paymentDetails.razorpayPaymentId}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Order ID:</span>
+                        <span className="font-mono text-xs break-all">
+                          {paymentDetails.razorpayOrderId}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Amount:</span>
+                        <span className="font-bold text-green-600 flex items-center">
+                          <IndianRupee className="w-3 h-3" />
+                          {paymentDetails.amount}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Status:</span>
+                        <span className="font-medium text-green-600">
+                          {paymentDetails.status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Payment Date:</span>
+                        <span className="font-medium">
+                          {paymentDetails.paidAt
+                            ? new Date(
+                                paymentDetails.paidAt
+                              ).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "Just now"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Appointment Details */}
+                  <div className="bg-blue-50 rounded-2xl p-4 space-y-3">
+                    <h4 className="font-semibold text-gray-900">
+                      Appointment Details
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Doctor:</span>
+                        <span className="font-medium">
+                          Dr. {appointment.doctor.firstName}{" "}
+                          {appointment.doctor.lastName}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Date:</span>
+                        <span className="font-medium">
+                          {new Date(
+                            appointment.appointmentDate
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Time:</span>
+                        <span className="font-medium">
+                          {appointment.startTime} - {appointment.endTime}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowPaymentDetails(false)}
+                  className="w-full bg-blue-600 text-white py-3 rounded-2xl font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Close
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+
+export default AppointmentCard;

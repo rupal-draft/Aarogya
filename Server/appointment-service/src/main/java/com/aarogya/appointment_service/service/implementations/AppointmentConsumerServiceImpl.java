@@ -14,12 +14,13 @@ import com.aarogya.appointment_service.models.FollowUp;
 import com.aarogya.appointment_service.repository.AppointmentRepository;
 import com.aarogya.appointment_service.service.AppointmentConsumerService;
 import com.aarogya.appointment_service.service.NotificationService;
-import com.aarogya.events.AppointmentApproveEvent;
-import com.aarogya.events.AppointmentRejectEvent;
+import com.aarogya.payment_service.events.AppointmentApproveEvent;
+import com.aarogya.payment_service.events.AppointmentRejectEvent;
 import com.mongodb.BasicDBObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -43,6 +44,9 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
     private final NotificationService notificationService;
     private final MongoTemplate mongoTemplate;
 
+    private static final String APPOINTMENT_CACHE = "appointments";
+
+
     @Override
     @Transactional
     @KafkaListener(
@@ -50,6 +54,7 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
             groupId = "appointment-approve-group",
             containerFactory = "appointmentApproveKafkaListenerFactory"
     )
+    @CacheEvict(value = APPOINTMENT_CACHE, allEntries = true)
     public void approveAppointment(AppointmentApproveEvent event) {
         String appointmentId = event.getAppointmentId();
         String paymentId = event.getPaymentId();
@@ -83,6 +88,7 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
             groupId = "appointment-reject-group",
             containerFactory = "appointmentRejectKafkaListenerFactory"
     )
+    @CacheEvict(value = APPOINTMENT_CACHE, allEntries = true)
     public void rejectAppointment(AppointmentRejectEvent event) {
         String appointmentId = event.getAppointmentId();
         log.info("Rejecting appointment with id: {}", appointmentId);

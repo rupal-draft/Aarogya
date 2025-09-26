@@ -276,9 +276,6 @@ public class AppointmentPaymentServiceImpl implements AppointmentPaymentService 
                 .build();
     }
 
-    private int convertToPaise(Double amount) {
-        return (int) (amount * 100);
-    }
 
     private AppointmentPaymentResponse convertToPaymentResponse(AppointmentPayment payment) {
         return AppointmentPaymentResponse.builder()
@@ -313,7 +310,7 @@ public class AppointmentPaymentServiceImpl implements AppointmentPaymentService 
 
     private JSONObject getJsonObject(InitiateAppointmentPaymentRequest request) {
         JSONObject orderRequest = new JSONObject();
-        orderRequest.put("amount", convertToPaise(request.getAmount()));
+        orderRequest.put("amount", request.getAmount());
         orderRequest.put("currency", request.getCurrency());
         orderRequest.put("receipt", "receipt_" + request.getAppointmentId());
 
