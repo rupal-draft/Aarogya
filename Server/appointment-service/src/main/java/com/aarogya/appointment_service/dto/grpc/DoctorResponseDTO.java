@@ -29,6 +29,6 @@ public class DoctorResponseDTO {
     private String imageUrl;
     private LocalDateTime createdAt;
 
-    private Double consultationFee;   // e.g. 500.00
+    private Double consultationFee; // this will be the appointment payment amount
     private String currency;
 }

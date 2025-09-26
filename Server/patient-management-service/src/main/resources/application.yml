@@ -16,6 +16,9 @@ server:
     context-path: /patient
 
 eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
   client:
     serviceUrl:
       defaultZone: ${EUREKA_SERVER_URL}
@@ -29,7 +32,7 @@ deploy:
 
 logging:
   level:
-    com.aarogya.appointment_service: INFO
+    com.aarogya.patient_management_service: INFO
     org.springframework.data.mongodb: INFO
 
 resilience4j:

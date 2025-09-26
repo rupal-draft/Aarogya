@@ -58,7 +58,6 @@ export const PatientDashboard: React.FC = () => {
   useEffect(() => {
     loadProfile();
   }, []);
-  console.log(profile);
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">

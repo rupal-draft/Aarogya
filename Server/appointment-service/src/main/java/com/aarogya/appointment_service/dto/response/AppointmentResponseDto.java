@@ -24,6 +24,7 @@ public class AppointmentResponseDto {
     private LocalTime endTime;
     private AppointmentStatus status;
     private AppointmentType type;
+    private String paymentId;
     private String reason;
     private List<String> symptoms;
     private String notes;

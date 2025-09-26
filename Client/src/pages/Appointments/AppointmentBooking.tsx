@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import type { DoctorResponseDTO } from "../../types/doctor"
-import EmergencyAppointmentForm from "../../components/Appointments/EmergencyAppointmentForm"
-import PatientAppointments from "../../components/Appointments/PatientAppointments"
-import DoctorSearch from "../../components/Doctors/DoctorSearch"
-import DoctorAvailability from "../../components/Doctors/DoctorAvailability"
-import { motion, AnimatePresence } from "framer-motion"
+import React, { useState } from "react";
+import type { DoctorResponseDTO } from "../../types/doctor";
+import EmergencyAppointmentForm from "../../components/Appointments/EmergencyAppointmentForm";
+import PatientAppointments from "../../components/Appointments/PatientAppointments";
+import DoctorSearch from "../../components/Doctors/DoctorSearch";
+import DoctorAvailability from "../../components/Doctors/DoctorAvailability";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Calendar,
@@ -23,38 +23,52 @@ import {
   Phone,
   Video,
   MapPin,
-} from "lucide-react"
-import AppointmentForm from "../../components/Appointments/AppointmentForm"
+  ListChecks,
+  Sparkles,
+} from "lucide-react";
+import AppointmentForm from "../../components/Appointments/AppointmentForm";
 
-type BookingStep = "search" | "availability" | "booking" | "emergency" | "appointments"
+type BookingStep =
+  | "search"
+  | "availability"
+  | "booking"
+  | "emergency"
+  | "appointments";
 
 const AppointmentBooking: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState<BookingStep>("search")
-  const [selectedDoctor, setSelectedDoctor] = useState<DoctorResponseDTO | null>(null)
-  const [selectedDate, setSelectedDate] = useState<string>("")
-  const [selectedSlot, setSelectedSlot] = useState<{ startTime: string; endTime: string } | null>(null)
+  const [currentStep, setCurrentStep] = useState<BookingStep>("search");
+  const [selectedDoctor, setSelectedDoctor] =
+    useState<DoctorResponseDTO | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedSlot, setSelectedSlot] = useState<{
+    startTime: string;
+    endTime: string;
+  } | null>(null);
 
   const handleDoctorSelect = (doctor: DoctorResponseDTO) => {
-    setSelectedDoctor(doctor)
-    setCurrentStep("availability")
-  }
+    setSelectedDoctor(doctor);
+    setCurrentStep("availability");
+  };
 
-  const handleSlotSelect = (date: string, slot: { startTime: string; endTime: string }) => {
-    setSelectedDate(date)
-    setSelectedSlot(slot)
-    setCurrentStep("booking")
-  }
+  const handleSlotSelect = (
+    date: string,
+    slot: { startTime: string; endTime: string }
+  ) => {
+    setSelectedDate(date);
+    setSelectedSlot(slot);
+    setCurrentStep("booking");
+  };
 
   const handleBookingComplete = () => {
-    setCurrentStep("appointments")
-    setSelectedDoctor(null)
-    setSelectedDate("")
-    setSelectedSlot(null)
-  }
+    setCurrentStep("appointments");
+    setSelectedDoctor(null);
+    setSelectedDate("");
+    setSelectedSlot(null);
+  };
 
   const handleEmergencyComplete = () => {
-    setCurrentStep("appointments")
-  }
+    setCurrentStep("appointments");
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -65,7 +79,7 @@ const AppointmentBooking: React.FC = () => {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -74,10 +88,10 @@ const AppointmentBooking: React.FC = () => {
       opacity: 1,
       transition: { duration: 0.5 },
     },
-  }
+  };
 
   const renderHeroSection = () => {
-    if (currentStep !== "search") return null
+    if (currentStep !== "search") return null;
 
     return (
       <motion.div
@@ -161,8 +175,16 @@ const AppointmentBooking: React.FC = () => {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="text-center">
-            <motion.div variants={itemVariants} className="flex justify-center mb-8">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="text-center"
+          >
+            <motion.div
+              variants={itemVariants}
+              className="flex justify-center mb-8"
+            >
               <div className="relative">
                 <motion.div
                   animate={{ scale: [1, 1.1, 1] }}
@@ -173,7 +195,11 @@ const AppointmentBooking: React.FC = () => {
                 </motion.div>
                 <motion.div
                   animate={{ scale: [0, 1, 0] }}
-                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
+                  transition={{
+                    duration: 2,
+                    repeat: Number.POSITIVE_INFINITY,
+                    delay: 0.5,
+                  }}
                   className="absolute inset-0 w-20 h-20 bg-white/10 rounded-full"
                 />
               </div>
@@ -191,11 +217,15 @@ const AppointmentBooking: React.FC = () => {
               variants={itemVariants}
               className="text-xl md:text-2xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed"
             >
-              Connect with world-class healthcare professionals. Schedule appointments, get emergency care, and manage
-              your health with ease.
+              Connect with world-class healthcare professionals. Schedule
+              appointments, get emergency care, and manage your health with
+              ease.
             </motion.p>
 
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8"
+            >
               <motion.button
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
@@ -217,10 +247,64 @@ const AppointmentBooking: React.FC = () => {
                 <span>Emergency Care</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </motion.button>
+
+              {/* New Beautiful Appointments Button */}
+              <motion.button
+                whileHover={{
+                  scale: 1.05,
+                  y: -2,
+                  background:
+                    "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setCurrentStep("appointments")}
+                className="group relative bg-gradient-to-r from-emerald-500 to-green-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center space-x-3 overflow-hidden"
+              >
+                {/* Animated sparkle effect */}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    duration: 3,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "linear",
+                  }}
+                  className="absolute -left-4 top-2"
+                >
+                  <Sparkles className="w-4 h-4 text-yellow-300" />
+                </motion.div>
+
+                {/* Main content */}
+                <motion.div
+                  animate={{ rotate: [0, -5, 5, 0] }}
+                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                >
+                  <ListChecks className="w-6 h-6" />
+                </motion.div>
+                <span>My Appointments</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+
+                {/* Hover effect overlay */}
+                <motion.div
+                  initial={{ x: "-100%", opacity: 0 }}
+                  whileHover={{ x: "100%", opacity: 1 }}
+                  transition={{ duration: 0.6 }}
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform skew-x-12"
+                />
+
+                {/* Pulsing dot */}
+                <motion.div
+                  animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
+                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                  className="absolute top-3 right-3 w-2 h-2 bg-yellow-300 rounded-full"
+                />
+              </motion.button>
             </motion.div>
 
             {/* Stats Section */}
-            <motion.div variants={itemVariants} className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <motion.div
+              variants={itemVariants}
+              className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8"
+            >
               <div className="text-center">
                 <motion.div
                   animate={{ scale: [1, 1.05, 1] }}
@@ -238,7 +322,11 @@ const AppointmentBooking: React.FC = () => {
               <div className="text-center">
                 <motion.div
                   animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
+                  transition={{
+                    duration: 3,
+                    repeat: Number.POSITIVE_INFINITY,
+                    delay: 0.5,
+                  }}
                   className="text-4xl font-bold text-green-300 mb-2"
                 >
                   24/7
@@ -252,7 +340,11 @@ const AppointmentBooking: React.FC = () => {
               <div className="text-center">
                 <motion.div
                   animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, delay: 1 }}
+                  transition={{
+                    duration: 3,
+                    repeat: Number.POSITIVE_INFINITY,
+                    delay: 1,
+                  }}
                   className="text-4xl font-bold text-pink-300 mb-2"
                 >
                   98%
@@ -266,18 +358,18 @@ const AppointmentBooking: React.FC = () => {
           </motion.div>
         </div>
       </motion.div>
-    )
-  }
+    );
+  };
 
   const renderStepIndicator = () => {
     const steps = [
       { key: "search", label: "Find Doctor", icon: Search },
       { key: "availability", label: "Select Time", icon: Calendar },
       { key: "booking", label: "Book Appointment", icon: CheckCircle },
-    ]
+    ];
 
     if (currentStep === "emergency" || currentStep === "appointments") {
-      return null
+      return null;
     }
 
     return (
@@ -290,9 +382,10 @@ const AppointmentBooking: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
           <div className="flex items-center space-x-8">
             {steps.map((step, index) => {
-              const Icon = step.icon
-              const isActive = currentStep === step.key
-              const isCompleted = steps.findIndex((s) => s.key === currentStep) > index
+              const Icon = step.icon;
+              const isActive = currentStep === step.key;
+              const isCompleted =
+                steps.findIndex((s) => s.key === currentStep) > index;
 
               return (
                 <React.Fragment key={step.key}>
@@ -302,13 +395,16 @@ const AppointmentBooking: React.FC = () => {
                       isActive
                         ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
                         : isCompleted
-                          ? "bg-green-500 text-white"
-                          : "bg-gray-100 text-gray-600"
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-100 text-gray-600"
                     }`}
                   >
                     <motion.div
                       animate={isActive ? { rotate: [0, 360] } : {}}
-                      transition={{ duration: 2, repeat: isActive ? Number.POSITIVE_INFINITY : 0 }}
+                      transition={{
+                        duration: 2,
+                        repeat: isActive ? Number.POSITIVE_INFINITY : 0,
+                      }}
                     >
                       <Icon className="w-5 h-5" />
                     </motion.div>
@@ -323,16 +419,16 @@ const AppointmentBooking: React.FC = () => {
                     />
                   )}
                 </React.Fragment>
-              )
+              );
             })}
           </div>
         </div>
       </motion.div>
-    )
-  }
+    );
+  };
 
   const renderQuickActions = () => {
-    if (currentStep !== "search") return null
+    if (currentStep !== "search") return null;
 
     return (
       <motion.div
@@ -343,8 +439,12 @@ const AppointmentBooking: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 mt-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-            <p className="text-gray-600 text-lg">Get started with your healthcare journey</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Quick Actions
+            </h2>
+            <p className="text-gray-600 text-lg">
+              Get started with your healthcare journey
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -358,8 +458,12 @@ const AppointmentBooking: React.FC = () => {
                 <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                   <Search className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Find Doctors</h3>
-                <p className="text-gray-600 text-sm">Search by specialty or name</p>
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Find Doctors
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Search by specialty or name
+                </p>
               </div>
             </motion.button>
 
@@ -388,7 +492,9 @@ const AppointmentBooking: React.FC = () => {
                 <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                   <Calendar className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">My Appointments</h3>
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  My Appointments
+                </h3>
                 <p className="text-gray-600 text-sm">View scheduled visits</p>
               </div>
             </motion.button>
@@ -401,18 +507,22 @@ const AppointmentBooking: React.FC = () => {
                 <div className="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                   <Shield className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Health Records</h3>
-                <p className="text-gray-600 text-sm">Access your medical history</p>
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Health Records
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Access your medical history
+                </p>
               </div>
             </motion.div>
           </div>
         </div>
       </motion.div>
-    )
-  }
+    );
+  };
 
   const renderServiceHighlights = () => {
-    if (currentStep !== "search") return null
+    if (currentStep !== "search") return null;
 
     return (
       <motion.div
@@ -437,7 +547,8 @@ const AppointmentBooking: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-xl text-gray-600 max-w-3xl mx-auto"
             >
-              Experience world-class healthcare with cutting-edge technology and compassionate care
+              Experience world-class healthcare with cutting-edge technology and
+              compassionate care
             </motion.p>
           </div>
 
@@ -446,7 +557,8 @@ const AppointmentBooking: React.FC = () => {
               {
                 icon: Video,
                 title: "Telemedicine",
-                description: "Consult with doctors from the comfort of your home",
+                description:
+                  "Consult with doctors from the comfort of your home",
                 color: "from-blue-500 to-cyan-500",
               },
               {
@@ -458,13 +570,15 @@ const AppointmentBooking: React.FC = () => {
               {
                 icon: Shield,
                 title: "Secure & Private",
-                description: "Your health data is protected with enterprise-grade security",
+                description:
+                  "Your health data is protected with enterprise-grade security",
                 color: "from-purple-500 to-violet-500",
               },
               {
                 icon: Star,
                 title: "Top-Rated Doctors",
-                description: "Access to highly qualified and experienced specialists",
+                description:
+                  "Access to highly qualified and experienced specialists",
                 color: "from-yellow-500 to-orange-500",
               },
               {
@@ -493,69 +607,76 @@ const AppointmentBooking: React.FC = () => {
                 >
                   <service.icon className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{service.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{service.description}</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  {service.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {service.description}
+                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </motion.div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <AnimatePresence mode="wait">
-  <motion.div
-    key={currentStep}
-    initial={{ opacity: 0, x: 20 }}
-    animate={{ opacity: 1, x: 0 }}
-    exit={{ opacity: 0, x: -20 }}
-    transition={{ duration: 0.5 }}
-  >
-    {renderHeroSection()}
-    {renderQuickActions()}
-    {renderServiceHighlights()}
-    {renderStepIndicator()}
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.5 }}
+        >
+          {renderHeroSection()}
+          {renderQuickActions()}
+          {renderServiceHighlights()}
+          {renderStepIndicator()}
 
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-      {currentStep === "search" && <DoctorSearch onDoctorSelect={handleDoctorSelect} />}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+            {currentStep === "search" && (
+              <DoctorSearch onDoctorSelect={handleDoctorSelect} />
+            )}
 
-      {currentStep === "availability" && selectedDoctor && (
-        <DoctorAvailability
-          doctor={selectedDoctor}
-          onSlotSelect={handleSlotSelect}
-          onBack={() => setCurrentStep("search")}
-        />
-      )}
+            {currentStep === "availability" && selectedDoctor && (
+              <DoctorAvailability
+                doctor={selectedDoctor}
+                onSlotSelect={handleSlotSelect}
+                onBack={() => setCurrentStep("search")}
+              />
+            )}
 
-      {currentStep === "booking" && selectedDoctor && selectedDate && selectedSlot && (
-        <AppointmentForm
-          doctor={selectedDoctor}
-          date={selectedDate}
-          slot={selectedSlot}
-          onComplete={handleBookingComplete}
-          onBack={() => setCurrentStep("availability")}
-        />
-      )}
+            {currentStep === "booking" &&
+              selectedDoctor &&
+              selectedDate &&
+              selectedSlot && (
+                <AppointmentForm
+                  doctor={selectedDoctor}
+                  date={selectedDate}
+                  slot={selectedSlot}
+                  onComplete={handleBookingComplete}
+                  onBack={() => setCurrentStep("availability")}
+                />
+              )}
 
-      {currentStep === "emergency" && (
-        <EmergencyAppointmentForm
-          onComplete={handleEmergencyComplete}
-          onBack={() => setCurrentStep("search")}
-        />
-      )}
+            {currentStep === "emergency" && (
+              <EmergencyAppointmentForm
+                onComplete={handleEmergencyComplete}
+                onBack={() => setCurrentStep("search")}
+              />
+            )}
 
-      {currentStep === "appointments" && (
-        <PatientAppointments onBack={() => setCurrentStep("search")} />
-      )}
+            {currentStep === "appointments" && (
+              <PatientAppointments onBack={() => setCurrentStep("search")} />
+            )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
-  </motion.div>
-</AnimatePresence>
+  );
+};
 
-    </div>
-  )
-}
-
-
-export default AppointmentBooking
+export default AppointmentBooking;

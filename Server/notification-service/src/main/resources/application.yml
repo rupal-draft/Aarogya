@@ -1,6 +1,6 @@
 spring:
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BROKER_URL}
     consumer:
       group-id: notification-service-group
       auto-offset-reset: earliest
@@ -13,6 +13,10 @@ spring:
     listener:
       ack-mode: manual_immediate
 
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
 
 notification:
   cleanup:

@@ -1,9 +1,6 @@
 import type { DoctorDashboardData } from "../types/doctorDashboard";
 import type { PatientProfile } from "../types/patient";
-import type {
-  ApiResponse,
-  PatientDashboardResponse,
-} from "../types/patientDashboard";
+import type { ApiResponse } from "../types/patientDashboard";
 import { api, ENDPOINTS } from "../utils/dashboardApi";
 
 export class DashboardService {
