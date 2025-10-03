@@ -1,6 +1,6 @@
-package com.aarogya.pharmacy_service.config;
+package com.aarogya.lab_service.config;
 
-import com.aarogya.payment_service.events.OrderStatusUpdateEvent;
+import com.aarogya.payment_service.events.LabOrderStatusUpdateEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,14 +23,14 @@ public class KafkaConsumerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ConsumerFactory<String, OrderStatusUpdateEvent> orderStatusUpdateConsumerFactory() {
-        JsonDeserializer<OrderStatusUpdateEvent> deserializer =
-                new JsonDeserializer<>(OrderStatusUpdateEvent.class);
+    public ConsumerFactory<String, LabOrderStatusUpdateEvent> labOrderStatusUpdateConsumerFactory() {
+        JsonDeserializer<LabOrderStatusUpdateEvent> deserializer =
+                new JsonDeserializer<>(LabOrderStatusUpdateEvent.class);
         deserializer.addTrustedPackages("*");
 
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "process-order-group");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "confirm-lab-order-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
 
@@ -38,10 +38,10 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderStatusUpdateEvent> orderStatusUpdateKafkaListenerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, OrderStatusUpdateEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, LabOrderStatusUpdateEvent> labOrderStatusUpdateKafkaListenerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, LabOrderStatusUpdateEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(orderStatusUpdateConsumerFactory());
+        factory.setConsumerFactory(labOrderStatusUpdateConsumerFactory());
         return factory;
     }
 }

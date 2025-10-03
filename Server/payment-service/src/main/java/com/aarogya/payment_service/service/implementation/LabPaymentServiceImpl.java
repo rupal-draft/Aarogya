@@ -6,6 +6,7 @@ import com.aarogya.payment_service.dto.request.WebhookRequest;
 import com.aarogya.payment_service.dto.response.LabPaymentDetailsResponse;
 import com.aarogya.payment_service.dto.response.LabPaymentResponse;
 import com.aarogya.payment_service.enums.PaymentStatus;
+import com.aarogya.payment_service.events.LabOrderStatusUpdateEvent;
 import com.aarogya.payment_service.exceptions.BadRequestException;
 import com.aarogya.payment_service.exceptions.PaymentException;
 import com.aarogya.payment_service.exceptions.ResourceNotFound;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +42,7 @@ public class LabPaymentServiceImpl implements LabPaymentService {
     private final LabPaymentRepository labPaymentRepository;
     private final RazorpayClient razorpayClient;
     private final PaymentSignature paymentSignature;
-//    private final KafkaTemplate<String, LabOrderStatusUpdateEvent> labOrderStatusUpdateKafkaTemplate;
+    private final KafkaTemplate<String, LabOrderStatusUpdateEvent> labOrderStatusUpdateKafkaTemplate;
 
     @Value("${razorpay.webhook.secret}")
     private String webhookSecret;
@@ -201,8 +203,8 @@ public class LabPaymentServiceImpl implements LabPaymentService {
         payment.setPaidAt(LocalDateTime.now());
         labPaymentRepository.save(payment);
 
-//        LabOrderStatusUpdateEvent labOrderStatusUpdateEvent = new LabOrderStatusUpdateEvent(payment.getOrderId(), payment.getId());
-//        labOrderStatusUpdateKafkaTemplate.send("process-lab-order", payment.getOrderId(), labOrderStatusUpdateEvent);
+        LabOrderStatusUpdateEvent labOrderStatusUpdateEvent = new LabOrderStatusUpdateEvent(payment.getOrderId(), payment.getId());
+        labOrderStatusUpdateKafkaTemplate.send("confirm-lab-order", payment.getOrderId(), labOrderStatusUpdateEvent);
 
         log.info("Lab payment confirmed manually for order {}", request.getRazorpayOrderId());
         return true;
@@ -222,8 +224,8 @@ public class LabPaymentServiceImpl implements LabPaymentService {
         payment.setWebhookPayload(webhookData);
         labPaymentRepository.save(payment);
 
-//        LabOrderStatusUpdateEvent labOrderStatusUpdateEvent = new LabOrderStatusUpdateEvent(payment.getOrderId(), payment.getId());
-//        labOrderStatusUpdateKafkaTemplate.send("process-lab-order", payment.getOrderId(), labOrderStatusUpdateEvent);
+        LabOrderStatusUpdateEvent labOrderStatusUpdateEvent = new LabOrderStatusUpdateEvent(payment.getOrderId(), payment.getId());
+        labOrderStatusUpdateKafkaTemplate.send("confirm-lab-order", payment.getOrderId(), labOrderStatusUpdateEvent);
 
         log.info("Lab order {} processed successfully via Kafka", payment.getOrderId());
     }

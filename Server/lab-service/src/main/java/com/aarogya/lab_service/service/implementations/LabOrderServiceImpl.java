@@ -16,14 +16,17 @@ import com.aarogya.lab_service.repository.LabOrderRepository;
 import com.aarogya.lab_service.repository.LabTestRepository;
 import com.aarogya.lab_service.service.LabOrderService;
 import com.aarogya.lab_service.service.LabResultService;
+import com.aarogya.payment_service.events.LabOrderStatusUpdateEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -267,6 +270,37 @@ public class LabOrderServiceImpl implements LabOrderService {
         log.info("Order cancelled successfully: {}", orderId);
 
         return mapToOrderResponse(cancelledOrder);
+    }
+
+    @Override
+    @Transactional
+    @KafkaListener(
+            topics = "confirm-lab-order",
+            groupId = "confirm-lab-order-group",
+            containerFactory = "orderStatusUpdateKafkaListenerFactory"
+    )
+    @CacheEvict(value = {"labOrders", "patientOrders"}, allEntries = true)
+    public void confirmOrder(LabOrderStatusUpdateEvent orderStatusUpdateEvent) {
+        log.info("Processing order with payment id: {}", orderStatusUpdateEvent.getPaymentId());
+        try {
+            LabOrder order = labOrderRepository
+                    .findById(orderStatusUpdateEvent.getOrderId())
+                    .orElseThrow(() -> new ResourceNotFoundException("No order is found with id: " + orderStatusUpdateEvent.getOrderId()));
+
+            order.setStatus(OrderStatus.CONFIRMED);
+            order.setPaymentId(orderStatusUpdateEvent.getPaymentId());
+            labOrderRepository.save(order);
+            log.info("Order processed with id: {}", order.getId());
+        } catch (ResourceNotFoundException e) {
+            log.error("Order not found: {}", e.getMessage());
+            throw e;
+        } catch (DataIntegrityViolationException e) {
+            log.error("Data integrity violation while updating Order status", e);
+            throw new DataIntegrityViolation("Error updating Order status");
+        } catch (Exception e) {
+            log.error("Unexpected error updating Order status", e);
+            throw new ServiceUnavailable(e.getLocalizedMessage());
+        }
     }
 
     private void validateCreateOrderRequest(CreateLabOrderRequest request) {

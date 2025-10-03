@@ -1,7 +1,8 @@
 spring:
   application:
     name: lab-service
-
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKER_URL}
   data:
     mongodb:
       uri: ${MONGO_URI}

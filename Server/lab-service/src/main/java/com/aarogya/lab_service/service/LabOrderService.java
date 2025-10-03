@@ -3,6 +3,7 @@ package com.aarogya.lab_service.service;
 import com.aarogya.lab_service.dto.request.CreateLabOrderRequest;
 import com.aarogya.lab_service.dto.response.LabOrderResponse;
 import com.aarogya.lab_service.enums.OrderStatus;
+import com.aarogya.payment_service.events.LabOrderStatusUpdateEvent;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDate;
@@ -30,4 +31,6 @@ public interface LabOrderService {
     LabOrderResponse updateOrderStatus(String orderId, OrderStatus newStatus);
 
     LabOrderResponse cancelOrder(String orderId, String cancellationReason);
+
+    void confirmOrder(LabOrderStatusUpdateEvent orderStatusUpdateEvent);
 }

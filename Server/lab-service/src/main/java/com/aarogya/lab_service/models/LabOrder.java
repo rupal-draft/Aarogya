@@ -34,9 +34,15 @@ public class LabOrder {
 
     private List<OrderedTest> orderedTests;
     private BigDecimal totalAmount;
-    private OrderStatus status;
+
+    @Builder.Default
+    private OrderStatus status = OrderStatus.PENDING_PAYMENT;
+
     private PaymentStatus paymentStatus;
-    private String paymentId;
+
+    @Builder.Default
+    private String paymentId = "Not paid yet";
+
     private LocalDateTime scheduledDateTime;
     private String location;
     private String specialInstructions;
