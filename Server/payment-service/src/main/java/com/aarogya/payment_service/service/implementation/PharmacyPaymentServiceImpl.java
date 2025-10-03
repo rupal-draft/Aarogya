@@ -6,6 +6,7 @@ import com.aarogya.payment_service.dto.request.WebhookRequest;
 import com.aarogya.payment_service.dto.response.PharmacyPaymentDetailsResponse;
 import com.aarogya.payment_service.dto.response.PharmacyPaymentResponse;
 import com.aarogya.payment_service.enums.PaymentStatus;
+import com.aarogya.payment_service.events.OrderStatusUpdateEvent;
 import com.aarogya.payment_service.exceptions.BadRequestException;
 import com.aarogya.payment_service.exceptions.PaymentException;
 import com.aarogya.payment_service.exceptions.ResourceNotFound;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,7 @@ public class PharmacyPaymentServiceImpl implements PharmacyPaymentService {
     private final PharmacyPaymentRepository pharmacyPaymentRepository;
     private final RazorpayClient razorpayClient;
     private final PaymentSignature paymentSignature;
+    private final KafkaTemplate<String, OrderStatusUpdateEvent> orderStatusUpdataKafkaTemplate;
 
     @Value("${razorpay.webhook.secret}")
     private String webhookSecret;
@@ -199,6 +202,10 @@ public class PharmacyPaymentServiceImpl implements PharmacyPaymentService {
         payment.setRazorpayPaymentId(request.getRazorpayPaymentId());
         payment.setPaidAt(LocalDateTime.now());
         pharmacyPaymentRepository.save(payment);
+
+        OrderStatusUpdateEvent orderStatusUpdateEvent = new OrderStatusUpdateEvent(payment.getOrderId(), payment.getId());
+
+        orderStatusUpdataKafkaTemplate.send("process-order", payment.getOrderId(), orderStatusUpdateEvent);
 
         log.info("Pharmacy payment confirmed manually for order {}", request.getRazorpayOrderId());
         return true;

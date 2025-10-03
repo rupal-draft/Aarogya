@@ -1,7 +1,6 @@
 package com.aarogya.pharmacy_service.service.implementations;
 
 import com.aarogya.pharmacy_service.Clients.MedicineExtractorClient;
-import com.aarogya.pharmacy_service.auth.UserContextHolder;
 import com.aarogya.pharmacy_service.documents.Medicine;
 import com.aarogya.pharmacy_service.dto.medicine.*;
 import com.aarogya.pharmacy_service.exceptions.MedicineNotFoundException;
@@ -10,7 +9,6 @@ import com.aarogya.pharmacy_service.mapper.MedicineMapper;
 import com.aarogya.pharmacy_service.repository.MedicineRepository;
 import com.aarogya.pharmacy_service.repository.projections.MedicineNameProjection;
 import com.aarogya.pharmacy_service.service.MedicineService;
-import com.aarogya.pharmacy_service.utils.CheckRole;
 import com.aarogya.pharmacy_service.utils.TextExtractionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +66,6 @@ public class MedicineServiceImpl implements MedicineService {
     @Transactional
     @CacheEvict(value = "medicines", allEntries = true)
     public MedicineResponseDTO createMedicine(MedicineCreationDTO medicineCreationDTO) {
-        CheckRole.checkRole(UserContextHolder.getUserDetails().getRole(), "ADMIN");
         log.info("Creating medicine with details: {}", medicineCreationDTO);
         try {
             Medicine medicine = medicineMapper.toEntity(medicineCreationDTO);
@@ -88,7 +85,6 @@ public class MedicineServiceImpl implements MedicineService {
     @Transactional
     @CacheEvict(value = "medicines", allEntries = true)
     public MedicineResponseDTO updateMedicine(String id, MedicineDTO medicineDTO) {
-        CheckRole.checkRole(UserContextHolder.getUserDetails().getRole(), "ADMIN");
         try {
             log.info("Updating medicine with id: {}", id);
             Medicine existingMedicine = medicineRepository.findById(id)
@@ -111,7 +107,6 @@ public class MedicineServiceImpl implements MedicineService {
     @Transactional
     @CacheEvict(value = "medicines", allEntries = true)
     public void deleteMedicine(String id) {
-        CheckRole.checkRole(UserContextHolder.getUserDetails().getRole(), "ADMIN");
         log.info("Deleting medicine with id: {}", id);
         try {
             if (!medicineRepository.existsById(id)) {
@@ -160,7 +155,6 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Transactional
     public MedicineResponseDTO updateStock(String id, MedicineStockUpdateDTO stockUpdateDTO) {
-        CheckRole.checkRole(UserContextHolder.getUserDetails().getRole(), "ADMIN");
         log.info("Updating stock for medicine with id: {}", id);
         try {
             Medicine medicine = medicineRepository.findById(id)
@@ -180,7 +174,6 @@ public class MedicineServiceImpl implements MedicineService {
     @Transactional(readOnly = true)
     @Cacheable(value = "medicines", key = "#threshold")
     public List<MedicineResponseDTO> getLowStockMedicines(int threshold) {
-        CheckRole.checkRole(UserContextHolder.getUserDetails().getRole(), "ADMIN");
         log.info("Fetching medicines with stock quantity less than: {}", threshold);
         try {
             return medicineRepository.findByStockQuantityLessThan(threshold).stream()

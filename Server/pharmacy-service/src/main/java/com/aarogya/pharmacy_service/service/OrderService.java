@@ -1,5 +1,6 @@
 package com.aarogya.pharmacy_service.service;
 
+import com.aarogya.payment_service.events.OrderStatusUpdateEvent;
 import com.aarogya.pharmacy_service.dto.order.OrderCreationDTO;
 import com.aarogya.pharmacy_service.dto.order.OrderDTO;
 import com.aarogya.pharmacy_service.dto.order.OrderStatusUpdateDTO;
@@ -21,4 +22,6 @@ public interface OrderService {
     OrderDTO updateOrderStatus(String id, OrderStatusUpdateDTO statusUpdateDTO);
 
     List<OrderDTO> getOrdersByStatus(String status);
+
+    void processOrder(OrderStatusUpdateEvent orderStatusUpdateEvent);
 }

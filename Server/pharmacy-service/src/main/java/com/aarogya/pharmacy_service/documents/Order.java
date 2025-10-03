@@ -47,6 +47,9 @@ public class Order {
 
     private String paymentMethod;
 
+    @Builder.Default
+    private String paymentId = "Not paid yet";
+
     @Indexed
     private LocalDateTime orderDate;
 

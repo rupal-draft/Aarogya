@@ -1,5 +1,6 @@
 package com.aarogya.pharmacy_service.service.implementations;
 
+import com.aarogya.payment_service.events.OrderStatusUpdateEvent;
 import com.aarogya.pharmacy_service.auth.UserContextHolder;
 import com.aarogya.pharmacy_service.documents.Medicine;
 import com.aarogya.pharmacy_service.documents.Order;
@@ -17,11 +18,12 @@ import com.aarogya.pharmacy_service.repository.OrderRepository;
 import com.aarogya.pharmacy_service.service.CartService;
 import com.aarogya.pharmacy_service.service.NotificationService;
 import com.aarogya.pharmacy_service.service.OrderService;
-import com.aarogya.pharmacy_service.utils.CheckRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -123,7 +125,6 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     @Cacheable(value = "orders", key = "#patientId")
     public List<OrderDTO> getOrdersByPatient(String patientId) {
-        CheckRole.checkRole(UserContextHolder.getUserDetails().getRole(), "ADMIN");
         log.info("Getting orders for patient: {}", patientId);
         try {
             return orderRepository.findByPatientId(patientId).stream()
@@ -166,7 +167,6 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @CacheEvict(value = "orders", allEntries = true)
     public OrderDTO updateOrderStatus(String id, OrderStatusUpdateDTO statusUpdateDTO) {
-        CheckRole.checkRole(UserContextHolder.getUserDetails().getRole(), "ADMIN");
         log.info("Updating order status for order with id: {}", id);
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
@@ -187,7 +187,6 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     @Cacheable(value = "orders", key = "#status")
     public List<OrderDTO> getOrdersByStatus(String status) {
-        CheckRole.checkRole(UserContextHolder.getUserDetails().getRole(), "ADMIN");
         try {
             OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase());
             return orderRepository.findByStatus(orderStatus).stream()
@@ -195,6 +194,38 @@ public class OrderServiceImpl implements OrderService {
                     .collect(Collectors.toList());
         } catch (IllegalArgumentException e) {
             throw new InvalidOrderStatusException(status);
+        }
+    }
+
+    @Override
+    @Transactional
+    @KafkaListener(
+            topics = "process-order",
+            groupId = "process-order-group",
+            containerFactory = "orderStatusUpdateKafkaListenerFactory"
+    )
+    @CacheEvict(value = "orders", allEntries = true)
+    public void processOrder(OrderStatusUpdateEvent orderStatusUpdateEvent) {
+        log.info("Processing order with payment id: {}", orderStatusUpdateEvent.getPaymentId());
+        try {
+            Order order = orderRepository
+                    .findById(orderStatusUpdateEvent.getOrderId())
+                    .orElseThrow(() -> new ResourceNotFound("No order is found with id: " + orderStatusUpdateEvent.getOrderId()));
+
+            order.setStatus(OrderStatus.PROCESSED);
+            order.setPaymentId(orderStatusUpdateEvent.getPaymentId());
+            orderRepository.save(order);
+            notificationService.sendOrderStatusUpdateNotification(order, new OrderStatusUpdateDTO(OrderStatus.PROCESSED.toString()));
+            log.info("Order processed with id: {}", order.getId());
+        } catch (ResourceNotFound e) {
+            log.error("Order not found: {}", e.getMessage());
+            throw e;
+        } catch (DataIntegrityViolationException e) {
+            log.error("Data integrity violation while updating Order status", e);
+            throw new DataIntegrityViolation("Error updating Order status");
+        } catch (Exception e) {
+            log.error("Unexpected error updating Order status", e);
+            throw new ServiceUnavailable(e.getLocalizedMessage());
         }
     }
 }
