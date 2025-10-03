@@ -10,7 +10,6 @@ import {
   publicNavItems,
 } from "../../Data/navigation";
 import { useAuth } from "../../hooks/Redux/useAuth";
-import { useCart } from "../../context/Cart/CartContext";
 import {
   Bell,
   Heart,
@@ -29,9 +28,7 @@ const Header = () => {
   const { isAuthenticated, userType, profileImage, userName, handleLogout } =
     useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const { cart } = useCart();
 
-  const itemCount = cart?.totalItems || 0;
   const navItems = isAuthenticated
     ? userType === "doctor"
       ? doctorNavItems
@@ -288,7 +285,6 @@ const Header = () => {
     }
   };
 
-  // Enhanced Cart Icon Component
   const CartIconComponent = () => (
     <Link to="/pharmacy/cart" className="relative group">
       <motion.div
@@ -296,51 +292,30 @@ const Header = () => {
         whileHover={{ scale: 1.1, y: -2 }}
         whileTap={{ scale: 0.9 }}
       >
+        {/* Cart icon with subtle wiggle always */}
         <motion.div
-          animate={itemCount > 0 ? { rotate: [0, -10, 10, -10, 0] } : {}}
+          animate={{ rotate: [0, -5, 5, -5, 0] }}
           transition={{
-            duration: 0.5,
-            repeat: itemCount > 0 ? Number.POSITIVE_INFINITY : 0,
-            repeatDelay: 3,
+            duration: 1.5,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatDelay: 5,
           }}
         >
           <ShoppingCart className="h-6 w-6 text-teal-600" />
         </motion.div>
 
-        <AnimatePresence>
-          {itemCount > 0 && (
-            <motion.div
-              key="badge"
-              initial={{ scale: 0, rotate: 180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0, rotate: -180 }}
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full h-7 w-7 flex items-center justify-center shadow-lg border-2 border-white"
-            >
-              <motion.span
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-              >
-                {itemCount > 99 ? "99+" : itemCount}
-              </motion.span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Subtle pulse effect */}
+        <motion.div
+          className="absolute inset-0 bg-teal-400 rounded-2xl opacity-20"
+          animate={{ scale: [1, 1.5], opacity: [0.2, 0] }}
+          transition={{
+            duration: 2,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatDelay: 4,
+          }}
+        />
 
-        {/* Pulse effect when items are added */}
-        {itemCount > 0 && (
-          <motion.div
-            className="absolute inset-0 bg-teal-400 rounded-2xl opacity-20"
-            animate={{ scale: [1, 1.5], opacity: [0.2, 0] }}
-            transition={{
-              duration: 1,
-              repeat: Number.POSITIVE_INFINITY,
-              repeatDelay: 2,
-            }}
-          />
-        )}
-
-        {/* Floating hearts animation */}
+        {/* Floating heart animation */}
         <motion.div
           className="absolute -top-1 -right-1 text-pink-400"
           animate={{
@@ -349,9 +324,9 @@ const Header = () => {
             scale: [0.5, 1, 0.5],
           }}
           transition={{
-            duration: 2,
+            duration: 3,
             repeat: Number.POSITIVE_INFINITY,
-            repeatDelay: 4,
+            repeatDelay: 6,
           }}
         >
           <Heart className="h-3 w-3 fill-current" />

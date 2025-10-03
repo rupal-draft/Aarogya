@@ -22,7 +22,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "orders")
-@CompoundIndex(def = "{'status': 1}", unique = true)
+@CompoundIndex(def = "{'status': 1}")
 public class Order {
 
 

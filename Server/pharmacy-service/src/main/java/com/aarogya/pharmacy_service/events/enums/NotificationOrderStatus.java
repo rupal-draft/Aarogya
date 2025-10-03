@@ -1,5 +1,5 @@
 package com.aarogya.pharmacy_service.events.enums;
 
 public enum NotificationOrderStatus {
-    PENDING, PROCESSING, DISPATCHED, DELIVERED, CANCELLED
+    PENDING, PROCESSED, DISPATCHED, DELIVERED, CANCELLED
 }

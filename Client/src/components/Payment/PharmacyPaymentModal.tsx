@@ -45,7 +45,7 @@ export const PharmacyPaymentModal: React.FC<PharmacyPaymentModalProps> = ({
   >("initiate");
   const [error, setError] = useState<string | null>(null);
   const [paymentDetails, setPaymentDetails] = useState<any>(null);
-
+  console.log(order);
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -79,7 +79,7 @@ export const PharmacyPaymentModal: React.FC<PharmacyPaymentModalProps> = ({
         key: paymentResponse.razorpayKey,
         amount: paymentResponse.amount,
         currency: paymentResponse.currency,
-        name: "HealthCare Pharmacy",
+        name: "Aarogya Pharmacy",
         description: `Medicine Order #${order.id.slice(-8)}`,
         order_id: paymentResponse.razorpayOrderId,
         handler: async function (response: any) {

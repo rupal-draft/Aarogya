@@ -63,7 +63,7 @@ export const paymentService = {
     request: InitiatePharmacyPaymentRequest
   ): Promise<PharmacyPaymentResponse> => {
     const response = await paymentApi.post("/core/pharmacy/initiate", request);
-    return response.data;
+    return response.data.data;
   },
 
   confirmPharmacyPaymentWithoutWebhook: async (
@@ -76,7 +76,7 @@ export const paymentService = {
     paymentId: string
   ): Promise<PharmacyPaymentDetailsResponse> => {
     const response = await paymentApi.get(`/core/pharmacy/${paymentId}`);
-    return response.data;
+    return response.data.data;
   },
 
   getPharmacyPaymentByOrderId: async (
@@ -85,6 +85,6 @@ export const paymentService = {
     const response = await paymentApi.get(
       `/core/pharmacy/order/${razorpayOrderId}`
     );
-    return response.data;
+    return response.data.data;
   },
 };

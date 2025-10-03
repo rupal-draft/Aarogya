@@ -136,14 +136,13 @@ public class PaymentController {
     }
 
     @PostMapping("/confirm/pharmacy")
-    public ResponseEntity<Void> confirmPharmacyPaymentWithoutWebhook(
+    public ResponseEntity<ApiResponse<String>> confirmPharmacyPaymentWithoutWebhook(
             @Valid @RequestBody VerifyPaymentRequest request) {
 
         log.debug("Verifying pharmacy payment status for order: {}", request.getRazorpayOrderId());
         boolean processed = pharmacyPaymentService.confirmPharmacyPaymentWithoutWebhook(request);
 
-        return processed
-                ? ResponseEntity.ok().build()
+        return processed ? ResponseEntity.ok(ApiResponse.success("Payment confirmed!"))
                 : ResponseEntity.status(HttpStatus.ALREADY_REPORTED).build();
     }
 

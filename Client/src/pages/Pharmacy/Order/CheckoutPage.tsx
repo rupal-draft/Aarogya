@@ -323,7 +323,7 @@ const CheckoutPage = () => {
               </svg>
             }
             actionText="Browse Medicines"
-            actionLink="/medicines"
+            actionLink="/pharmacy/medicines"
           />
         </div>
       </div>

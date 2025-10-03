@@ -49,6 +49,9 @@ server:
     context-path: /lab
 
 eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
   client:
     serviceUrl:
       defaultZone: ${EUREKA_SERVER_URL}

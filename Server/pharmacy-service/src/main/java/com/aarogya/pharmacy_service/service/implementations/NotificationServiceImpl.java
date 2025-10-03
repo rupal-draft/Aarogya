@@ -8,9 +8,10 @@ import com.aarogya.pharmacy_service.events.enums.NotificationOrderStatus;
 import com.aarogya.pharmacy_service.events.messaging.OrderItemNotificationDto;
 import com.aarogya.pharmacy_service.events.messaging.OrderNotificationDto;
 import com.aarogya.pharmacy_service.service.NotificationService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,7 @@ import java.util.Map;
 public class NotificationServiceImpl implements NotificationService {
 
     private final KafkaTemplate<String, NotificationEvent> orderNotificationKafkaTemplate;
-    private final ModelMapper modelMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void sendOrderCreatedNotification(Order order) {
@@ -77,7 +78,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private NotificationEvent buildNotificationEvent(OrderNotificationDto order, String message) {
-        Map<String, Object> data = modelMapper.map(order, Map.class);
+        Map<String, Object> data = objectMapper.convertValue(order, new TypeReference<Map<String, Object>>() {});
         return NotificationEvent.builder()
                 .data(data)
                 .read(false)

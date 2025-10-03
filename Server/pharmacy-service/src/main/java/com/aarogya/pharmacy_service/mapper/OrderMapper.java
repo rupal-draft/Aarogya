@@ -1,8 +1,10 @@
 package com.aarogya.pharmacy_service.mapper;
 
 import com.aarogya.pharmacy_service.documents.Order;
+import com.aarogya.pharmacy_service.documents.OrderItem;
 import com.aarogya.pharmacy_service.dto.order.OrderCreationDTO;
 import com.aarogya.pharmacy_service.dto.order.OrderDTO;
+import com.aarogya.pharmacy_service.dto.order.OrderItemDTO;
 import com.aarogya.pharmacy_service.dto.order.OrderStatusUpdateDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,8 @@ public class OrderMapper {
 
         modelMapper.typeMap(OrderStatusUpdateDTO.class, Order.class)
                 .addMappings(mapper -> mapper.skip(Order::setStatus));
+
+        modelMapper.typeMap(OrderItem.class, OrderItemDTO.class);
     }
 
     public Order toEntity(OrderCreationDTO dto) {
@@ -31,3 +35,4 @@ public class OrderMapper {
         modelMapper.map(dto, entity);
     }
 }
+

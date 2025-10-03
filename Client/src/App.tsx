@@ -25,6 +25,24 @@ import JournalDashboard from "./pages/Journal/JournalDashboard";
 import AvailabilityDashboard from "./pages/Availability/AvailabilityDashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import Unauthorized from "./components/Unauthorized";
+import OrdersPage from "./pages/Pharmacy/Order/OrdersPage";
+import { CartProvider } from "./context/Cart/CartContext";
+
+function PharmacyRoutes() {
+  return (
+    <Routes>
+      <Route path="medicines" element={<MedicineListPage />} />
+      <Route path="medicines/:id" element={<MedicineDetailPage />} />
+      <Route path="cart" element={<CartPage />} />
+      <Route path="checkout" element={<CheckoutPage />} />
+      <Route
+        path="order-confirmation/:orderId"
+        element={<OrderConfirmationPage />}
+      />
+      <Route path="orders" element={<OrdersPage />} />
+    </Routes>
+  );
+}
 
 function App() {
   return (
@@ -41,50 +59,12 @@ function App() {
 
           {/* Patient protected routes */}
           <Route
-            path="/pharmacy/medicines"
+            path="/pharmacy/*"
             element={
               <ProtectedRoute allowedRoles={["patient"]}>
-                <MedicineListPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pharmacy/medicines/:id"
-            element={
-              <ProtectedRoute allowedRoles={["patient"]}>
-                <MedicineDetailPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pharmacy/cart"
-            element={
-              <ProtectedRoute allowedRoles={["patient"]}>
-                <CartPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pharmacy/checkout"
-            element={
-              <ProtectedRoute allowedRoles={["patient"]}>
-                <CheckoutPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pharmacy/order-confirmation/:orderId"
-            element={
-              <ProtectedRoute allowedRoles={["patient"]}>
-                <OrderConfirmationPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pharmacy/orders"
-            element={
-              <ProtectedRoute allowedRoles={["patient"]}>
-                <OrderConfirmationPage />
+                <CartProvider>
+                  <PharmacyRoutes />
+                </CartProvider>
               </ProtectedRoute>
             }
           />

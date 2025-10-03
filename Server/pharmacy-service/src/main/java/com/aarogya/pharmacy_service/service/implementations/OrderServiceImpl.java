@@ -1,6 +1,7 @@
 package com.aarogya.pharmacy_service.service.implementations;
 
 import com.aarogya.payment_service.events.OrderStatusUpdateEvent;
+import com.aarogya.pharmacy_service.Clients.UserGrpcClient;
 import com.aarogya.pharmacy_service.auth.UserContextHolder;
 import com.aarogya.pharmacy_service.documents.Medicine;
 import com.aarogya.pharmacy_service.documents.Order;
@@ -11,6 +12,7 @@ import com.aarogya.pharmacy_service.dto.order.OrderCreationDTO;
 import com.aarogya.pharmacy_service.dto.order.OrderDTO;
 import com.aarogya.pharmacy_service.dto.order.OrderItemCreationDTO;
 import com.aarogya.pharmacy_service.dto.order.OrderStatusUpdateDTO;
+import com.aarogya.pharmacy_service.dto.patient.PatientResponseDTO;
 import com.aarogya.pharmacy_service.exceptions.*;
 import com.aarogya.pharmacy_service.mapper.OrderMapper;
 import com.aarogya.pharmacy_service.repository.MedicineRepository;
@@ -42,11 +44,13 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final CartService cartService;
     private final NotificationService notificationService;
+    private final UserGrpcClient userGrpcClient;
 
     @Transactional
     @CacheEvict(value = "orders", allEntries = true)
     public OrderDTO placeOrder(OrderCreationDTO orderCreationDTO) {
         String patientId = UserContextHolder.getUserDetails().getUserId();
+        PatientResponseDTO patientResponseDTO = userGrpcClient.getPatient(patientId);
         log.info("Placing order for patient: {}", patientId);
         try {
             List<OrderItem> orderItems = orderCreationDTO.getItems().stream()
@@ -88,7 +92,9 @@ public class OrderServiceImpl implements OrderService {
 
             Order savedOrder = orderRepository.save(order);
             notificationService.sendOrderCreatedNotification(savedOrder);
-            return orderMapper.toDTO(savedOrder);
+            OrderDTO orderDTO = orderMapper.toDTO(savedOrder);
+            orderDTO.setPatientName(patientResponseDTO.getFirstName() + " " + patientResponseDTO.getLastName());
+            return orderDTO;
         } catch (Exception e) {
             log.error("Error while placing order: {}", e.getMessage());
             throw new ServiceUnavailable(e.getLocalizedMessage());

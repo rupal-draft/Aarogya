@@ -1,33 +1,34 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Link } from "react-router-dom"
-import { motion } from "framer-motion"
-import type { MedicineResponseDTO } from "../../../types/medicine"
-import { useCart } from "../../../context/Cart/CartContext"
-import { toast } from "react-toastify"
-
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import type { MedicineResponseDTO } from "../../../types/medicine";
+import { useCart } from "../../../context/Cart/CartContext";
+import { toast } from "react-toastify";
 
 interface MedicineCardProps {
-  medicine: MedicineResponseDTO
+  medicine: MedicineResponseDTO;
 }
 
 const MedicineCard = ({ medicine }: MedicineCardProps) => {
-  const [isHovered, setIsHovered] = useState(false)
-  const [isAdding, setIsAdding] = useState(false)
-  const { addItem } = useCart()
+  const [isHovered, setIsHovered] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const { addItem } = useCart();
 
   // Format price to 2 decimal places
-  const formattedPrice = Number(medicine.price).toFixed(2)
+  const formattedPrice = Number(medicine.price).toFixed(2);
 
   // Check if medicine is in stock
-  const isInStock = medicine.stockQuantity > 0
+  const isInStock = medicine.stockQuantity > 0;
 
   // Get first image or placeholder
   const imageUrl =
-    medicine.images && medicine.images.length > 0 ? medicine.images[0] : "/placeholder.svg?height=300&width=400"
+    medicine.images && medicine.images.length > 0
+      ? medicine.images[0]
+      : "/placeholder.svg?height=300&width=400";
 
   // Card animation variants
   const cardVariants = {
@@ -42,27 +43,27 @@ const MedicineCard = ({ medicine }: MedicineCardProps) => {
       boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
       transition: { duration: 0.3 },
     },
-  }
+  };
 
   // Handle add to cart
   const handleAddToCart = async (e: React.MouseEvent) => {
-    e.preventDefault() // Prevent navigation
-    e.stopPropagation() // Prevent event bubbling
+    e.preventDefault(); // Prevent navigation
+    e.stopPropagation(); // Prevent event bubbling
 
-    if (!isInStock || isAdding) return
+    if (!isInStock || isAdding) return;
 
     try {
-      setIsAdding(true)
-      await addItem(medicine.id, 1)
-      toast.success("Item added to cart!")
+      setIsAdding(true);
+      await addItem(medicine.id, 1);
+      toast.success("Item added to cart!");
       setTimeout(() => {
-        setIsAdding(false)
-      }, 1000)
+        setIsAdding(false);
+      }, 1000);
     } catch (error) {
-      console.error("Failed to add item to cart:", error)
-      setIsAdding(false)
+      console.error("Failed to add item to cart:", error);
+      setIsAdding(false);
     }
-  }
+  };
 
   return (
     <motion.div
@@ -74,7 +75,7 @@ const MedicineCard = ({ medicine }: MedicineCardProps) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link to={`/medicines/${medicine.id}`} className="block h-full">
+      <Link to={`${medicine.id}`} className="block h-full">
         {/* Product Image */}
         <div className="relative overflow-hidden h-48">
           <motion.img
@@ -91,7 +92,12 @@ const MedicineCard = ({ medicine }: MedicineCardProps) => {
               className="absolute top-2 right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 500, damping: 15, delay: 0.1 }}
+              transition={{
+                type: "spring",
+                stiffness: 500,
+                damping: 15,
+                delay: 0.1,
+              }}
             >
               Rx
             </motion.div>
@@ -100,7 +106,9 @@ const MedicineCard = ({ medicine }: MedicineCardProps) => {
           {/* Out of Stock Overlay */}
           {!isInStock && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-              <span className="bg-red-500 text-white px-3 py-1 rounded-md font-medium">Out of Stock</span>
+              <span className="bg-red-500 text-white px-3 py-1 rounded-md font-medium">
+                Out of Stock
+              </span>
             </div>
           )}
         </div>
@@ -108,19 +116,33 @@ const MedicineCard = ({ medicine }: MedicineCardProps) => {
         {/* Product Info */}
         <div className="p-4">
           {/* Category */}
-          <div className="text-xs text-teal-600 font-medium uppercase tracking-wide mb-1">{medicine.category}</div>
+          <div className="text-xs text-teal-600 font-medium uppercase tracking-wide mb-1">
+            {medicine.category}
+          </div>
 
           {/* Title */}
-          <h3 className="text-lg font-semibold text-gray-800 mb-1 line-clamp-2 h-14">{medicine.name}</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-1 line-clamp-2 h-14">
+            {medicine.name}
+          </h3>
 
           {/* Manufacturer */}
-          <div className="text-sm text-gray-600 mb-2">{medicine.manufacturer}</div>
+          <div className="text-sm text-gray-600 mb-2">
+            {medicine.manufacturer}
+          </div>
 
           {/* Price */}
           <div className="flex items-center justify-between mb-3">
-            <span className="text-lg font-bold text-gray-800">${formattedPrice}</span>
-            <span className={`text-sm ${isInStock ? "text-green-600" : "text-red-500"}`}>
-              {isInStock ? `${medicine.stockQuantity} in stock` : "Out of stock"}
+            <span className="text-lg font-bold text-gray-800">
+              ${formattedPrice}
+            </span>
+            <span
+              className={`text-sm ${
+                isInStock ? "text-green-600" : "text-red-500"
+              }`}
+            >
+              {isInStock
+                ? `${medicine.stockQuantity} in stock`
+                : "Out of stock"}
             </span>
           </div>
 
@@ -157,7 +179,12 @@ const MedicineCard = ({ medicine }: MedicineCardProps) => {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"></path>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
               ) : (
                 <svg
@@ -180,7 +207,7 @@ const MedicineCard = ({ medicine }: MedicineCardProps) => {
         </div>
       </Link>
     </motion.div>
-  )
-}
+  );
+};
 
-export default MedicineCard
+export default MedicineCard;
