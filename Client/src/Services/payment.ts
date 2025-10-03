@@ -3,6 +3,9 @@ import type {
   AppointmentPaymentDetailsResponse,
   AppointmentPaymentResponse,
   InitiateAppointmentPaymentRequest,
+  InitiatePharmacyPaymentRequest,
+  PharmacyPaymentDetailsResponse,
+  PharmacyPaymentResponse,
   VerifyPaymentRequest,
 } from "../types/payment";
 
@@ -17,7 +20,6 @@ const paymentApi = axios.create({
 });
 
 export const paymentService = {
-  // Initiate appointment payment
   initiateAppointmentPayment: async (
     request: InitiateAppointmentPaymentRequest
   ): Promise<AppointmentPaymentResponse> => {
@@ -28,7 +30,6 @@ export const paymentService = {
     return response.data.data;
   },
 
-  // Verify payment signature
   verifyPayment: async (
     request: VerifyPaymentRequest
   ): Promise<{ valid: boolean }> => {
@@ -36,14 +37,12 @@ export const paymentService = {
     return response.data.data;
   },
 
-  // Confirm payment without webhook
   confirmPaymentWithoutWebhook: async (
     request: VerifyPaymentRequest
   ): Promise<void> => {
     await paymentApi.post("/core/confirm/appointment", request);
   },
 
-  // Get payment details by payment ID
   getPaymentDetails: async (
     paymentId: string
   ): Promise<AppointmentPaymentDetailsResponse> => {
@@ -51,7 +50,6 @@ export const paymentService = {
     return response.data.data;
   },
 
-  // Get payment details by order ID
   getPaymentByOrderId: async (
     razorpayOrderId: string
   ): Promise<AppointmentPaymentDetailsResponse> => {
@@ -59,5 +57,34 @@ export const paymentService = {
       `/core/appointment/order/${razorpayOrderId}`
     );
     return response.data.data;
+  },
+
+  initiatePharmacyPayment: async (
+    request: InitiatePharmacyPaymentRequest
+  ): Promise<PharmacyPaymentResponse> => {
+    const response = await paymentApi.post("/core/pharmacy/initiate", request);
+    return response.data;
+  },
+
+  confirmPharmacyPaymentWithoutWebhook: async (
+    request: VerifyPaymentRequest
+  ): Promise<void> => {
+    await paymentApi.post("/core/confirm/pharmacy", request);
+  },
+
+  getPharmacyPaymentDetails: async (
+    paymentId: string
+  ): Promise<PharmacyPaymentDetailsResponse> => {
+    const response = await paymentApi.get(`/core/pharmacy/${paymentId}`);
+    return response.data;
+  },
+
+  getPharmacyPaymentByOrderId: async (
+    razorpayOrderId: string
+  ): Promise<PharmacyPaymentDetailsResponse> => {
+    const response = await paymentApi.get(
+      `/core/pharmacy/order/${razorpayOrderId}`
+    );
+    return response.data;
   },
 };

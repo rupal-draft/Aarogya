@@ -1,37 +1,50 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
-import { useCart } from "../../../context/Cart/CartContext"
-import { createOrderFromCart } from "../../../Services/orderService"
-import EmptyState from "../../../components/Pharmacy/EmptyState"
+import { useCart } from "../../../context/Cart/CartContext";
+import { createOrderFromCart } from "../../../Services/orderService";
+import EmptyState from "../../../components/Pharmacy/EmptyState";
+import type { OrderDTO } from "../../../types/order";
+import { PharmacyPaymentModal } from "../../../components/Payment/PharmacyPaymentModal";
 
 interface FormData {
-  fullName: string
-  email: string
-  phone: string
-  address: string
-  city: string
-  state: string
-  zipCode: string
-  paymentMethod: "CREDIT_CARD" | "PAYPAL" | "CASH_ON_DELIVERY"
-  cardNumber?: string
-  cardExpiry?: string
-  cardCvv?: string
-  prescriptionFile?: File | null
+  fullName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  paymentMethod:
+    | "CREDIT_CARD"
+    | "PAYPAL"
+    | "CASH_ON_DELIVERY"
+    | "CARD"
+    | "UPI"
+    | string;
+  cardNumber?: string;
+  cardExpiry?: string;
+  cardCvv?: string;
+  prescriptionFile?: File | null;
 }
 
 interface FormErrors {
-  [key: string]: string
+  [key: string]: string;
 }
 
 const CheckoutPage = () => {
-  const { cart, loading: cartLoading, error: cartError, clearItems } = useCart()
-  const navigate = useNavigate()
+  const {
+    cart,
+    loading: cartLoading,
+    error: cartError,
+    clearItems,
+  } = useCart();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
@@ -46,128 +59,185 @@ const CheckoutPage = () => {
     cardExpiry: "",
     cardCvv: "",
     prescriptionFile: null,
-  })
+  });
 
-  const [errors, setErrors] = useState<FormErrors>({})
-  const [step, setStep] = useState<1 | 2>(1)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showPrescriptionUpload, setShowPrescriptionUpload] = useState(false)
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [step, setStep] = useState<1 | 2>(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPrescriptionUpload, setShowPrescriptionUpload] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState<OrderDTO | null>(null);
 
   // Check if any item requires prescription
-  const requiresPrescription = cart?.items.some((item) => item.prescriptionRequired) || false
+  const requiresPrescription =
+    cart?.items.some(
+      (item) => item.prescriptionRequired || item.requiresPrescription
+    ) || false;
 
   // Handle form input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[name]
-        return newErrors
-      })
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
     }
-  }
+  };
 
   // Handle file upload for prescription
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null
-    setFormData((prev) => ({ ...prev, prescriptionFile: file }))
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, prescriptionFile: file }));
 
     // Clear error when user uploads a file
     if (errors.prescriptionFile) {
       setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors.prescriptionFile
-        return newErrors
-      })
+        const newErrors = { ...prev };
+        delete newErrors.prescriptionFile;
+        return newErrors;
+      });
     }
-  }
+  };
 
   // Validate form data
   const validateForm = (step: 1 | 2): boolean => {
-    const newErrors: FormErrors = {}
+    const newErrors: FormErrors = {};
 
     if (step === 1) {
-      if (!formData.fullName.trim()) newErrors.fullName = "Full name is required"
-      if (!formData.email.trim()) newErrors.email = "Email is required"
-      else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid"
-      if (!formData.phone.trim()) newErrors.phone = "Phone number is required"
-      if (!formData.address.trim()) newErrors.address = "Address is required"
-      if (!formData.city.trim()) newErrors.city = "City is required"
-      if (!formData.state.trim()) newErrors.state = "State is required"
-      if (!formData.zipCode.trim()) newErrors.zipCode = "ZIP code is required"
+      if (!formData.fullName.trim())
+        newErrors.fullName = "Full name is required";
+      if (!formData.email.trim()) newErrors.email = "Email is required";
+      else if (!/\S+@\S+\.\S+/.test(formData.email))
+        newErrors.email = "Email is invalid";
+      if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
+      if (!formData.address.trim()) newErrors.address = "Address is required";
+      if (!formData.city.trim()) newErrors.city = "City is required";
+      if (!formData.state.trim()) newErrors.state = "State is required";
+      if (!formData.zipCode.trim()) newErrors.zipCode = "ZIP code is required";
     }
 
     if (step === 2) {
-      if (formData.paymentMethod === "CREDIT_CARD") {
-        if (!formData.cardNumber?.trim()) newErrors.cardNumber = "Card number is required"
+      if (!formData.paymentMethod) {
+        newErrors.paymentMethod = "Payment method is required";
+      }
+
+      if (
+        formData.paymentMethod === "CREDIT_CARD" ||
+        formData.paymentMethod === "CARD"
+      ) {
+        if (!formData.cardNumber?.trim())
+          newErrors.cardNumber = "Card number is required";
         else if (!/^\d{16}$/.test(formData.cardNumber.replace(/\s/g, "")))
-          newErrors.cardNumber = "Card number must be 16 digits"
+          newErrors.cardNumber = "Card number must be 16 digits";
 
-        if (!formData.cardExpiry?.trim()) newErrors.cardExpiry = "Expiry date is required"
+        if (!formData.cardExpiry?.trim())
+          newErrors.cardExpiry = "Expiry date is required";
         else if (!/^\d{2}\/\d{2}$/.test(formData.cardExpiry))
-          newErrors.cardExpiry = "Expiry date must be in MM/YY format"
+          newErrors.cardExpiry = "Expiry date must be in MM/YY format";
 
-        if (!formData.cardCvv?.trim()) newErrors.cardCvv = "CVV is required"
-        else if (!/^\d{3,4}$/.test(formData.cardCvv)) newErrors.cardCvv = "CVV must be 3 or 4 digits"
+        if (!formData.cardCvv?.trim()) newErrors.cardCvv = "CVV is required";
+        else if (!/^\d{3,4}$/.test(formData.cardCvv))
+          newErrors.cardCvv = "CVV must be 3 or 4 digits";
       }
 
       if (requiresPrescription && !formData.prescriptionFile) {
-        newErrors.prescriptionFile = "Prescription is required for some items in your cart"
+        newErrors.prescriptionFile =
+          "Prescription is required for some items in your cart";
       }
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Handle next step
   const handleNextStep = () => {
     if (validateForm(1)) {
-      setStep(2)
+      setStep(2);
       if (requiresPrescription) {
-        setShowPrescriptionUpload(true)
+        setShowPrescriptionUpload(true);
       }
     }
-  }
+  };
 
   // Handle previous step
   const handlePrevStep = () => {
-    setStep(1)
-  }
+    setStep(1);
+  };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateForm(step)) return
+    if (!validateForm(step)) return;
 
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
 
       // Format shipping address
-      const shippingAddress = `${formData.fullName}, ${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.phone}`
+      const shippingAddress = `${formData.fullName}, ${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.phone}`;
 
       // Create order from cart
-      const order = await createOrderFromCart(shippingAddress, formData.paymentMethod, cart?.items || [])
+      const order = await createOrderFromCart(
+        shippingAddress,
+        formData.paymentMethod,
+        cart?.items || []
+      );
 
-      // Clear cart after successful order
-      await clearItems()
+      // Set the created order and show payment modal if payment method is not COD
+      setCreatedOrder(order);
 
-      // Redirect to order confirmation page
-      navigate(`/pharmacy/order-confirmation/${order.id}`)
+      if (formData.paymentMethod !== "CASH_ON_DELIVERY") {
+        setShowPaymentModal(true);
+      } else {
+        // Clear cart and redirect for COD orders
+        await clearItems();
+        navigate(`/pharmacy/order-confirmation/${order.id}`);
+      }
     } catch (error) {
-      console.error("Error creating order:", error)
+      console.error("Error creating order:", error);
       setErrors({
         submit: "Failed to place your order. Please try again.",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
+
+  const handlePaymentSuccess = async (paymentDetails: any) => {
+    try {
+      await clearItems();
+
+      setShowPaymentModal(false);
+
+      if (createdOrder) {
+        navigate(`/pharmacy/order-confirmation/${createdOrder.id}`);
+      }
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+      // Still redirect even if cart clearing fails
+      if (createdOrder) {
+        navigate(`/pharmacy/order-confirmation/${createdOrder.id}`);
+      }
+    }
+  };
+
+  const handlePaymentFailure = (error: string) => {
+    console.error("Payment failed:", error);
+    setShowPaymentModal(false);
+    setErrors({
+      submit: `Payment failed: ${error}. Please try again.`,
+    });
+  };
 
   // Loading state
   if (cartLoading) {
@@ -187,7 +257,7 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Error state
@@ -211,7 +281,9 @@ const CheckoutPage = () => {
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Cart</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              Error Loading Cart
+            </h2>
             <p className="text-gray-600 mb-4">{cartError}</p>
             <button
               onClick={() => window.location.reload()}
@@ -222,7 +294,7 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Empty cart
@@ -255,21 +327,50 @@ const CheckoutPage = () => {
           />
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-8">Checkout</h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <Link
+            to="/pharmacy/cart"
+            className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Back to Cart
+          </Link>
+          <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+        </div>
 
         {/* Checkout steps */}
         <div className="mb-8">
           <div className="flex justify-between mb-2">
-            <div className={`text-sm font-medium ${step >= 1 ? "text-teal-600" : "text-gray-500"}`}>
+            <div
+              className={`text-sm font-medium ${
+                step >= 1 ? "text-teal-600" : "text-gray-500"
+              }`}
+            >
               Shipping Information
             </div>
-            <div className={`text-sm font-medium ${step >= 2 ? "text-teal-600" : "text-gray-500"}`}>
+            <div
+              className={`text-sm font-medium ${
+                step >= 2 ? "text-teal-600" : "text-gray-500"
+              }`}
+            >
               Payment & Review
             </div>
           </div>
@@ -295,12 +396,17 @@ const CheckoutPage = () => {
                     transition={{ duration: 0.3 }}
                     className="bg-white rounded-lg shadow-md p-6 mb-6"
                   >
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Shipping Information</h2>
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                      Shipping Information
+                    </h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       {/* Full Name */}
                       <div>
-                        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                          htmlFor="fullName"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                           Full Name *
                         </label>
                         <input
@@ -310,15 +416,24 @@ const CheckoutPage = () => {
                           value={formData.fullName}
                           onChange={handleChange}
                           className={`block w-full rounded-md border ${
-                            errors.fullName ? "border-red-300" : "border-gray-300"
+                            errors.fullName
+                              ? "border-red-300"
+                              : "border-gray-300"
                           } px-3 py-2 focus:outline-none focus:ring-teal-500 focus:border-teal-500`}
                         />
-                        {errors.fullName && <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>}
+                        {errors.fullName && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {errors.fullName}
+                          </p>
+                        )}
                       </div>
 
                       {/* Email */}
                       <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                          htmlFor="email"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                           Email Address *
                         </label>
                         <input
@@ -331,13 +446,20 @@ const CheckoutPage = () => {
                             errors.email ? "border-red-300" : "border-gray-300"
                           } px-3 py-2 focus:outline-none focus:ring-teal-500 focus:border-teal-500`}
                         />
-                        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                        {errors.email && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {errors.email}
+                          </p>
+                        )}
                       </div>
                     </div>
 
                     {/* Phone */}
                     <div className="mb-4">
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="phone"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Phone Number *
                       </label>
                       <input
@@ -350,12 +472,19 @@ const CheckoutPage = () => {
                           errors.phone ? "border-red-300" : "border-gray-300"
                         } px-3 py-2 focus:outline-none focus:ring-teal-500 focus:border-teal-500`}
                       />
-                      {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+                      {errors.phone && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.phone}
+                        </p>
+                      )}
                     </div>
 
                     {/* Address */}
                     <div className="mb-4">
-                      <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="address"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Address *
                       </label>
                       <input
@@ -368,13 +497,20 @@ const CheckoutPage = () => {
                           errors.address ? "border-red-300" : "border-gray-300"
                         } px-3 py-2 focus:outline-none focus:ring-teal-500 focus:border-teal-500`}
                       />
-                      {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
+                      {errors.address && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.address}
+                        </p>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                       {/* City */}
                       <div>
-                        <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                          htmlFor="city"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                           City *
                         </label>
                         <input
@@ -387,12 +523,19 @@ const CheckoutPage = () => {
                             errors.city ? "border-red-300" : "border-gray-300"
                           } px-3 py-2 focus:outline-none focus:ring-teal-500 focus:border-teal-500`}
                         />
-                        {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
+                        {errors.city && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {errors.city}
+                          </p>
+                        )}
                       </div>
 
                       {/* State */}
                       <div>
-                        <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                          htmlFor="state"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                           State *
                         </label>
                         <input
@@ -405,12 +548,19 @@ const CheckoutPage = () => {
                             errors.state ? "border-red-300" : "border-gray-300"
                           } px-3 py-2 focus:outline-none focus:ring-teal-500 focus:border-teal-500`}
                         />
-                        {errors.state && <p className="mt-1 text-sm text-red-600">{errors.state}</p>}
+                        {errors.state && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {errors.state}
+                          </p>
+                        )}
                       </div>
 
                       {/* ZIP Code */}
                       <div>
-                        <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                          htmlFor="zipCode"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                           ZIP Code *
                         </label>
                         <input
@@ -420,10 +570,16 @@ const CheckoutPage = () => {
                           value={formData.zipCode}
                           onChange={handleChange}
                           className={`block w-full rounded-md border ${
-                            errors.zipCode ? "border-red-300" : "border-gray-300"
+                            errors.zipCode
+                              ? "border-red-300"
+                              : "border-gray-300"
                           } px-3 py-2 focus:outline-none focus:ring-teal-500 focus:border-teal-500`}
                         />
-                        {errors.zipCode && <p className="mt-1 text-sm text-red-600">{errors.zipCode}</p>}
+                        {errors.zipCode && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {errors.zipCode}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -486,7 +642,9 @@ const CheckoutPage = () => {
                   >
                     {/* Payment Method */}
                     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                      <h2 className="text-lg font-semibold text-gray-800 mb-4">Payment Method</h2>
+                      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                        Payment Method
+                      </h2>
 
                       <div className="space-y-4">
                         <div className="flex items-center">
@@ -499,8 +657,29 @@ const CheckoutPage = () => {
                             onChange={handleChange}
                             className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300"
                           />
-                          <label htmlFor="credit-card" className="ml-3 block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="credit-card"
+                            className="ml-3 block text-sm font-medium text-gray-700"
+                          >
                             Credit Card
+                          </label>
+                        </div>
+
+                        <div className="flex items-center">
+                          <input
+                            id="card"
+                            name="paymentMethod"
+                            type="radio"
+                            value="CARD"
+                            checked={formData.paymentMethod === "CARD"}
+                            onChange={handleChange}
+                            className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300"
+                          />
+                          <label
+                            htmlFor="card"
+                            className="ml-3 block text-sm font-medium text-gray-700"
+                          >
+                            Credit/Debit Card
                           </label>
                         </div>
 
@@ -514,8 +693,29 @@ const CheckoutPage = () => {
                             onChange={handleChange}
                             className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300"
                           />
-                          <label htmlFor="paypal" className="ml-3 block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="paypal"
+                            className="ml-3 block text-sm font-medium text-gray-700"
+                          >
                             PayPal
+                          </label>
+                        </div>
+
+                        <div className="flex items-center">
+                          <input
+                            id="upi"
+                            name="paymentMethod"
+                            type="radio"
+                            value="UPI"
+                            checked={formData.paymentMethod === "UPI"}
+                            onChange={handleChange}
+                            className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300"
+                          />
+                          <label
+                            htmlFor="upi"
+                            className="ml-3 block text-sm font-medium text-gray-700"
+                          >
+                            UPI Payment
                           </label>
                         </div>
 
@@ -525,23 +725,38 @@ const CheckoutPage = () => {
                             name="paymentMethod"
                             type="radio"
                             value="CASH_ON_DELIVERY"
-                            checked={formData.paymentMethod === "CASH_ON_DELIVERY"}
+                            checked={
+                              formData.paymentMethod === "CASH_ON_DELIVERY"
+                            }
                             onChange={handleChange}
                             className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300"
                           />
-                          <label htmlFor="cash-on-delivery" className="ml-3 block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="cash-on-delivery"
+                            className="ml-3 block text-sm font-medium text-gray-700"
+                          >
                             Cash on Delivery
                           </label>
                         </div>
                       </div>
 
+                      {errors.paymentMethod && (
+                        <p className="mt-2 text-sm text-red-600">
+                          {errors.paymentMethod}
+                        </p>
+                      )}
+
                       {/* Credit Card Details */}
-                      {formData.paymentMethod === "CREDIT_CARD" && (
+                      {(formData.paymentMethod === "CREDIT_CARD" ||
+                        formData.paymentMethod === "CARD") && (
                         <div className="mt-4 p-4 border border-gray-200 rounded-md">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             {/* Card Number */}
                             <div>
-                              <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                              <label
+                                htmlFor="cardNumber"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                              >
                                 Card Number *
                               </label>
                               <input
@@ -552,16 +767,25 @@ const CheckoutPage = () => {
                                 onChange={handleChange}
                                 placeholder="1234 5678 9012 3456"
                                 className={`block w-full rounded-md border ${
-                                  errors.cardNumber ? "border-red-300" : "border-gray-300"
+                                  errors.cardNumber
+                                    ? "border-red-300"
+                                    : "border-gray-300"
                                 } px-3 py-2 focus:outline-none focus:ring-teal-500 focus:border-teal-500`}
                               />
-                              {errors.cardNumber && <p className="mt-1 text-sm text-red-600">{errors.cardNumber}</p>}
+                              {errors.cardNumber && (
+                                <p className="mt-1 text-sm text-red-600">
+                                  {errors.cardNumber}
+                                </p>
+                              )}
                             </div>
 
                             {/* Card Expiry */}
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <label htmlFor="cardExpiry" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label
+                                  htmlFor="cardExpiry"
+                                  className="block text-sm font-medium text-gray-700 mb-1"
+                                >
                                   Expiry Date *
                                 </label>
                                 <input
@@ -572,15 +796,24 @@ const CheckoutPage = () => {
                                   onChange={handleChange}
                                   placeholder="MM/YY"
                                   className={`block w-full rounded-md border ${
-                                    errors.cardExpiry ? "border-red-300" : "border-gray-300"
+                                    errors.cardExpiry
+                                      ? "border-red-300"
+                                      : "border-gray-300"
                                   } px-3 py-2 focus:outline-none focus:ring-teal-500 focus:border-teal-500`}
                                 />
-                                {errors.cardExpiry && <p className="mt-1 text-sm text-red-600">{errors.cardExpiry}</p>}
+                                {errors.cardExpiry && (
+                                  <p className="mt-1 text-sm text-red-600">
+                                    {errors.cardExpiry}
+                                  </p>
+                                )}
                               </div>
 
                               {/* Card CVV */}
                               <div>
-                                <label htmlFor="cardCvv" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label
+                                  htmlFor="cardCvv"
+                                  className="block text-sm font-medium text-gray-700 mb-1"
+                                >
                                   CVV *
                                 </label>
                                 <input
@@ -591,10 +824,16 @@ const CheckoutPage = () => {
                                   onChange={handleChange}
                                   placeholder="123"
                                   className={`block w-full rounded-md border ${
-                                    errors.cardCvv ? "border-red-300" : "border-gray-300"
+                                    errors.cardCvv
+                                      ? "border-red-300"
+                                      : "border-gray-300"
                                   } px-3 py-2 focus:outline-none focus:ring-teal-500 focus:border-teal-500`}
                                 />
-                                {errors.cardCvv && <p className="mt-1 text-sm text-red-600">{errors.cardCvv}</p>}
+                                {errors.cardCvv && (
+                                  <p className="mt-1 text-sm text-red-600">
+                                    {errors.cardCvv}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -605,10 +844,13 @@ const CheckoutPage = () => {
                     {/* Prescription Upload */}
                     {showPrescriptionUpload && (
                       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                        <h2 className="text-lg font-semibold text-gray-800 mb-4">Prescription Upload</h2>
+                        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                          Prescription Upload
+                        </h2>
                         <p className="text-sm text-gray-600 mb-4">
-                          Some items in your cart require a valid prescription. Please upload a clear image or PDF of
-                          your prescription.
+                          Some items in your cart require a valid prescription.
+                          Please upload a clear image or PDF of your
+                          prescription.
                         </p>
 
                         <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
@@ -643,7 +885,9 @@ const CheckoutPage = () => {
                                 <span className="text-sm font-medium text-gray-900">
                                   {formData.prescriptionFile.name}
                                 </span>
-                                <span className="text-xs text-gray-500 mt-1">Click to change file</span>
+                                <span className="text-xs text-gray-500 mt-1">
+                                  Click to change file
+                                </span>
                               </>
                             ) : (
                               <>
@@ -662,7 +906,8 @@ const CheckoutPage = () => {
                                   />
                                 </svg>
                                 <span className="text-sm font-medium text-gray-900">
-                                  Drag and drop your file here or click to browse
+                                  Drag and drop your file here or click to
+                                  browse
                                 </span>
                                 <span className="text-xs text-gray-500 mt-1">
                                   Supported formats: JPG, JPEG, PNG, PDF
@@ -672,8 +917,52 @@ const CheckoutPage = () => {
                           </label>
                         </div>
                         {errors.prescriptionFile && (
-                          <p className="mt-2 text-sm text-red-600">{errors.prescriptionFile}</p>
+                          <p className="mt-2 text-sm text-red-600">
+                            {errors.prescriptionFile}
+                          </p>
                         )}
+                      </div>
+                    )}
+
+                    {/* Prescription Required Warning */}
+                    {requiresPrescription && !showPrescriptionUpload && (
+                      <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                        <div className="flex">
+                          <div className="flex-shrink-0">
+                            <svg
+                              className="h-5 w-5 text-yellow-400"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </div>
+                          <div className="ml-3">
+                            <h3 className="text-sm font-medium text-yellow-800">
+                              Prescription Required
+                            </h3>
+                            <div className="mt-2 text-sm text-yellow-700">
+                              <p>
+                                Some items in your cart require a prescription.
+                                Please upload your prescription before placing
+                                the order.
+                              </p>
+                            </div>
+                            <div className="mt-4">
+                              <button
+                                type="button"
+                                onClick={() => setShowPrescriptionUpload(true)}
+                                className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-md text-sm hover:bg-yellow-200"
+                              >
+                                Upload Prescription
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -696,7 +985,9 @@ const CheckoutPage = () => {
                             </svg>
                           </div>
                           <div className="ml-3">
-                            <p className="text-sm text-red-700">{errors.submit}</p>
+                            <p className="text-sm text-red-700">
+                              {errors.submit}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -770,7 +1061,12 @@ const CheckoutPage = () => {
                               viewBox="0 0 24 24"
                               stroke="currentColor"
                             >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                           </>
                         )}
@@ -785,25 +1081,37 @@ const CheckoutPage = () => {
           {/* Order summary */}
           <div className="lg:w-1/3">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Order Summary</h2>
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                Order Summary
+              </h2>
 
               <div className="space-y-4 mb-6">
                 {cart.items.map((item) => (
-                  <div key={item.medicineId} className="flex items-center">
+                  <div
+                    key={item.medicineId || item.id}
+                    className="flex items-center"
+                  >
                     <div className="w-12 h-12 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden mr-3">
                       <img
-                        src={item.medicineImage || "/placeholder.svg?height=48&width=48"}
+                        src={
+                          item.medicineImage ||
+                          "/placeholder.svg?height=48&width=48"
+                        }
                         alt={item.medicineName}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{item.medicineName}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {item.medicineName}
+                      </p>
                       <p className="text-xs text-gray-500">
-                        ${item.price.toFixed(2)} x {item.quantity}
+                        ${item.price?.toFixed(2) || "0.00"} x {item.quantity}
                       </p>
                     </div>
-                    <div className="text-sm font-medium text-gray-900">${(item.price * item.quantity).toFixed(2)}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      ${((item.price || 0) * item.quantity).toFixed(2)}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -811,7 +1119,9 @@ const CheckoutPage = () => {
               <div className="border-t border-gray-200 pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-900">${cart.totalAmount.toFixed(2)}</span>
+                  <span className="text-gray-900">
+                    ${cart.totalAmount?.toFixed(2) || "0.00"}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Shipping</span>
@@ -819,11 +1129,15 @@ const CheckoutPage = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax</span>
-                  <span className="text-gray-900">${(cart.totalAmount * 0.1).toFixed(2)}</span>
+                  <span className="text-gray-900">
+                    ${((cart.totalAmount || 0) * 0.1).toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-base font-medium pt-2 border-t border-gray-200">
                   <span className="text-gray-900">Total</span>
-                  <span className="text-teal-600">${(cart.totalAmount * 1.1).toFixed(2)}</span>
+                  <span className="text-teal-600">
+                    ${((cart.totalAmount || 0) * 1.1).toFixed(2)}
+                  </span>
                 </div>
               </div>
 
@@ -849,8 +1163,19 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
-    </div>
-  )
-}
 
-export default CheckoutPage
+      {/* Payment Modal */}
+      {createdOrder && (
+        <PharmacyPaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          order={createdOrder}
+          onPaymentSuccess={handlePaymentSuccess}
+          onPaymentFailure={handlePaymentFailure}
+        />
+      )}
+    </div>
+  );
+};
+
+export default CheckoutPage;

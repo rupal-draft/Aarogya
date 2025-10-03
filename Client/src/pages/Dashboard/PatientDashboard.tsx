@@ -33,7 +33,7 @@ import { VitalsStatsCard } from "../../components/Dashboard/Patient/VitalsStatsC
 import { AnalyticsCard } from "../../components/Dashboard/Patient/AnalyticsCard";
 import { StatisticsCard } from "../../components/Dashboard/Patient/StatisticsCard";
 
-export const PatientDashboard: React.FC = () => {
+const PatientDashboard: React.FC = () => {
   const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -329,3 +329,5 @@ export const PatientDashboard: React.FC = () => {
     </div>
   );
 };
+
+export default PatientDashboard;
