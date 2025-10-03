@@ -1,15 +1,10 @@
 package com.aarogya.payment_service.controller;
 
 import com.aarogya.payment_service.advices.ApiResponse;
-import com.aarogya.payment_service.dto.request.InitiateAppointmentPaymentRequest;
-import com.aarogya.payment_service.dto.request.InitiatePharmacyPaymentRequest;
-import com.aarogya.payment_service.dto.request.VerifyPaymentRequest;
-import com.aarogya.payment_service.dto.request.WebhookRequest;
-import com.aarogya.payment_service.dto.response.AppointmentPaymentDetailsResponse;
-import com.aarogya.payment_service.dto.response.AppointmentPaymentResponse;
-import com.aarogya.payment_service.dto.response.PharmacyPaymentDetailsResponse;
-import com.aarogya.payment_service.dto.response.PharmacyPaymentResponse;
+import com.aarogya.payment_service.dto.request.*;
+import com.aarogya.payment_service.dto.response.*;
 import com.aarogya.payment_service.service.AppointmentPaymentService;
+import com.aarogya.payment_service.service.LabPaymentService;
 import com.aarogya.payment_service.service.PharmacyPaymentService;
 import com.aarogya.payment_service.util.PaymentSignature;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -33,6 +28,7 @@ public class PaymentController {
 
     private final AppointmentPaymentService paymentService;
     private final PharmacyPaymentService pharmacyPaymentService;
+    private final LabPaymentService labPaymentService;
     private final PaymentSignature paymentSignature;
 
     @PostMapping("/appointment/initiate")
@@ -104,7 +100,59 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/confirm/pharmacy")
+    public ResponseEntity<ApiResponse<String>> confirmPharmacyPaymentWithoutWebhook(
+            @Valid @RequestBody VerifyPaymentRequest request) {
 
+        log.debug("Verifying pharmacy payment status for order: {}", request.getRazorpayOrderId());
+        boolean processed = pharmacyPaymentService.confirmPharmacyPaymentWithoutWebhook(request);
+
+        return processed ? ResponseEntity.ok(ApiResponse.success("Payment confirmed!"))
+                : ResponseEntity.status(HttpStatus.ALREADY_REPORTED).build();
+    }
+
+
+    // Fallback methods
+    public ResponseEntity<PharmacyPaymentResponse> initiatePharmacyPaymentFallback(InitiatePharmacyPaymentRequest request, Throwable t) {
+        log.error("Fallback triggered for initiatePharmacyPayment: {}", t.getMessage());
+        return ResponseEntity.badRequest().build();
+    }
+
+    @PostMapping("/lab/initiate")
+    @CircuitBreaker(name = "paymentController", fallbackMethod = "initiateLabPaymentFallback")
+    @RateLimiter(name = "paymentController")
+    public ResponseEntity<LabPaymentResponse> initiateLabPayment(@Valid @RequestBody InitiateLabPaymentRequest request) {
+        log.info("Received lab payment initiation request for order: {}", request.getOrderId());
+        LabPaymentResponse response = labPaymentService.initiateLabPayment(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/lab/{paymentId}")
+    public ResponseEntity<LabPaymentDetailsResponse> getLabPaymentDetails(@PathVariable String paymentId) {
+        log.debug("Fetching lab payment details for ID: {}", paymentId);
+        LabPaymentDetailsResponse response = labPaymentService.getLabPaymentDetails(paymentId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/lab/order/{razorpayOrderId}")
+    public ResponseEntity<LabPaymentDetailsResponse> getLabPaymentByOrderId(@PathVariable String razorpayOrderId) {
+        log.debug("Fetching lab payment by order ID: {}", razorpayOrderId);
+        LabPaymentDetailsResponse response = labPaymentService.getLabPaymentByOrderId(razorpayOrderId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/confirm/lab")
+    public ResponseEntity<ApiResponse<String>> confirmLabPaymentWithoutWebhook(
+            @Valid @RequestBody VerifyPaymentRequest request) {
+
+        log.debug("Verifying lab payment status for order: {}", request.getRazorpayOrderId());
+        boolean processed = labPaymentService.confirmLabPaymentWithoutWebhook(request);
+
+        return processed ? ResponseEntity.ok(ApiResponse.success("Payment confirmed!"))
+                : ResponseEntity.status(HttpStatus.ALREADY_REPORTED).build();
+    }
+
+    // Update the webhook handler to include lab payments
     @PostMapping("/webhook")
     public ResponseEntity<Void> handleWebhook(
             @RequestBody WebhookRequest webhookRequest,
@@ -121,8 +169,15 @@ public class PaymentController {
             @SuppressWarnings("unchecked")
             Map<String, Object> notes = (Map<String, Object>) entity.get("notes");
 
-            if (notes != null && "PHARMACY".equalsIgnoreCase((String) notes.get("type"))) {
-                pharmacyPaymentService.processPharmacyWebhook(webhookRequest, signature);
+            if (notes != null) {
+                String type = (String) notes.get("type");
+                if ("PHARMACY".equalsIgnoreCase(type)) {
+                    pharmacyPaymentService.processPharmacyWebhook(webhookRequest, signature);
+                } else if ("LAB".equalsIgnoreCase(type)) {
+                    labPaymentService.processLabWebhook(webhookRequest, signature);
+                } else {
+                    paymentService.processWebhook(webhookRequest, signature);
+                }
             } else {
                 paymentService.processWebhook(webhookRequest, signature);
             }
@@ -135,21 +190,8 @@ public class PaymentController {
         }
     }
 
-    @PostMapping("/confirm/pharmacy")
-    public ResponseEntity<ApiResponse<String>> confirmPharmacyPaymentWithoutWebhook(
-            @Valid @RequestBody VerifyPaymentRequest request) {
-
-        log.debug("Verifying pharmacy payment status for order: {}", request.getRazorpayOrderId());
-        boolean processed = pharmacyPaymentService.confirmPharmacyPaymentWithoutWebhook(request);
-
-        return processed ? ResponseEntity.ok(ApiResponse.success("Payment confirmed!"))
-                : ResponseEntity.status(HttpStatus.ALREADY_REPORTED).build();
-    }
-
-
-    // Fallback methods
-    public ResponseEntity<PharmacyPaymentResponse> initiatePharmacyPaymentFallback(InitiatePharmacyPaymentRequest request, Throwable t) {
-        log.error("Fallback triggered for initiatePharmacyPayment: {}", t.getMessage());
+    public ResponseEntity<LabPaymentResponse> initiateLabPaymentFallback(InitiateLabPaymentRequest request, Throwable t) {
+        log.error("Fallback triggered for initiateLabPayment: {}", t.getMessage());
         return ResponseEntity.badRequest().build();
     }
 }
