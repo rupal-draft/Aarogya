@@ -68,6 +68,40 @@ export interface PharmacyPaymentDetailsResponse {
   updatedAt: string;
 }
 
+export interface InitiateLabPaymentRequest {
+  orderId: string;
+  patientId: string;
+  patientName: string;
+  amount: number;
+  currency: string;
+}
+
+export interface LabPaymentResponse {
+  paymentId: string;
+  orderId: string;
+  razorpayOrderId: string;
+  razorpayKey: string;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface LabPaymentDetailsResponse {
+  paymentId: string;
+  orderId: string;
+  patientId: string;
+  patientName: string;
+  amount: number;
+  currency: string;
+  status: string;
+  razorpayOrderId: string;
+  razorpayPaymentId?: string;
+  failureReason?: string;
+  createdAt: string;
+  paidAt?: string;
+  updatedAt: string;
+}
 export interface VerifyPaymentRequest {
   razorpayOrderId: string;
   razorpayPaymentId: string;

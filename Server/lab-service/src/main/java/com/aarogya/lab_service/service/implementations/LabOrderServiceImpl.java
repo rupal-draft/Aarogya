@@ -277,7 +277,7 @@ public class LabOrderServiceImpl implements LabOrderService {
     @KafkaListener(
             topics = "confirm-lab-order",
             groupId = "confirm-lab-order-group",
-            containerFactory = "orderStatusUpdateKafkaListenerFactory"
+            containerFactory = "labOrderStatusUpdateKafkaListenerFactory"
     )
     @CacheEvict(value = {"labOrders", "patientOrders"}, allEntries = true)
     public void confirmOrder(LabOrderStatusUpdateEvent orderStatusUpdateEvent) {

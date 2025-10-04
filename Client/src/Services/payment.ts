@@ -3,7 +3,10 @@ import type {
   AppointmentPaymentDetailsResponse,
   AppointmentPaymentResponse,
   InitiateAppointmentPaymentRequest,
+  InitiateLabPaymentRequest,
   InitiatePharmacyPaymentRequest,
+  LabPaymentDetailsResponse,
+  LabPaymentResponse,
   PharmacyPaymentDetailsResponse,
   PharmacyPaymentResponse,
   VerifyPaymentRequest,
@@ -85,6 +88,33 @@ export const paymentService = {
     const response = await paymentApi.get(
       `/core/pharmacy/order/${razorpayOrderId}`
     );
+    return response.data.data;
+  },
+
+  initiateLabPayment: async (
+    request: InitiateLabPaymentRequest
+  ): Promise<LabPaymentResponse> => {
+    const response = await paymentApi.post("/core/lab/initiate", request);
+    return response.data.data;
+  },
+
+  confirmLabPaymentWithoutWebhook: async (
+    request: VerifyPaymentRequest
+  ): Promise<void> => {
+    await paymentApi.post("/core/confirm/lab", request);
+  },
+
+  getLabPaymentDetails: async (
+    paymentId: string
+  ): Promise<LabPaymentDetailsResponse> => {
+    const response = await paymentApi.get(`/core/lab/${paymentId}`);
+    return response.data.data;
+  },
+
+  getLabPaymentByOrderId: async (
+    razorpayOrderId: string
+  ): Promise<LabPaymentDetailsResponse> => {
+    const response = await paymentApi.get(`/core/lab/order/${razorpayOrderId}`);
     return response.data.data;
   },
 };

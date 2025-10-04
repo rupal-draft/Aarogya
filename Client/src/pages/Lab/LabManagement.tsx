@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
 import type { LabTestResponse } from "../../types/lab";
 import LabTestSearch from "../../components/Lab/LabTestSearch";
 import LabOrderForm from "../../components/Lab/LabOrderForm";

@@ -1,78 +1,87 @@
-import type React from "react";
-import type { AppointmentResponseDto } from "../../types/appointment";
-import { AppointmentStatus } from "../../Data/enums/Appointment";
-import { AnimatePresence, motion } from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Calendar,
+  TestTube,
   Clock,
-  Video,
   CheckCircle,
   XCircle,
-  AlertCircle,
-  User,
-  IndianRupee,
-  FileText,
+  MapPin,
+  Calendar,
   CreditCard,
   Eye,
   EyeOff,
-  Award,
+  Activity,
+  User,
+  IndianRupee,
+  AlertTriangle,
 } from "lucide-react";
-import { useState } from "react";
+import type { LabOrderResponse } from "../../types/lab";
+import { OrderStatus, PaymentStatus } from "../../Data/enums/lab";
 import { paymentService } from "../../Services/payment";
-import { PaymentModal } from "../Payment/AppointmentPaymentModal";
+import { LabPaymentModal } from "../Payment/LabPaymentModal";
 
-interface AppointmentCardProps {
-  appointment: AppointmentResponseDto;
+interface LabOrderCardProps {
+  order: LabOrderResponse;
   index: number;
 }
 
-const AppointmentCard: React.FC<AppointmentCardProps> = ({
-  appointment,
-  index,
-}) => {
+export const LabOrderCard: React.FC<LabOrderCardProps> = ({ order, index }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState<any>(null);
   const [loadingPaymentDetails, setLoadingPaymentDetails] = useState(false);
-  const getStatusColor = (status: AppointmentStatus) => {
+
+  const getStatusColor = (status: OrderStatus) => {
     switch (status) {
-      case AppointmentStatus.PENDING:
+      case OrderStatus.PENDING:
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case AppointmentStatus.CONFIRMED:
-        return "bg-green-100 text-green-800 border-green-200";
-      case AppointmentStatus.CANCELLED:
-        return "bg-red-100 text-red-800 border-red-200";
-      case AppointmentStatus.COMPLETED:
+      case OrderStatus.CONFIRMED:
         return "bg-blue-100 text-blue-800 border-blue-200";
+      case OrderStatus.SAMPLE_COLLECTED:
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case OrderStatus.IN_PROGRESS:
+        return "bg-indigo-100 text-indigo-800 border-indigo-200";
+      case OrderStatus.COMPLETED:
+        return "bg-green-100 text-green-800 border-green-200";
+      case OrderStatus.CANCELLED:
+        return "bg-red-100 text-red-800 border-red-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
-  const getStatusIcon = (status: AppointmentStatus) => {
+  const getStatusIcon = (status: OrderStatus) => {
     switch (status) {
-      case AppointmentStatus.PENDING:
+      case OrderStatus.PENDING:
         return Clock;
-      case AppointmentStatus.CONFIRMED:
+      case OrderStatus.CONFIRMED:
         return CheckCircle;
-      case AppointmentStatus.CANCELLED:
+      case OrderStatus.SAMPLE_COLLECTED:
+        return TestTube;
+      case OrderStatus.IN_PROGRESS:
+        return Activity;
+      case OrderStatus.COMPLETED:
+        return CheckCircle;
+      case OrderStatus.CANCELLED:
         return XCircle;
-      case AppointmentStatus.COMPLETED:
-        return CheckCircle;
       default:
-        return Calendar;
+        return Clock;
     }
   };
 
   const isPaymentRequired = () => {
     return (
-      appointment.status === AppointmentStatus.PENDING &&
-      (!appointment.paymentId || appointment.paymentId === "Not paid yet")
+      order.paymentStatus === PaymentStatus.PENDING &&
+      (!order.paymentId || order.paymentId === "Not paid yet")
     );
   };
 
   const isPaid = () => {
-    return appointment.paymentId && appointment.paymentId !== "Not paid yet";
+    return (
+      order.paymentStatus === PaymentStatus.PAID &&
+      order.paymentId &&
+      order.paymentId !== "Not paid yet"
+    );
   };
 
   const handlePaymentSuccess = (details: any) => {
@@ -85,13 +94,12 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   };
 
   const loadPaymentDetails = async () => {
-    if (!appointment.paymentId || appointment.paymentId === "Not paid yet")
-      return;
+    if (!order.paymentId || order.paymentId === "Not paid yet") return;
 
     try {
       setLoadingPaymentDetails(true);
-      const details = await paymentService.getPaymentDetails(
-        appointment.paymentId
+      const details = await paymentService.getLabPaymentDetails(
+        order.paymentId
       );
       setPaymentDetails(details);
       setShowPaymentDetails(true);
@@ -102,7 +110,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
     }
   };
 
-  const StatusIcon = getStatusIcon(appointment.status);
+  const StatusIcon = getStatusIcon(order.status);
 
   return (
     <>
@@ -123,7 +131,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
         className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300"
       >
         {/* Header with gradient background */}
-        <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white p-6">
+        <div className="relative bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white p-6">
           {/* Floating background elements */}
           <motion.div
             animate={{ rotate: 360, scale: [1, 1.1, 1] }}
@@ -148,26 +156,25 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                 </motion.div>
                 <div>
                   <h3 className="text-xl font-bold">
-                    Dr. {appointment.doctor.firstName}{" "}
-                    {appointment.doctor.lastName}
+                    Order #{order.orderNumber}
                   </h3>
-                  <p className="text-blue-100 text-sm">
-                    {appointment.doctor.specialization}
+                  <p className="text-cyan-100 text-sm">
+                    {order.orderedTests.length} test(s)
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-4 text-sm text-blue-100">
+              <div className="flex items-center space-x-4 text-sm text-cyan-100">
                 <div className="flex items-center space-x-1">
-                  <Award className="w-4 h-4" />
-                  <span>{appointment.doctor.experienceYears} years</span>
+                  <User className="w-4 h-4" />
+                  <span>{order.patientName}</span>
                 </div>
-                {appointment.isVirtual && (
-                  <div className="flex items-center space-x-1">
-                    <Video className="w-4 h-4" />
-                    <span>Virtual</span>
-                  </div>
-                )}
+                <div className="flex items-center space-x-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    {new Date(order.scheduledDateTime).toLocaleDateString()}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -176,73 +183,51 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
               animate={{ scale: 1 }}
               transition={{ delay: index * 0.1 + 0.3 }}
               className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
-                appointment.status
+                order.status
               )}`}
             >
-              {appointment.status}
+              {order.status}
             </motion.div>
           </div>
         </div>
 
         {/* Main Content */}
         <div className="p-6 space-y-6">
-          {/* Appointment Details Grid */}
+          {/* Order Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <motion.div
               whileHover={{ scale: 1.02 }}
               className="bg-gray-50 rounded-2xl p-4 space-y-3"
             >
               <h4 className="font-semibold text-gray-900 flex items-center">
-                <Calendar className="w-4 h-4 mr-2 text-blue-500" />
-                Appointment Details
+                <TestTube className="w-4 h-4 mr-2 text-cyan-500" />
+                Order Information
               </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Date:</span>
+                  <span className="text-gray-600">Order Date:</span>
                   <span className="font-medium">
-                    {new Date(appointment.appointmentDate).toLocaleDateString(
-                      "en-US",
-                      {
-                        weekday: "short",
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      }
-                    )}
+                    {new Date(order.createdAt).toLocaleDateString("en-US", {
+                      weekday: "short",
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Time:</span>
+                  <span className="text-gray-600">Scheduled:</span>
                   <span className="font-medium">
-                    {appointment.startTime} - {appointment.endTime}
+                    {new Date(order.scheduledDateTime).toLocaleDateString()} at{" "}
+                    {new Date(order.scheduledDateTime).toLocaleTimeString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Type:</span>
-                  <span className="font-medium capitalize">
-                    {appointment.type.toLowerCase()}
+                  <span className="text-gray-600">Tests:</span>
+                  <span className="font-medium">
+                    {order.orderedTests.length} test(s)
                   </span>
                 </div>
-                {appointment.priority && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Priority:</span>
-                    <span
-                      className={`font-medium ${
-                        appointment.priority > 3
-                          ? "text-red-600"
-                          : appointment.priority > 1
-                          ? "text-yellow-600"
-                          : "text-green-600"
-                      }`}
-                    >
-                      {appointment.priority > 3
-                        ? "High"
-                        : appointment.priority > 1
-                        ? "Medium"
-                        : "Low"}
-                    </span>
-                  </div>
-                )}
               </div>
             </motion.div>
 
@@ -251,82 +236,75 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
               className="bg-gray-50 rounded-2xl p-4 space-y-3"
             >
               <h4 className="font-semibold text-gray-900 flex items-center">
-                <User className="w-4 h-4 mr-2 text-purple-500" />
-                Doctor Information
+                <MapPin className="w-4 h-4 mr-2 text-blue-500" />
+                Collection Location
               </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">License:</span>
-                  <span className="font-mono text-xs">
-                    {appointment.doctor.licenseNumber}
-                  </span>
-                </div>
-                {appointment.doctor.phone && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Phone:</span>
-                    <span className="font-medium">
-                      {appointment.doctor.phone}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Fee:</span>
-                  <span className="font-bold text-green-600 flex items-center">
-                    <IndianRupee className="w-3 h-3" />
-                    {appointment.doctor.consultationFee}
-                  </span>
-                </div>
+              <div className="text-sm">
+                <p className="text-gray-800 leading-relaxed">
+                  {order.location}
+                </p>
               </div>
             </motion.div>
           </div>
 
-          {/* Reason and Symptoms */}
-          {(appointment.reason || appointment.symptoms?.length) && (
-            <motion.div
-              whileHover={{ scale: 1.01 }}
-              className="bg-blue-50 rounded-2xl p-4 space-y-3"
-            >
-              <h4 className="font-semibold text-gray-900 flex items-center">
-                <FileText className="w-4 h-4 mr-2 text-green-500" />
-                Medical Information
-              </h4>
-              {appointment.reason && (
-                <div>
-                  <span className="text-sm text-gray-600 block mb-1">
-                    Reason:
-                  </span>
-                  <p className="text-sm font-medium text-gray-800">
-                    {appointment.reason}
-                  </p>
-                </div>
-              )}
-              {appointment.symptoms?.length > 0 && (
-                <div>
-                  <span className="text-sm text-gray-600 block mb-2">
-                    Symptoms:
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {appointment.symptoms.map((symptom, idx) => (
-                      <motion.span
-                        key={idx}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium"
-                      >
-                        {symptom}
-                      </motion.span>
-                    ))}
+          {/* Lab Tests */}
+          <motion.div
+            whileHover={{ scale: 1.01 }}
+            className="bg-blue-50 rounded-2xl p-4 space-y-3"
+          >
+            <h4 className="font-semibold text-gray-900 flex items-center">
+              <Activity className="w-4 h-4 mr-2 text-blue-500" />
+              Lab Tests ({order.orderedTests.length})
+            </h4>
+            <div className="space-y-3 max-h-48 overflow-y-auto">
+              {order.orderedTests.map((test, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="flex items-center space-x-3 bg-white rounded-xl p-3"
+                >
+                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <TestTube className="w-6 h-6 text-cyan-500" />
                   </div>
-                </div>
-              )}
-            </motion.div>
-          )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">
+                      {test.testName}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Code: {test.testCode}
+                    </p>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          test.status === "COMPLETED"
+                            ? "bg-green-500"
+                            : test.status === "IN_PROGRESS"
+                            ? "bg-blue-500"
+                            : test.status === "SAMPLE_COLLECTED"
+                            ? "bg-purple-500"
+                            : "bg-yellow-500"
+                        }`}
+                      />
+                      <span className="text-xs text-gray-500">
+                        {test.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-sm font-bold text-gray-900 flex items-center">
+                    <IndianRupee className="w-3 h-3" />
+                    {test.price.toFixed(2)}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
 
           {/* Payment Section */}
           <motion.div
             whileHover={{ scale: 1.01 }}
-            className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-4 border border-green-100"
+            className="bg-gradient-to-r from-green-50 to-cyan-50 rounded-2xl p-4 border border-green-100"
           >
             <h4 className="font-semibold text-gray-900 flex items-center mb-3">
               <CreditCard className="w-4 h-4 mr-2 text-green-500" />
@@ -335,10 +313,10 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
 
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Consultation Fee:</span>
+                <span className="text-sm text-gray-600">Total Amount:</span>
                 <span className="font-bold text-xl text-green-600 flex items-center">
                   <IndianRupee className="w-4 h-4" />
-                  {appointment.doctor.consultationFee}
+                  {order.totalAmount.toFixed(2)}
                 </span>
               </div>
 
@@ -366,7 +344,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setShowPaymentModal(true)}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
+                    className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-cyan-700 hover:to-blue-700 transition-all duration-200 flex items-center justify-center space-x-2"
                   >
                     <CreditCard className="w-4 h-4" />
                     <span>Pay Now</span>
@@ -403,75 +381,50 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
             </div>
           </motion.div>
 
-          {/* Notes */}
-          {(appointment.notes || appointment.doctorNotes) && (
+          {/* Special Instructions */}
+          {order.specialInstructions && (
             <motion.div
               whileHover={{ scale: 1.01 }}
               className="bg-yellow-50 rounded-2xl p-4 space-y-3 border border-yellow-100"
             >
               <h4 className="font-semibold text-gray-900 flex items-center">
-                <FileText className="w-4 h-4 mr-2 text-yellow-500" />
-                Notes
+                <AlertTriangle className="w-4 h-4 mr-2 text-yellow-500" />
+                Special Instructions
               </h4>
-              {appointment.notes && (
-                <div>
-                  <span className="text-sm text-gray-600 block mb-1">
-                    Patient Notes:
-                  </span>
-                  <p className="text-sm text-gray-800">{appointment.notes}</p>
-                </div>
-              )}
-              {appointment.doctorNotes && (
-                <div>
-                  <span className="text-sm text-gray-600 block mb-1">
-                    Doctor Notes:
-                  </span>
-                  <p className="text-sm text-gray-800">
-                    {appointment.doctorNotes}
-                  </p>
-                </div>
-              )}
+              <p className="text-sm text-gray-800">
+                {order.specialInstructions}
+              </p>
             </motion.div>
           )}
 
-          {/* Meeting Link */}
-          {appointment.isVirtual && appointment.meetingLink && (
+          {/* Doctor Information */}
+          {order.doctorName && (
             <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-purple-50 rounded-2xl p-4 border border-purple-100"
+              whileHover={{ scale: 1.01 }}
+              className="bg-purple-50 rounded-2xl p-4 space-y-3 border border-purple-100"
             >
-              <h4 className="font-semibold text-gray-900 flex items-center mb-3">
-                <Video className="w-4 h-4 mr-2 text-purple-500" />
-                Virtual Meeting
+              <h4 className="font-semibold text-gray-900 flex items-center">
+                <User className="w-4 h-4 mr-2 text-purple-500" />
+                Referring Doctor
               </h4>
-              <motion.a
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                href={appointment.meetingLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 font-semibold"
-              >
-                <Video className="w-4 h-4" />
-                <span>Join Meeting</span>
-              </motion.a>
+              <p className="text-sm text-gray-800">{order.doctorName}</p>
             </motion.div>
           )}
 
           {/* Cancellation Reason */}
-          {appointment.status === AppointmentStatus.CANCELLED &&
-            appointment.cancellationReason && (
+          {order.status === OrderStatus.CANCELLED &&
+            order.cancellationReason && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="bg-red-50 rounded-2xl p-4 border border-red-100"
               >
                 <h4 className="font-semibold text-gray-900 flex items-center mb-2">
-                  <AlertCircle className="w-4 h-4 mr-2 text-red-500" />
+                  <XCircle className="w-4 h-4 mr-2 text-red-500" />
                   Cancellation Reason
                 </h4>
                 <p className="text-sm text-gray-800">
-                  {appointment.cancellationReason}
+                  {order.cancellationReason}
                 </p>
               </motion.div>
             )}
@@ -479,10 +432,10 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
       </motion.div>
 
       {/* Payment Modal */}
-      <PaymentModal
+      <LabPaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        appointment={appointment}
+        order={order}
         onPaymentSuccess={handlePaymentSuccess}
         onPaymentFailure={handlePaymentFailure}
       />
@@ -506,7 +459,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
               className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden"
             >
               {/* Header */}
-              <div className="relative bg-gradient-to-r from-green-600 to-blue-600 text-white p-6">
+              <div className="relative bg-gradient-to-r from-green-600 to-cyan-600 text-white p-6">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -522,10 +475,12 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                     transition={{ duration: 2, repeat: Infinity }}
                     className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4"
                   >
-                    <FileText className="w-8 h-8" />
+                    <TestTube className="w-8 h-8" />
                   </motion.div>
                   <h2 className="text-2xl font-bold mb-2">Payment Receipt</h2>
-                  <p className="text-green-100">Transaction Details</p>
+                  <p className="text-green-100">
+                    Lab Order Transaction Details
+                  </p>
                 </div>
               </div>
 
@@ -600,31 +555,34 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                     </div>
                   </div>
 
-                  {/* Appointment Details */}
+                  {/* Order Details */}
                   <div className="bg-blue-50 rounded-2xl p-4 space-y-3">
                     <h4 className="font-semibold text-gray-900">
-                      Appointment Details
+                      Order Details
                     </h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Doctor:</span>
+                        <span className="text-gray-600">Order Number:</span>
                         <span className="font-medium">
-                          Dr. {appointment.doctor.firstName}{" "}
-                          {appointment.doctor.lastName}
+                          #{order.orderNumber}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Date:</span>
+                        <span className="text-gray-600">Patient:</span>
+                        <span className="font-medium">{order.patientName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Tests:</span>
+                        <span className="font-medium">
+                          {order.orderedTests.length} test(s)
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Scheduled:</span>
                         <span className="font-medium">
                           {new Date(
-                            appointment.appointmentDate
+                            order.scheduledDateTime
                           ).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Time:</span>
-                        <span className="font-medium">
-                          {appointment.startTime} - {appointment.endTime}
                         </span>
                       </div>
                     </div>
@@ -635,7 +593,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowPaymentDetails(false)}
-                  className="w-full bg-blue-600 text-white py-3 rounded-2xl font-semibold hover:bg-blue-700 transition-colors"
+                  className="w-full bg-cyan-600 text-white py-3 rounded-2xl font-semibold hover:bg-cyan-700 transition-colors"
                 >
                   Close
                 </motion.button>
@@ -647,5 +605,3 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
     </>
   );
 };
-
-export default AppointmentCard;
