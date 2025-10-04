@@ -191,7 +191,7 @@ export const LabPaymentModal: React.FC<LabPaymentModalProps> = ({
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden"
+          className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
         >
           {/* Header */}
           <div className="relative bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-6">

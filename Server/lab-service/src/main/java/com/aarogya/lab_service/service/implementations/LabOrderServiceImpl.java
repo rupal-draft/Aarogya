@@ -288,6 +288,7 @@ public class LabOrderServiceImpl implements LabOrderService {
                     .orElseThrow(() -> new ResourceNotFoundException("No order is found with id: " + orderStatusUpdateEvent.getOrderId()));
 
             order.setStatus(OrderStatus.CONFIRMED);
+            order.setPaymentStatus(PaymentStatus.PAID);
             order.setPaymentId(orderStatusUpdateEvent.getPaymentId());
             labOrderRepository.save(order);
             log.info("Order processed with id: {}", order.getId());

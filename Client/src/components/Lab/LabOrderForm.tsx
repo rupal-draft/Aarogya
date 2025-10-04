@@ -24,6 +24,7 @@ import type {
 } from "../../types/lab";
 import { labOrderService } from "../../Services/lab";
 import { LabPaymentModal } from "../Payment/LabPaymentModal";
+import { locations } from "../../Data/lab";
 
 interface LabOrderFormProps {
   selectedTests: LabTestResponse[];
@@ -48,34 +49,6 @@ const LabOrderForm: React.FC<LabOrderFormProps> = ({
     null
   );
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-
-  const locations = [
-    {
-      value: "Home Collection",
-      icon: "🏠",
-      description: "Our technician will visit your location",
-    },
-    {
-      value: "Main Lab - Downtown",
-      icon: "🏢",
-      description: "123 Main Street, Downtown",
-    },
-    {
-      value: "Branch Lab - Uptown",
-      icon: "🏥",
-      description: "456 Uptown Avenue",
-    },
-    {
-      value: "Hospital Lab - Central",
-      icon: "🏨",
-      description: "Central Hospital Campus",
-    },
-    {
-      value: "Clinic Lab - Westside",
-      icon: "⚕️",
-      description: "Westside Medical Clinic",
-    },
-  ];
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -136,7 +109,7 @@ const LabOrderForm: React.FC<LabOrderFormProps> = ({
       setCreatedOrder(order);
 
       // Show payment modal if payment is required
-      if (order.totalAmount > 0 && order.paymentStatus === "PENDING") {
+      if (order.totalAmount > 0 && order.paymentStatus === "Pending") {
         setShowPaymentModal(true);
       } else {
         onComplete();
@@ -165,7 +138,6 @@ const LabOrderForm: React.FC<LabOrderFormProps> = ({
 
   const handlePaymentModalClose = () => {
     setShowPaymentModal(false);
-    // Optionally, you can reset the form or keep the created order for retry
   };
 
   const totalAmount = selectedTests.reduce((sum, test) => sum + test.price, 0);
@@ -203,7 +175,6 @@ const LabOrderForm: React.FC<LabOrderFormProps> = ({
   };
 
   const timeSlots = getTimeSlots();
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Enhanced Header with More Animations */}
