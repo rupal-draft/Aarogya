@@ -1,15 +1,27 @@
+// components/Patient-Management/AllergiesCard.tsx
 import React from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, Zap, Shield } from "lucide-react";
+import { AlertTriangle, Zap, Shield, Eye } from "lucide-react";
 import type { Allergy } from "../../types/patientManagement";
 
 interface AllergiesCardProps {
   allergies: Allergy[];
+  onViewAll?: () => void;
+  totalCount?: number;
 }
 
-export const AllergiesCard: React.FC<AllergiesCardProps> = ({ allergies }) => {
+export const AllergiesCard: React.FC<AllergiesCardProps> = ({
+  allergies,
+  onViewAll,
+  totalCount = 0,
+}) => {
+  const showViewAll = totalCount > 3;
+
+  const safeValue = (val: any, fallback: string = "N/A") =>
+    val !== undefined && val !== null ? val : fallback;
+
   const getSeverityColor = (severity: string) => {
-    switch (severity.toLowerCase()) {
+    switch (severity?.toLowerCase()) {
       case "critical":
         return "bg-red-100 text-red-800 border-red-300";
       case "severe":
@@ -24,7 +36,7 @@ export const AllergiesCard: React.FC<AllergiesCardProps> = ({ allergies }) => {
   };
 
   const getTypeIcon = (type: string) => {
-    switch (type.toLowerCase()) {
+    switch (type?.toLowerCase()) {
       case "food":
         return "🍎";
       case "drug":
@@ -45,92 +57,115 @@ export const AllergiesCard: React.FC<AllergiesCardProps> = ({ allergies }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.5 }}
     >
-      <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-        <AlertTriangle className="w-6 h-6 text-red-500" />
-        Known Allergies
-        <span className="bg-red-100 text-red-800 text-sm px-2 py-1 rounded-full ml-2">
-          {allergies.length}
-        </span>
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <AlertTriangle className="w-6 h-6 text-red-500" />
+          Known Allergies
+          <span className="bg-red-100 text-red-800 text-sm px-2 py-1 rounded-full ml-2">
+            {totalCount}
+          </span>
+        </h2>
+        {showViewAll && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onViewAll}
+            className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          >
+            <Eye className="w-4 h-4" />
+            View All
+          </motion.button>
+        )}
+      </div>
 
       <div className="space-y-4">
-        {allergies.map((allergy, index) => (
-          <motion.div
-            key={allergy.id}
-            className="bg-red-50 rounded-xl p-4 border-2 border-red-100"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: index * 0.1 }}
-            whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">
-                  {getTypeIcon(allergy.allergyType)}
-                </span>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {allergy.allergen}
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    {allergy.allergyType} Allergy
+        {allergies.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No allergies found
+          </div>
+        ) : (
+          allergies.map((allergy, index) => (
+            <motion.div
+              key={allergy.id}
+              className="bg-red-50 rounded-xl p-4 border-2 border-red-100"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">
+                    {getTypeIcon(allergy.allergyType)}
+                  </span>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {safeValue(allergy.allergen)}
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      {safeValue(allergy.allergyType)} Allergy
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold border ${getSeverityColor(
+                      allergy.severity
+                    )}`}
+                  >
+                    {safeValue(allergy.severity)}
+                  </span>
+                  {allergy.severity?.toLowerCase() === "critical" && (
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ repeat: Infinity, duration: 1 }}
+                    >
+                      <Zap className="w-5 h-5 text-red-600" />
+                    </motion.div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="bg-white bg-opacity-70 rounded-lg p-3">
+                  <h4 className="font-semibold text-gray-900 mb-1 flex items-center gap-1">
+                    <AlertTriangle className="w-4 h-4 text-orange-500" />
+                    Reaction
+                  </h4>
+                  <p className="text-gray-700 text-sm">
+                    {safeValue(allergy.reaction)}
+                  </p>
+                </div>
+
+                <div className="bg-white bg-opacity-70 rounded-lg p-3">
+                  <h4 className="font-semibold text-gray-900 mb-1 flex items-center gap-1">
+                    <Shield className="w-4 h-4 text-green-500" />
+                    Emergency Action
+                  </h4>
+                  <p className="text-gray-700 text-sm font-medium">
+                    {safeValue(allergy.emergencyAction)}
                   </p>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-2">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold border ${getSeverityColor(
-                    allergy.severity
-                  )}`}
-                >
-                  {allergy.severity}
+
+              <div className="flex items-center justify-between mt-3 text-sm text-gray-600">
+                <span>
+                  Diagnosed:{" "}
+                  {allergy.diagnosedDate
+                    ? new Date(allergy.diagnosedDate).toLocaleDateString()
+                    : "N/A"}
                 </span>
-                {allergy.severity.toLowerCase() === "critical" && (
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ repeat: Infinity, duration: 1 }}
-                  >
-                    <Zap className="w-5 h-5 text-red-600" />
-                  </motion.div>
-                )}
+                <span
+                  className={`font-medium ${
+                    allergy.isActive ? "text-red-600" : "text-gray-500"
+                  }`}
+                >
+                  {allergy.isActive ? "Active" : "Inactive"}
+                </span>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="bg-white bg-opacity-70 rounded-lg p-3">
-                <h4 className="font-semibold text-gray-900 mb-1 flex items-center gap-1">
-                  <AlertTriangle className="w-4 h-4 text-orange-500" />
-                  Reaction
-                </h4>
-                <p className="text-gray-700 text-sm">{allergy.reaction}</p>
-              </div>
-
-              <div className="bg-white bg-opacity-70 rounded-lg p-3">
-                <h4 className="font-semibold text-gray-900 mb-1 flex items-center gap-1">
-                  <Shield className="w-4 h-4 text-green-500" />
-                  Emergency Action
-                </h4>
-                <p className="text-gray-700 text-sm font-medium">
-                  {allergy.emergencyAction}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between mt-3 text-sm text-gray-600">
-              <span>
-                Diagnosed:{" "}
-                {new Date(allergy.diagnosedDate).toLocaleDateString()}
-              </span>
-              <span
-                className={`font-medium ${
-                  allergy.isActive ? "text-red-600" : "text-gray-500"
-                }`}
-              >
-                {allergy.isActive ? "Active" : "Inactive"}
-              </span>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))
+        )}
       </div>
     </motion.div>
   );

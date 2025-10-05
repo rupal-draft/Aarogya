@@ -1,3 +1,4 @@
+// components/Patient-Management/EmergencyContactCard.tsx
 import React from "react";
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, Users, PhoneCall } from "lucide-react";
@@ -10,6 +11,9 @@ interface EmergencyContactCardProps {
 export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
   contact,
 }) => {
+  const safeValue = (val: any, fallback: string = "N/A") =>
+    val !== undefined && val !== null ? val : fallback;
+
   return (
     <motion.div
       className="bg-white rounded-2xl shadow-lg p-6"
@@ -20,7 +24,7 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
       <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
         <Users className="w-6 h-6 text-blue-500" />
         Emergency Contact
-        {contact.isPrimary && (
+        {contact?.isPrimary && (
           <span className="bg-red-100 text-red-800 text-sm px-2 py-1 rounded-full ml-2">
             Primary
           </span>
@@ -40,9 +44,11 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
             <Users className="w-8 h-8 text-red-500" />
           </motion.div>
           <h3 className="text-xl font-bold text-gray-900">
-            {contact.contactName}
+            {safeValue(contact?.contactName)}
           </h3>
-          <p className="text-red-600 font-medium">{contact.relationship}</p>
+          <p className="text-red-600 font-medium">
+            {safeValue(contact?.relationship)}
+          </p>
         </div>
 
         <div className="space-y-4">
@@ -54,13 +60,13 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
             <Phone className="w-5 h-5 text-green-500" />
             <div>
               <p className="font-semibold text-gray-900">
-                {contact.phoneNumber}
+                {safeValue(contact?.phoneNumber)}
               </p>
               <p className="text-sm text-gray-600">Primary Phone</p>
             </div>
           </motion.div>
 
-          {contact.secondaryPhone && (
+          {contact?.secondaryPhone && (
             <motion.div
               className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm"
               whileHover={{ x: 5 }}
@@ -69,7 +75,7 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
               <PhoneCall className="w-5 h-5 text-blue-500" />
               <div>
                 <p className="font-semibold text-gray-900">
-                  {contact.secondaryPhone}
+                  {safeValue(contact.secondaryPhone)}
                 </p>
                 <p className="text-sm text-gray-600">Secondary Phone</p>
               </div>
@@ -83,7 +89,9 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
           >
             <Mail className="w-5 h-5 text-purple-500" />
             <div>
-              <p className="font-semibold text-gray-900">{contact.email}</p>
+              <p className="font-semibold text-gray-900">
+                {safeValue(contact?.email)}
+              </p>
               <p className="text-sm text-gray-600">Email Address</p>
             </div>
           </motion.div>
@@ -95,7 +103,9 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
           >
             <MapPin className="w-5 h-5 text-orange-500 mt-0.5" />
             <div>
-              <p className="font-semibold text-gray-900">{contact.address}</p>
+              <p className="font-semibold text-gray-900">
+                {safeValue(contact?.address)}
+              </p>
               <p className="text-sm text-gray-600">Home Address</p>
             </div>
           </motion.div>

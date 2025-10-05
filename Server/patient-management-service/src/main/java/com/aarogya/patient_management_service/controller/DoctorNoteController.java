@@ -134,7 +134,6 @@ public class DoctorNoteController {
     public ResponseEntity<DoctorNoteResponse> createDoctorNote(
             @Valid @RequestBody CreateDoctorNoteRequest request) {
 
-        String patientId = UserContextHolder.getUserDetails().getUserId();
         DoctorNoteResponse response = doctorNoteService.createDoctorNote(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

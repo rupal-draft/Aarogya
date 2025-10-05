@@ -1,4 +1,4 @@
-// Patient Management Types
+// types/patientManagement.ts
 export interface Patient {
   id: string;
   email: string;

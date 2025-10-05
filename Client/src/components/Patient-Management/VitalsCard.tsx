@@ -1,3 +1,4 @@
+// components/Patient-Management/VitalsCard.tsx
 import React from "react";
 import { motion } from "framer-motion";
 import {
@@ -9,71 +10,84 @@ import {
   Ruler,
 } from "lucide-react";
 import type { LatestVitals } from "../../types/patientManagement";
-import { AnimatedCounter } from "../../common/Counter/AnimatedCounter2";
 
 interface VitalsCardProps {
   vitals: LatestVitals;
 }
 
 export const VitalsCard: React.FC<VitalsCardProps> = ({ vitals }) => {
-  const safeValue = (val: any, fallback: string = "NA") =>
+  const safeValue = (val: any, fallback: string = "N/A") =>
     val !== undefined && val !== null ? val : fallback;
 
   const vitalsData = [
     {
       label: "Blood Pressure",
       value:
-        vitals.bloodPressureSystolic !== undefined &&
-        vitals.bloodPressureDiastolic !== undefined
-          ? `${vitals.bloodPressureSystolic}/${vitals.bloodPressureDiastolic}`
+        vitals?.bloodPressureSystolic !== undefined &&
+        vitals?.bloodPressureDiastolic !== undefined
+          ? `${safeValue(vitals.bloodPressureSystolic)}/${safeValue(
+              vitals.bloodPressureDiastolic
+            )}`
           : "-/-",
       unit: "mmHg",
       icon: Heart,
       color: "text-red-500",
       bgColor: "bg-red-50",
       normal:
-        vitals.bloodPressureSystolic !== undefined &&
-        vitals.bloodPressureDiastolic !== undefined &&
+        vitals?.bloodPressureSystolic &&
+        vitals?.bloodPressureDiastolic &&
         vitals.bloodPressureSystolic <= 120 &&
         vitals.bloodPressureDiastolic <= 80,
     },
     {
       label: "Heart Rate",
-      value: safeValue(vitals.heartRate),
+      value: safeValue(vitals?.heartRate),
       unit: "bpm",
       icon: Activity,
       color: "text-pink-500",
       bgColor: "bg-pink-50",
       normal:
-        vitals.heartRate !== undefined &&
+        vitals?.heartRate !== undefined &&
         vitals.heartRate >= 60 &&
         vitals.heartRate <= 100,
     },
     {
       label: "Temperature",
-      value: safeValue(vitals.temperature),
+      value: safeValue(vitals?.temperature),
       unit: "°C",
       icon: Thermometer,
       color: "text-orange-500",
       bgColor: "bg-orange-50",
       normal:
-        vitals.temperature !== undefined &&
+        vitals?.temperature !== undefined &&
         vitals.temperature >= 36.1 &&
         vitals.temperature <= 37.2,
     },
     {
+      label: "Respiratory Rate",
+      value: safeValue(vitals?.respiratoryRate),
+      unit: "breaths/min",
+      icon: Activity,
+      color: "text-blue-500",
+      bgColor: "bg-blue-50",
+      normal:
+        vitals?.respiratoryRate !== undefined &&
+        vitals.respiratoryRate >= 12 &&
+        vitals.respiratoryRate <= 20,
+    },
+    {
       label: "Oxygen Saturation",
-      value: safeValue(vitals.oxygenSaturation),
+      value: safeValue(vitals?.oxygenSaturation),
       unit: "%",
       icon: Droplets,
       color: "text-blue-500",
       bgColor: "bg-blue-50",
       normal:
-        vitals.oxygenSaturation !== undefined && vitals.oxygenSaturation >= 95,
+        vitals?.oxygenSaturation !== undefined && vitals.oxygenSaturation >= 95,
     },
     {
       label: "Weight",
-      value: safeValue(vitals.weight),
+      value: safeValue(vitals?.weight),
       unit: "kg",
       icon: Weight,
       color: "text-green-500",
@@ -81,14 +95,23 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({ vitals }) => {
       normal: true,
     },
     {
+      label: "Height",
+      value: safeValue(vitals?.height),
+      unit: "cm",
+      icon: Ruler,
+      color: "text-purple-500",
+      bgColor: "bg-purple-50",
+      normal: true,
+    },
+    {
       label: "BMI",
-      value: safeValue(vitals.bmi),
+      value: safeValue(vitals?.bmi),
       unit: "",
       icon: Ruler,
       color: "text-purple-500",
       bgColor: "bg-purple-50",
       normal:
-        vitals.bmi !== undefined && vitals.bmi >= 18.5 && vitals.bmi <= 24.9,
+        vitals?.bmi !== undefined && vitals.bmi >= 18.5 && vitals.bmi <= 24.9,
     },
   ];
 
@@ -104,7 +127,7 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({ vitals }) => {
         Latest Vitals
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {vitalsData.map((vital, index) => {
           const Icon = vital.icon;
           return (
@@ -133,18 +156,9 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({ vitals }) => {
                 )}
               </div>
               <div className="text-2xl font-bold text-gray-900 mb-1">
-                {typeof vital.value === "number" ? (
-                  <AnimatedCounter
-                    value={vital.value}
-                    decimals={1}
-                    suffix={vital.unit}
-                  />
-                ) : (
-                  <span>
-                    {vital.value !== undefined && vital.value !== null
-                      ? `${vital.value}${vital.unit}`
-                      : "NA"}
-                  </span>
+                {vital.value}
+                {typeof vital.value === "number" && vital.unit && (
+                  <span className="text-lg font-normal ml-1">{vital.unit}</span>
                 )}
               </div>
               <div className="text-sm text-gray-600">{vital.label}</div>
@@ -161,18 +175,18 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({ vitals }) => {
       >
         <h3 className="font-semibold text-gray-900 mb-2">Recorded by</h3>
         <p className="text-gray-600 text-sm">
-          {safeValue(vitals.recordedBy)} ({safeValue(vitals.recordedByType)})
+          {safeValue(vitals?.recordedBy)} ({safeValue(vitals?.recordedByType)})
         </p>
         <p className="text-gray-600 text-sm">
-          {vitals.recordedAt
+          {vitals?.recordedAt
             ? `${new Date(
                 vitals.recordedAt
               ).toLocaleDateString()} at ${new Date(
                 vitals.recordedAt
               ).toLocaleTimeString()}`
-            : "NA"}
+            : "N/A"}
         </p>
-        {vitals.notes && (
+        {vitals?.notes && (
           <p className="text-gray-600 text-sm mt-2 italic">"{vitals.notes}"</p>
         )}
       </motion.div>

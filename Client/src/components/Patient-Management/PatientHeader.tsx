@@ -1,3 +1,4 @@
+// components/Patient-Management/PatientHeader.tsx
 import React from "react";
 import { motion } from "framer-motion";
 import { User, Phone, Mail, MapPin, Calendar, Droplets } from "lucide-react";
@@ -8,8 +9,12 @@ interface PatientHeaderProps {
 }
 
 export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient }) => {
-  const age =
-    new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear();
+  const safeValue = (val: any, fallback: string = "N/A") =>
+    val !== undefined && val !== null ? val : fallback;
+
+  const age = patient?.dateOfBirth
+    ? new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear()
+    : "N/A";
 
   return (
     <motion.div
@@ -25,8 +30,10 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient }) => {
           transition={{ type: "spring", stiffness: 300 }}
         >
           <img
-            src={patient.imageUrl}
-            alt={`${patient.firstName} ${patient.lastName}`}
+            src={safeValue(patient?.imageUrl, "/default-avatar.png")}
+            alt={`${safeValue(patient?.firstName)} ${safeValue(
+              patient?.lastName
+            )}`}
             className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-blue-100 shadow-lg"
           />
           <motion.div
@@ -43,7 +50,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient }) => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            {patient.firstName} {patient.lastName}
+            {safeValue(patient?.firstName)} {safeValue(patient?.lastName)}
           </motion.h1>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
@@ -54,7 +61,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient }) => {
               transition={{ delay: 0.3 }}
             >
               <User className="w-4 h-4 text-blue-500" />
-              <span>Age: {age} years</span>
+              <span>Age: {safeValue(age)} years</span>
             </motion.div>
 
             <motion.div
@@ -64,7 +71,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient }) => {
               transition={{ delay: 0.4 }}
             >
               <Droplets className="w-4 h-4 text-red-500" />
-              <span>Blood: {patient.bloodGroup}</span>
+              <span>Blood: {safeValue(patient?.bloodGroup)}</span>
             </motion.div>
 
             <motion.div
@@ -74,7 +81,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient }) => {
               transition={{ delay: 0.5 }}
             >
               <Calendar className="w-4 h-4 text-green-500" />
-              <span>Gender: {patient.gender}</span>
+              <span>Gender: {safeValue(patient?.gender)}</span>
             </motion.div>
           </div>
 
@@ -86,7 +93,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient }) => {
               transition={{ delay: 0.6 }}
             >
               <Phone className="w-4 h-4 text-blue-500" />
-              <span className="text-sm">{patient.phone}</span>
+              <span className="text-sm">{safeValue(patient?.phone)}</span>
             </motion.div>
 
             <motion.div
@@ -96,7 +103,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient }) => {
               transition={{ delay: 0.7 }}
             >
               <Mail className="w-4 h-4 text-purple-500" />
-              <span className="text-sm">{patient.email}</span>
+              <span className="text-sm">{safeValue(patient?.email)}</span>
             </motion.div>
 
             <motion.div
@@ -106,7 +113,9 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient }) => {
               transition={{ delay: 0.8 }}
             >
               <MapPin className="w-4 h-4 text-orange-500" />
-              <span className="text-sm truncate">{patient.address}</span>
+              <span className="text-sm truncate">
+                {safeValue(patient?.address)}
+              </span>
             </motion.div>
           </div>
         </div>
