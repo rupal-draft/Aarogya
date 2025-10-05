@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   getArticleComments,
   commentArticle,
@@ -13,132 +13,134 @@ import {
   fetchRecentArticles,
   fetchPopularArticles,
   fetchArticleById,
-} from "./../../Services/articleService"
-import type { ArticleResponseDTO, ArticleCommentResponseDTO, ArticleCommentRequestDTO } from "../../types/article"
-import BlogDetailBanner from "../../components/Articles/BlogDetailBanner"
-import ErrorDisplay from "../../common/Error/ErrorDisplay"
-import BlogDetailSkeleton from "../../components/Articles/BlogDetailSkeleton"
-import ShareSection from "../../components/Articles/ShareSection"
-import CommentSection from "../../components/Articles/CommentSection"
-import CommentForm from "../../components/Articles/CommentForm"
-import BlogSidebar from "../../components/Articles/BlogSidebar"
-
+} from "./../../Services/articleService";
+import type {
+  ArticleResponseDTO,
+  ArticleCommentResponseDTO,
+  ArticleCommentRequestDTO,
+} from "../../types/article";
+import BlogDetailBanner from "../../components/Articles/BlogDetailBanner";
+import ErrorDisplay from "../../common/Error/ErrorDisplay";
+import BlogDetailSkeleton from "../../components/Articles/BlogDetailSkeleton";
+import ShareSection from "../../components/Articles/ShareSection";
+import CommentSection from "../../components/Articles/CommentSection";
+import CommentForm from "../../components/Articles/CommentForm";
+import BlogSidebar from "../../components/Articles/BlogSidebar";
 
 const BlogDetailPage = () => {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const [article, setArticle] = useState<ArticleResponseDTO | null>(null)
-  const [comments, setComments] = useState<ArticleCommentResponseDTO[]>([])
-  const [recentArticles, setRecentArticles] = useState<ArticleResponseDTO[]>([])
-  const [popularArticles, setPopularArticles] = useState<ArticleResponseDTO[]>([])
-  const [loading, setLoading] = useState(true)
-  const [commentLoading, setCommentLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [likeCount, setLikeCount] = useState(0)
-  const [isLiked, setIsLiked] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [article, setArticle] = useState<ArticleResponseDTO | null>(null);
+  const [comments, setComments] = useState<ArticleCommentResponseDTO[]>([]);
+  const [recentArticles, setRecentArticles] = useState<ArticleResponseDTO[]>(
+    []
+  );
+  const [popularArticles, setPopularArticles] = useState<ArticleResponseDTO[]>(
+    []
+  );
+  const [loading, setLoading] = useState(true);
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Fetch article data
   useEffect(() => {
     const fetchData = async () => {
-      if (!id) return
+      if (!id) return;
 
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       try {
         // Fetch article details
-        const articleData = await fetchArticleById(id)
-        setArticle(articleData)
+        const articleData = await fetchArticleById(id);
+        setArticle(articleData);
 
         // Fetch comments
-        const commentsData = await getArticleComments(id)
-        setComments(commentsData)
+        const commentsData = await getArticleComments(id);
+        setComments(commentsData);
 
         // Fetch like count
-        const likesCount = await getArticleLikesCount(id)
-        setLikeCount(likesCount)
+        const likesCount = await getArticleLikesCount(id);
+        setLikeCount(likesCount);
 
         // Check if user has liked the article
         // In a real app, you'd get the userId from auth context
-        const liked = await hasLikedArticle(id)
-        setIsLiked(liked)
+        const liked = await hasLikedArticle(id);
+        setIsLiked(liked);
 
         // Fetch sidebar data
-        const recentData = await fetchRecentArticles()
-        setRecentArticles(recentData)
+        const recentData = await fetchRecentArticles();
+        setRecentArticles(recentData);
 
-        const popularData = await fetchPopularArticles()
-        setPopularArticles(popularData)
+        const popularData = await fetchPopularArticles();
+        setPopularArticles(popularData);
       } catch (err) {
-        setError("Failed to load article. Please try again later.")
-        console.error("Error fetching article data:", err)
+        setError("Failed to load article. Please try again later.");
+        console.error("Error fetching article data:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [id])
+    fetchData();
+  }, [id]);
 
   // Handle like/unlike
   const handleLikeToggle = async () => {
-    if (!id) return
+    if (!id) return;
 
     try {
       if (isLiked) {
-        await unlikeArticle(id)
-        setLikeCount((prev) => Math.max(0, prev - 1))
+        await unlikeArticle(id);
+        setLikeCount((prev) => Math.max(0, prev - 1));
       } else {
-        await likeArticle(id)
-        setLikeCount((prev) => prev + 1)
+        await likeArticle(id);
+        setLikeCount((prev) => prev + 1);
       }
-      setIsLiked(!isLiked)
+      setIsLiked(!isLiked);
     } catch (err) {
-      console.error("Error toggling like:", err)
+      console.error("Error toggling like:", err);
     }
-  }
+  };
 
   // Handle comment submission
-  const handleCommentSubmit = async (commentData: {
-    message: string
-  }) => {
-    if (!id) return
+  const handleCommentSubmit = async (commentData: { message: string }) => {
+    if (!id) return;
 
-    setCommentLoading(true)
+    setCommentLoading(true);
     try {
       const newComment: ArticleCommentRequestDTO = {
         articleId: id,
         comment: commentData.message,
-      }
+      };
 
-      await commentArticle(newComment)
+      await commentArticle(newComment);
 
-      // Refresh comments
-      const updatedComments = await getArticleComments(id)
-      setComments(updatedComments)
+      const updatedComments = await getArticleComments(id);
+      setComments(updatedComments);
     } catch (err) {
-      console.error("Error submitting comment:", err)
+      console.error("Error submitting comment:", err);
     } finally {
-      setCommentLoading(false)
+      setCommentLoading(false);
     }
-  }
+  };
 
   // Handle navigation between posts
   const navigateToPrevPost = () => {
     // In a real app, you'd fetch the previous post ID from an API
     // For now, we'll just navigate back to the blog list
-    navigate("/blogs")
-  }
+    navigate("/blogs");
+  };
 
   const navigateToNextPost = () => {
     // In a real app, you'd fetch the next post ID from an API
     // For now, we'll just navigate back to the blog list
-    navigate("/blogs")
-  }
-
-
+    navigate("/blogs");
+  };
 
   return (
     <div className="blog-detail-page bg-gray-50">
@@ -190,14 +192,18 @@ const BlogDetailPage = () => {
                             <div className="flex items-center">
                               <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500 mr-3">
                                 <img
-                                  src={article.doctor.imageUrl || "/placeholder.svg?height=100&width=100"}
+                                  src={
+                                    article.doctor.imageUrl ||
+                                    "/placeholder.svg?height=100&width=100"
+                                  }
                                   alt={`${article.doctor.firstName} ${article.doctor.lastName}`}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
                               <div>
                                 <h3 className="font-medium text-gray-800">
-                                  Dr. {article.doctor.firstName} {article.doctor.lastName}
+                                  Dr. {article.doctor.firstName}{" "}
+                                  {article.doctor.lastName}
                                 </h3>
                                 <div className="flex items-center text-gray-500 text-sm">
                                   <svg
@@ -214,7 +220,9 @@ const BlogDetailPage = () => {
                                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                                     />
                                   </svg>
-                                  {new Date(article.createdAt).toLocaleDateString("en-US", {
+                                  {new Date(
+                                    article.createdAt
+                                  ).toLocaleDateString("en-US", {
                                     year: "numeric",
                                     month: "long",
                                     day: "numeric",
@@ -233,7 +241,10 @@ const BlogDetailPage = () => {
                           transition={{ duration: 0.5, delay: 0.4 }}
                         >
                           <img
-                            src={article?.imageUrl || "/placeholder.svg?height=600&width=1200"}
+                            src={
+                              article?.imageUrl ||
+                              "/placeholder.svg?height=600&width=1200"
+                            }
                             alt={article?.title}
                             className="w-full h-auto object-cover"
                           />
@@ -245,7 +256,9 @@ const BlogDetailPage = () => {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.5, delay: 0.5 }}
-                          dangerouslySetInnerHTML={{ __html: article?.content || "" }}
+                          dangerouslySetInnerHTML={{
+                            __html: article?.content || "",
+                          }}
                         />
 
                         {/* Tags */}
@@ -257,7 +270,10 @@ const BlogDetailPage = () => {
                             transition={{ duration: 0.5, delay: 0.6 }}
                           >
                             {article.tags.map((tag, index) => (
-                              <span key={index} className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
+                              <span
+                                key={index}
+                                className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm"
+                              >
                                 #{tag}
                               </span>
                             ))}
@@ -283,7 +299,12 @@ const BlogDetailPage = () => {
                               viewBox="0 0 24 24"
                               stroke="currentColor"
                             >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 19l-7-7 7-7"
+                              />
                             </svg>
                             Previous Post
                           </motion.button>
@@ -300,7 +321,12 @@ const BlogDetailPage = () => {
                               viewBox="0 0 24 24"
                               stroke="currentColor"
                             >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
                             </svg>
                           </motion.button>
                         </motion.div>
@@ -317,7 +343,10 @@ const BlogDetailPage = () => {
                       {/* Comments Section */}
                       <div className="bg-gray-50 p-6 md:p-8 border-t border-gray-100">
                         <CommentSection comments={comments} />
-                        <CommentForm onSubmit={handleCommentSubmit} isLoading={commentLoading} />
+                        <CommentForm
+                          onSubmit={handleCommentSubmit}
+                          isLoading={commentLoading}
+                        />
                       </div>
                     </motion.div>
                   )}
@@ -340,7 +369,7 @@ const BlogDetailPage = () => {
         </motion.section>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default BlogDetailPage
+export default BlogDetailPage;

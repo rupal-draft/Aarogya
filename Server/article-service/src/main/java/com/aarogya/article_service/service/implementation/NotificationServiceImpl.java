@@ -12,10 +12,10 @@ import com.aarogya.article_service.event.messaging.LikeNotificationData;
 import com.aarogya.article_service.event.messaging.PostNotificationData;
 import com.aarogya.article_service.exceptions.ServiceUnavailable;
 import com.aarogya.article_service.service.NotificationService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +29,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final UserGrpcClient userGrpcClient;
     private final KafkaTemplate<String, NotificationEvent>postNotificationKafkaTemplate;
-    private final ModelMapper modelMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void sendPostCreatedNotification(Articles articles) {
@@ -46,7 +46,7 @@ public class NotificationServiceImpl implements NotificationService {
                     .postedBy(doctor.getFirstName() + " " + doctor.getLastName())
                     .postedByImage(doctor.getImageUrl())
                     .build();
-            Map<String, Object> data = modelMapper.map(postNotificationData, Map.class);
+            Map<String, Object> data = objectMapper.convertValue(postNotificationData, new TypeReference<Map<String, Object>>() {});
             NotificationEvent notificationEvent = NotificationEvent.builder()
                     .data(data)
                     .read(false)
@@ -56,11 +56,8 @@ public class NotificationServiceImpl implements NotificationService {
                     .type(NotificationEvent.SaveNotificationType.POST)
                     .build();
             postNotificationKafkaTemplate.send("new-post", articles.getId(), notificationEvent);
-        } catch (KafkaException e) {
-            log.error("Failed to send post created notification to Notification Microservice for Article: " + articles.getId());
-            throw new ServiceUnavailable("Failed to send post created notification to Notification Microservice for Article: " + articles.getId());
         } catch (Exception e) {
-            log.error("Failed to send post created notification to Notification Microservice for Article: " + articles.getId());
+            log.error("Failed to send post created notification to Notification Microservice for Article: {}", articles.getId());
             throw new ServiceUnavailable("Failed to send post created notification to Notification Microservice for Article: " + articles.getId());
         }
     }
@@ -80,7 +77,7 @@ public class NotificationServiceImpl implements NotificationService {
                         .build();
 
                 NotificationEvent notificationEvent = NotificationEvent.builder()
-                        .data(modelMapper.map(commentNotificationData, Map.class))
+                        .data(objectMapper.convertValue(commentNotificationData, new TypeReference<Map<String, Object>>() {}))
                         .read(false)
                         .timestamp(LocalDateTime.now())
                         .title("New Comment Added!")
@@ -99,7 +96,7 @@ public class NotificationServiceImpl implements NotificationService {
                         .build();
 
                 NotificationEvent notificationEvent = NotificationEvent.builder()
-                        .data(modelMapper.map(commentNotificationData, Map.class))
+                        .data(objectMapper.convertValue(commentNotificationData, new TypeReference<Map<String, Object>>() {}))
                         .read(false)
                         .timestamp(LocalDateTime.now())
                         .title("New Comment Added!")
@@ -108,11 +105,8 @@ public class NotificationServiceImpl implements NotificationService {
                         .build();
                 postNotificationKafkaTemplate.send("new-comment", comments.getArticleId(), notificationEvent);
             }
-        } catch (KafkaException e) {
-            log.error("Failed to send post commented notification to Notification Microservice for Article: " + comments.getArticleId());
-            throw new ServiceUnavailable("Failed to send post commented notification to Notification Microservice for Article: " + comments.getArticleId());
         } catch (Exception e) {
-            log.error("Failed to send post commented notification to Notification Microservice for Article: " + comments.getArticleId());
+            log.error("Failed to send post commented notification to Notification Microservice for Article: {}", comments.getArticleId());
             throw new ServiceUnavailable("Failed to send post commented notification to Notification Microservice for Article: " + comments.getArticleId());
         }
     }
@@ -131,7 +125,7 @@ public class NotificationServiceImpl implements NotificationService {
                         .likedTime(likes.getCreatedAt())
                         .build();
                 NotificationEvent notificationEvent = NotificationEvent.builder()
-                        .data(modelMapper.map(likeNotificationData, Map.class))
+                        .data(objectMapper.convertValue(likeNotificationData, new TypeReference<Map<String, Object>>() {}))
                         .read(false)
                         .timestamp(LocalDateTime.now())
                         .title("New Like Added!")
@@ -149,7 +143,7 @@ public class NotificationServiceImpl implements NotificationService {
                         .likedTime(likes.getCreatedAt())
                         .build();
                 NotificationEvent notificationEvent = NotificationEvent.builder()
-                        .data(modelMapper.map(likeNotificationData, Map.class))
+                        .data(objectMapper.convertValue(likeNotificationData, new TypeReference<Map<String, Object>>() {}))
                         .read(false)
                         .timestamp(LocalDateTime.now())
                         .title("New Like Added!")
@@ -158,11 +152,8 @@ public class NotificationServiceImpl implements NotificationService {
                         .build();
                 postNotificationKafkaTemplate.send("new-like", likes.getArticleId(), notificationEvent);
             }
-        } catch (KafkaException e) {
-            log.error("Failed to send post liked notification to Notification Microservice for Article: " + likes.getArticleId());
-            throw new ServiceUnavailable("Failed to send post liked notification to Notification Microservice for Article: " + likes.getArticleId());
         } catch (Exception e) {
-            log.error("Failed to send post liked notification to Notification Microservice for Article: " + likes.getArticleId());
+            log.error("Failed to send post liked notification to Notification Microservice for Article: {}", e.getLocalizedMessage());
             throw new ServiceUnavailable("Failed to send post liked notification to Notification Microservice for Article: " + likes.getArticleId());
         }
     }

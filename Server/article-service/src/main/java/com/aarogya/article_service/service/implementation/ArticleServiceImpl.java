@@ -338,6 +338,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "comments", allEntries = true)
     public void commentArticle(ArticleCommentRequestDTO articleCommentRequestDTO) {
         log.info("Article comment request received {}", articleCommentRequestDTO);
         if (articleCommentRequestDTO.getComment() == null) {

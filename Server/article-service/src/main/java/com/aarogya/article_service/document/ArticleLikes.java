@@ -32,7 +32,8 @@ public class ArticleLikes {
 
     @NotBlank
     @Pattern(regexp = "doctor|patient", message = "userType must be either 'doctor' or 'patient'")
-    private String userType;
+    @Builder.Default
+    private String userType = "patient";
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

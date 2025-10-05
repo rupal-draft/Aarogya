@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
 @Document(collection = "article_comments")
-@CompoundIndex(def = "{'articleId': 1, 'userId': 1}", unique = true)
+@CompoundIndex(def = "{'articleId': 1, 'userId': 1}")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -34,7 +34,8 @@ public class ArticleComments {
 
     @NotBlank
     @Pattern(regexp = "doctor|patient", message = "userType must be either 'doctor' or 'patient'")
-    private String userType;
+    @Builder.Default
+    private String userType = "patient";
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
