@@ -28,7 +28,7 @@ interface SymptomsTimelineCardProps {
   onViewAll?: () => void;
   totalCount?: number;
   onDataUpdate?: () => void;
-  patientId: string;
+  patientId?: string;
 }
 
 export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({

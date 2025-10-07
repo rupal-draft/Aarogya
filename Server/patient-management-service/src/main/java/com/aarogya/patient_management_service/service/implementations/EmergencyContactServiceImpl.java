@@ -1,5 +1,6 @@
 package com.aarogya.patient_management_service.service.implementations;
 
+import com.aarogya.patient_management_service.annotations.EvictPatientCaches;
 import com.aarogya.patient_management_service.dto.request.CreateEmergencyContactRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateEmergencyContactRequest;
 import com.aarogya.patient_management_service.dto.response.EmergencyContactResponse;
@@ -12,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -92,7 +92,7 @@ public class EmergencyContactServiceImpl implements EmergencyContactService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientEmergencyContacts", "primaryContact"}, key = "#patientId")
+    @EvictPatientCaches
     public EmergencyContactResponse createEmergencyContact(String patientId, CreateEmergencyContactRequest request) {
         try {
             log.info("Creating emergency contact for patient: {}", patientId);
@@ -138,7 +138,7 @@ public class EmergencyContactServiceImpl implements EmergencyContactService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientEmergencyContacts", "emergencyContact", "primaryContact"}, allEntries = true)
+    @EvictPatientCaches
     public EmergencyContactResponse updateEmergencyContact(String patientId, String contactId, UpdateEmergencyContactRequest request) {
         try {
             log.info("Updating emergency contact {} for patient: {}", contactId, patientId);
@@ -199,7 +199,7 @@ public class EmergencyContactServiceImpl implements EmergencyContactService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientEmergencyContacts", "emergencyContact", "primaryContact"}, allEntries = true)
+    @EvictPatientCaches
     public EmergencyContactResponse partialUpdateEmergencyContact(String patientId, String contactId, UpdateEmergencyContactRequest request) {
         try {
             log.info("Partially updating emergency contact {} for patient: {}", contactId, patientId);
@@ -262,7 +262,7 @@ public class EmergencyContactServiceImpl implements EmergencyContactService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientEmergencyContacts", "emergencyContact", "primaryContact"}, allEntries = true)
+    @EvictPatientCaches
     public EmergencyContactResponse setPrimaryContact(String patientId, String contactId) {
         try {
             log.info("Setting emergency contact {} as primary for patient: {}", contactId, patientId);
@@ -293,7 +293,7 @@ public class EmergencyContactServiceImpl implements EmergencyContactService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientEmergencyContacts", "emergencyContact", "primaryContact"}, allEntries = true)
+    @EvictPatientCaches
     public void deleteEmergencyContact(String patientId, String contactId) {
         try {
             log.info("Soft deleting emergency contact {} for patient: {}", contactId, patientId);

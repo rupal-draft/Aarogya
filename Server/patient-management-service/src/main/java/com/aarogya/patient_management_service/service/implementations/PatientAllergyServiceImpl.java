@@ -1,5 +1,6 @@
 package com.aarogya.patient_management_service.service.implementations;
 
+import com.aarogya.patient_management_service.annotations.EvictPatientCaches;
 import com.aarogya.patient_management_service.dto.request.CreateAllergyRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateAllergyRequest;
 import com.aarogya.patient_management_service.dto.response.PatientAllergyResponse;
@@ -39,7 +40,7 @@ public class PatientAllergyServiceImpl implements PatientAllergyService {
     private final ModelMapper modelMapper;
 
     @Override
-    @CacheEvict(value = {"patientAllergies", "criticalAllergies"}, key = "#patientId")
+    @EvictPatientCaches
     public PatientAllergyResponse addAllergy(String patientId, CreateAllergyRequest request) {
         try {
             log.info("Adding allergy for patient: {}", patientId);
@@ -124,7 +125,7 @@ public class PatientAllergyServiceImpl implements PatientAllergyService {
     }
 
     @Override
-    @CacheEvict(value = {"patientAllergies", "criticalAllergies"}, key = "#patientId")
+    @EvictPatientCaches
     public PatientAllergyResponse updateAllergy(String patientId, String allergyId, UpdateAllergyRequest request) {
         try {
             log.info("Updating allergy: {} for patient: {}", allergyId, patientId);
@@ -159,7 +160,7 @@ public class PatientAllergyServiceImpl implements PatientAllergyService {
     }
 
     @Override
-    @CacheEvict(value = {"patientAllergies", "criticalAllergies"}, key = "#patientId")
+    @EvictPatientCaches
     public PatientAllergyResponse partialUpdateAllergy(String patientId, String allergyId, UpdateAllergyRequest request) {
         try {
             log.info("Partially updating allergy: {} for patient: {}", allergyId, patientId);
@@ -187,7 +188,7 @@ public class PatientAllergyServiceImpl implements PatientAllergyService {
     }
 
     @Override
-    @CacheEvict(value = {"patientAllergies", "criticalAllergies"}, key = "#patientId")
+    @EvictPatientCaches
     public PatientAllergyResponse updateAllergySeverity(String patientId, String allergyId, String severity) {
         try {
             log.info("Updating allergy severity: {} for patient: {} to: {}", allergyId, patientId, severity);
@@ -227,7 +228,7 @@ public class PatientAllergyServiceImpl implements PatientAllergyService {
     }
 
     @Override
-    @CacheEvict(value = {"patientAllergies", "criticalAllergies"}, key = "#patientId")
+    @EvictPatientCaches
     public void deleteAllergy(String patientId, String allergyId) {
         try {
             log.info("Deleting allergy: {} for patient: {}", allergyId, patientId);

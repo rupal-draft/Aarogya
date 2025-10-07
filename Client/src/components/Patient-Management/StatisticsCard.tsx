@@ -230,21 +230,6 @@ export const StatisticsCard: React.FC<StatisticsCardProps> = ({ data }) => {
           Comprehensive health overview with all patient data
         </motion.p>
       </motion.div>
-
-      {/* Activity Indicator */}
-      <motion.div
-        className="flex items-center gap-2 mt-4 text-xs text-gray-500"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.8 }}
-      >
-        <motion.div
-          className="w-2 h-2 bg-green-500 rounded-full"
-          animate={{ scale: [1, 1.5, 1] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-        />
-        <span>Live data updated</span>
-      </motion.div>
     </motion.div>
   );
 };

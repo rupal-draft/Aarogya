@@ -1,5 +1,6 @@
 package com.aarogya.patient_management_service.service.implementations;
 
+import com.aarogya.patient_management_service.annotations.EvictPatientCaches;
 import com.aarogya.patient_management_service.dto.request.CreateMedicalHistoryRequest;
 import com.aarogya.patient_management_service.dto.response.MedicalHistoryResponse;
 import com.aarogya.patient_management_service.exceptions.ResourceNotFoundException;
@@ -73,7 +74,7 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
     }
 
     @Override
-    @CacheEvict(value = {"medicalHistory", "activeMedicalHistory", "patientDashboard"}, allEntries = true)
+    @EvictPatientCaches
     public MedicalHistoryResponse addMedicalHistory(String patientId, CreateMedicalHistoryRequest request) {
         try {
             log.info("Adding medical history for patient: {}", patientId);
@@ -111,7 +112,7 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
     }
 
     @Override
-    @CacheEvict(value = {"medicalHistory", "activeMedicalHistory", "patientDashboard"}, allEntries = true)
+    @EvictPatientCaches
     public MedicalHistoryResponse updateMedicalHistory(String patientId, String historyId, CreateMedicalHistoryRequest request) {
         try {
             log.info("Updating medical history {} for patient: {}", historyId, patientId);
@@ -140,7 +141,7 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
     }
 
     @Override
-    @CacheEvict(value = {"medicalHistory", "activeMedicalHistory", "patientDashboard"}, allEntries = true)
+    @EvictPatientCaches
     public void deleteMedicalHistory(String patientId, String historyId) {
         try {
             log.info("Deleting medical history {} for patient: {}", historyId, patientId);

@@ -29,7 +29,7 @@ interface MedicationsCardProps {
   onViewAll?: () => void;
   totalCount?: number;
   onDataUpdate?: () => void;
-  patientId: string;
+  patientId?: string;
 }
 
 export const MedicationsCard: React.FC<MedicationsCardProps> = ({

@@ -2,7 +2,6 @@ package com.aarogya.patient_management_service.controller;
 
 import com.aarogya.patient_management_service.advices.ApiError;
 import com.aarogya.patient_management_service.advices.ApiResponse;
-import com.aarogya.patient_management_service.auth.UserContextHolder;
 import com.aarogya.patient_management_service.dto.request.CreateAllergyRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateAllergyRequest;
 import com.aarogya.patient_management_service.dto.response.PatientAllergyResponse;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/allergies")
+@RequestMapping("/{patientId}/allergies")
 @Validated
 public class PatientAllergyController {
 
@@ -33,32 +32,38 @@ public class PatientAllergyController {
     @PostMapping
     @RateLimiter(name = "allergiesRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<PatientAllergyResponse> addAllergy(
+            @PathVariable String patientId,
             @Valid @RequestBody CreateAllergyRequest request) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+
         PatientAllergyResponse response = patientAllergyService.addAllergy(patientId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
     @RateLimiter(name = "allergiesRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<Page<PatientAllergyResponse>> getPatientAllergies(Pageable pageable) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<Page<PatientAllergyResponse>> getPatientAllergies(
+            @PathVariable String patientId,
+            Pageable pageable) {
+
         Page<PatientAllergyResponse> response = patientAllergyService.getPatientAllergies(patientId, pageable);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/critical")
     @RateLimiter(name = "allergiesRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<List<PatientAllergyResponse>> getCriticalAllergies() {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<List<PatientAllergyResponse>> getCriticalAllergies(
+            @PathVariable String patientId) {
+
         List<PatientAllergyResponse> response = patientAllergyService.getCriticalAllergies(patientId);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{allergyId}")
     @RateLimiter(name = "allergiesRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<PatientAllergyResponse> getAllergyById(@PathVariable String allergyId) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<PatientAllergyResponse> getAllergyById(
+            @PathVariable String patientId,
+            @PathVariable String allergyId) {
+
         PatientAllergyResponse response = patientAllergyService.getAllergyById(patientId, allergyId);
         return ResponseEntity.ok(response);
     }
@@ -66,9 +71,10 @@ public class PatientAllergyController {
     @PutMapping("/{allergyId}")
     @RateLimiter(name = "allergiesRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<PatientAllergyResponse> updateAllergy(
+            @PathVariable String patientId,
             @PathVariable String allergyId,
             @Valid @RequestBody UpdateAllergyRequest request) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+
         PatientAllergyResponse response = patientAllergyService.updateAllergy(patientId, allergyId, request);
         return ResponseEntity.ok(response);
     }
@@ -76,9 +82,10 @@ public class PatientAllergyController {
     @PatchMapping("/{allergyId}")
     @RateLimiter(name = "allergiesRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<PatientAllergyResponse> partialUpdateAllergy(
+            @PathVariable String patientId,
             @PathVariable String allergyId,
             @Valid @RequestBody UpdateAllergyRequest request) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+
         PatientAllergyResponse response = patientAllergyService.partialUpdateAllergy(patientId, allergyId, request);
         return ResponseEntity.ok(response);
     }
@@ -86,17 +93,20 @@ public class PatientAllergyController {
     @PutMapping("/{allergyId}/severity")
     @RateLimiter(name = "allergiesRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<PatientAllergyResponse> updateAllergySeverity(
+            @PathVariable String patientId,
             @PathVariable String allergyId,
             @RequestParam String severity) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+
         PatientAllergyResponse response = patientAllergyService.updateAllergySeverity(patientId, allergyId, severity);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{allergyId}")
     @RateLimiter(name = "allergiesRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<ApiResponse<String>> deleteAllergy(@PathVariable String allergyId) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<ApiResponse<String>> deleteAllergy(
+            @PathVariable String patientId,
+            @PathVariable String allergyId) {
+
         patientAllergyService.deleteAllergy(patientId, allergyId);
         return ResponseEntity.ok(ApiResponse.success("Allergy deleted successfully!"));
     }
@@ -109,3 +119,4 @@ public class PatientAllergyController {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(apiError);
     }
 }
+

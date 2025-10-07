@@ -30,9 +30,9 @@ interface DoctorNotesCardProps {
   onViewAll?: () => void;
   totalCount?: number;
   onDataUpdate?: () => void;
-  patientId: string;
-  doctorId: string;
-  doctorName: string;
+  patientId?: string;
+  doctorId?: string;
+  doctorName?: string;
 }
 
 export const DoctorNotesCard: React.FC<DoctorNotesCardProps> = ({

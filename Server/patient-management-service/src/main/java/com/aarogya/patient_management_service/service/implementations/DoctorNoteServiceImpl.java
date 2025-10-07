@@ -1,5 +1,6 @@
 package com.aarogya.patient_management_service.service.implementations;
 
+import com.aarogya.patient_management_service.annotations.EvictPatientCaches;
 import com.aarogya.patient_management_service.dto.request.CreateDoctorNoteRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateDoctorNoteRequest;
 import com.aarogya.patient_management_service.dto.response.DoctorNoteResponse;
@@ -42,7 +43,7 @@ public class DoctorNoteServiceImpl implements DoctorNoteService {
     private final CacheManager cacheManager;
 
     @Override
-    @Cacheable(value = "patientNotes", key = "#patientId + '_' + #pageable.pageNumber + '_' + #pageable.pageSize + '_' + #pageable.sort")
+    @EvictPatientCaches
     public Page<DoctorNoteResponse> getPatientNotes(String patientId, Pageable pageable) {
         try {
             log.info("Fetching doctor notes for patient: {}, page: {}", patientId, pageable.getPageNumber());
@@ -156,8 +157,7 @@ public class DoctorNoteServiceImpl implements DoctorNoteService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientNotes", "doctorNote", "patientNotesByType", "patientNotesByPriority",
-            "patientNotesByCategory", "nonPrivateNotes", "urgentNotes"}, allEntries = true)
+    @EvictPatientCaches
     public DoctorNoteResponse createDoctorNote(CreateDoctorNoteRequest request) {
         try {
             log.info("Creating doctor note for patient: {}", request.getPatientId());
@@ -175,8 +175,7 @@ public class DoctorNoteServiceImpl implements DoctorNoteService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientNotes", "doctorNote", "patientNotesByType", "patientNotesByPriority",
-            "patientNotesByCategory", "nonPrivateNotes", "urgentNotes"}, allEntries = true)
+    @EvictPatientCaches
     public DoctorNoteResponse updateDoctorNote(String patientId, String noteId, UpdateDoctorNoteRequest request) {
         try {
             log.info("Updating doctor note {} for patient: {}", noteId, patientId);
@@ -197,8 +196,7 @@ public class DoctorNoteServiceImpl implements DoctorNoteService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientNotes", "doctorNote", "patientNotesByType", "patientNotesByPriority",
-            "patientNotesByCategory", "nonPrivateNotes", "urgentNotes"}, allEntries = true)
+    @EvictPatientCaches
     public void deleteDoctorNote(String patientId, String noteId) {
         try {
             log.info("Deleting doctor note {} for patient: {}", noteId, patientId);

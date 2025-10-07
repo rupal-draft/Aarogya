@@ -1,5 +1,6 @@
 package com.aarogya.patient_management_service.service.implementations;
 
+import com.aarogya.patient_management_service.annotations.EvictPatientCaches;
 import com.aarogya.patient_management_service.dto.request.CreateSymptomTrackerRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateSymptomTrackerRequest;
 import com.aarogya.patient_management_service.dto.response.SymptomStatsResponse;
@@ -125,8 +126,7 @@ public class SymptomTrackerServiceImpl implements SymptomTrackerService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientSymptoms", "symptomsByName", "symptomsBySeverity", "recentSymptoms",
-            "symptomsByCategory", "severeSymptoms", "symptomStats"}, key = "#patientId")
+    @EvictPatientCaches
     public SymptomTrackerResponse recordSymptom(String patientId, CreateSymptomTrackerRequest request) {
         try {
             log.info("Recording symptom for patient: {}", patientId);
@@ -164,9 +164,7 @@ public class SymptomTrackerServiceImpl implements SymptomTrackerService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientSymptoms", "symptom", "symptomsByName", "symptomsBySeverity",
-            "recentSymptoms", "symptomsByCategory", "severeSymptoms", "symptomStats"},
-            allEntries = true)
+    @EvictPatientCaches
     public SymptomTrackerResponse updateSymptom(String patientId, String symptomId, UpdateSymptomTrackerRequest request) {
         try {
             log.info("Updating symptom {} for patient: {}", symptomId, patientId);
@@ -209,9 +207,7 @@ public class SymptomTrackerServiceImpl implements SymptomTrackerService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientSymptoms", "symptom", "symptomsByName", "symptomsBySeverity",
-            "recentSymptoms", "symptomsByCategory", "severeSymptoms", "symptomStats"},
-            allEntries = true)
+    @EvictPatientCaches
     public SymptomTrackerResponse partialUpdateSymptom(String patientId, String symptomId, UpdateSymptomTrackerRequest request) {
         try {
             log.info("Partially updating symptom {} for patient: {}", symptomId, patientId);
@@ -253,9 +249,7 @@ public class SymptomTrackerServiceImpl implements SymptomTrackerService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientSymptoms", "symptom", "symptomsByName", "symptomsBySeverity",
-            "recentSymptoms", "symptomsByCategory", "severeSymptoms", "symptomStats"},
-            allEntries = true)
+    @EvictPatientCaches
     public void deleteSymptom(String patientId, String symptomId) {
         try {
             log.info("Deleting symptom {} for patient: {}", symptomId, patientId);

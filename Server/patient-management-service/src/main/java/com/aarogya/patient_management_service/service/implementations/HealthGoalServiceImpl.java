@@ -1,5 +1,6 @@
 package com.aarogya.patient_management_service.service.implementations;
 
+import com.aarogya.patient_management_service.annotations.EvictPatientCaches;
 import com.aarogya.patient_management_service.dto.request.CreateHealthGoalRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateHealthGoalRequest;
 import com.aarogya.patient_management_service.dto.response.HealthGoalResponse;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
@@ -142,9 +142,7 @@ public class HealthGoalServiceImpl implements HealthGoalService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientHealthGoals", "activeHealthGoals", "healthGoalsByType",
-            "healthGoalsByPriority", "overdueHealthGoals", "healthGoalsByStatus"},
-            key = "#patientId")
+    @EvictPatientCaches
     public HealthGoalResponse createHealthGoal(String patientId, CreateHealthGoalRequest request) {
         try {
             log.info("Creating health goal for patient: {}", patientId);
@@ -181,9 +179,7 @@ public class HealthGoalServiceImpl implements HealthGoalService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientHealthGoals", "healthGoal", "activeHealthGoals", "healthGoalsByType",
-            "healthGoalsByPriority", "overdueHealthGoals", "healthGoalsByStatus"},
-            allEntries = true)
+    @EvictPatientCaches
     public HealthGoalResponse updateHealthGoal(String patientId, String goalId, UpdateHealthGoalRequest request) {
         try {
             log.info("Updating health goal {} for patient: {}", goalId, patientId);
@@ -221,9 +217,7 @@ public class HealthGoalServiceImpl implements HealthGoalService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientHealthGoals", "healthGoal", "activeHealthGoals", "healthGoalsByType",
-            "healthGoalsByPriority", "overdueHealthGoals", "healthGoalsByStatus"},
-            allEntries = true)
+    @EvictPatientCaches
     public HealthGoalResponse partialUpdateHealthGoal(String patientId, String goalId, UpdateHealthGoalRequest request) {
         try {
             log.info("Partially updating health goal {} for patient: {}", goalId, patientId);
@@ -265,9 +259,7 @@ public class HealthGoalServiceImpl implements HealthGoalService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientHealthGoals", "healthGoal", "activeHealthGoals", "healthGoalsByType",
-            "healthGoalsByPriority", "overdueHealthGoals", "healthGoalsByStatus"},
-            allEntries = true)
+    @EvictPatientCaches
     public HealthGoalResponse updateProgress(String patientId, String goalId, BigDecimal currentValue) {
         try {
             log.info("Updating progress for health goal {} for patient: {}", goalId, patientId);
@@ -298,9 +290,7 @@ public class HealthGoalServiceImpl implements HealthGoalService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientHealthGoals", "healthGoal", "activeHealthGoals", "healthGoalsByType",
-            "healthGoalsByPriority", "overdueHealthGoals", "healthGoalsByStatus"},
-            allEntries = true)
+    @EvictPatientCaches
     public HealthGoalResponse addToProgress(String patientId, String goalId, BigDecimal increment) {
         try {
             log.info("Adding {} to progress for health goal {} for patient: {}", increment, goalId, patientId);
@@ -332,9 +322,7 @@ public class HealthGoalServiceImpl implements HealthGoalService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientHealthGoals", "healthGoal", "activeHealthGoals", "healthGoalsByType",
-            "healthGoalsByPriority", "overdueHealthGoals", "healthGoalsByStatus"},
-            allEntries = true)
+    @EvictPatientCaches
     public HealthGoalResponse updateStatus(String patientId, String goalId, String status) {
         try {
             log.info("Updating status for health goal {} for patient: {}", goalId, patientId);
@@ -362,9 +350,7 @@ public class HealthGoalServiceImpl implements HealthGoalService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"patientHealthGoals", "healthGoal", "activeHealthGoals", "healthGoalsByType",
-            "healthGoalsByPriority", "overdueHealthGoals", "healthGoalsByStatus"},
-            allEntries = true)
+    @EvictPatientCaches
     public void deleteHealthGoal(String patientId, String goalId) {
         try {
             log.info("Soft deleting health goal {} for patient: {}", goalId, patientId);

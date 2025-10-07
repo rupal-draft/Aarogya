@@ -23,7 +23,7 @@ interface MedicalHistoryCardProps {
   onViewAll?: () => void;
   totalCount?: number;
   onDataUpdate?: () => void;
-  patientId: string;
+  patientId?: string;
 }
 
 export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({

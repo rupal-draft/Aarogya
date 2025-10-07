@@ -1,5 +1,6 @@
 package com.aarogya.patient_management_service.service.implementations;
 
+import com.aarogya.patient_management_service.annotations.EvictPatientCaches;
 import com.aarogya.patient_management_service.dto.request.CreateVitalsRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateVitalsRequest;
 import com.aarogya.patient_management_service.dto.response.PatientVitalsResponse;
@@ -41,7 +42,7 @@ public class PatientVitalsServiceImpl implements PatientVitalsService {
     private final ModelMapper modelMapper;
 
     @Override
-    @CacheEvict(value = {"patientVitals", "latestVitals"}, key = "#patientId")
+    @EvictPatientCaches
     public PatientVitalsResponse recordVitals(String patientId, CreateVitalsRequest request) {
         try {
             log.info("Recording vitals for patient: {}", patientId);
@@ -175,7 +176,7 @@ public class PatientVitalsServiceImpl implements PatientVitalsService {
     }
 
     @Override
-    @CacheEvict(value = {"patientVitals", "latestVitals"}, key = "#patientId")
+    @EvictPatientCaches
     public PatientVitalsResponse updateVitals(String patientId, String vitalsId, UpdateVitalsRequest request) {
         try {
             log.info("Updating vitals: {} for patient: {}", vitalsId, patientId);
@@ -206,7 +207,7 @@ public class PatientVitalsServiceImpl implements PatientVitalsService {
     }
 
     @Override
-    @CacheEvict(value = {"patientVitals", "latestVitals"}, key = "#patientId")
+    @EvictPatientCaches
     public PatientVitalsResponse partialUpdateVitals(String patientId, String vitalsId, UpdateVitalsRequest request) {
         try {
             log.info("Partially updating vitals: {} for patient: {}", vitalsId, patientId);
@@ -233,7 +234,7 @@ public class PatientVitalsServiceImpl implements PatientVitalsService {
     }
 
     @Override
-    @CacheEvict(value = {"patientVitals", "latestVitals"}, key = "#patientId")
+    @EvictPatientCaches
     public void deleteVitals(String patientId, String vitalsId) {
         try {
             log.info("Deleting vitals: {} for patient: {}", vitalsId, patientId);

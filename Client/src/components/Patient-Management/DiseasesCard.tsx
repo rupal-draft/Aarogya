@@ -25,7 +25,7 @@ interface DiseasesCardProps {
   onViewAll?: () => void;
   totalCount?: number;
   onDataUpdate?: () => void;
-  patientId: string;
+  patientId?: string;
 }
 
 export const DiseasesCard: React.FC<DiseasesCardProps> = ({

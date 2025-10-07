@@ -27,7 +27,7 @@ import { emergencyContactsService } from "../../Services/Patient/emergencyContac
 interface EmergencyContactCardProps {
   contact: EmergencyContact;
   onDataUpdate?: () => void;
-  patientId: string;
+  patientId?: string;
 }
 
 export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({

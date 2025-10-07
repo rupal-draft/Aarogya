@@ -26,7 +26,7 @@ interface HealthGoalsCardProps {
   onViewAll?: () => void;
   totalCount?: number;
   onDataUpdate?: () => void;
-  patientId: string;
+  patientId?: string;
 }
 
 export const HealthGoalsCard: React.FC<HealthGoalsCardProps> = ({

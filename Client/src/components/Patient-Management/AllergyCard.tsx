@@ -26,7 +26,7 @@ interface AllergiesCardProps {
   onViewAll?: () => void;
   totalCount?: number;
   onDataUpdate?: () => void;
-  patientId: string;
+  patientId?: string;
 }
 
 export const AllergiesCard: React.FC<AllergiesCardProps> = ({
@@ -45,7 +45,6 @@ export const AllergiesCard: React.FC<AllergiesCardProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
     null
   );
-
   const showViewAll = totalCount > 3;
 
   const safeValue = (val: any, fallback: string = "N/A") =>
@@ -133,6 +132,11 @@ export const AllergiesCard: React.FC<AllergiesCardProps> = ({
 
   // Save allergy (create or update)
   const saveAllergy = async () => {
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
+
     if (!formData.allergen || !formData.severity || !formData.diagnosedDate) {
       alert("Please fill in all required fields");
       return;
@@ -159,7 +163,11 @@ export const AllergiesCard: React.FC<AllergiesCardProps> = ({
           emergencyAction: formData.emergencyAction,
         };
 
-        await allergiesService.updateAllergy(editingAllergy, updateRequest);
+        await allergiesService.updateAllergy(
+          patientId,
+          editingAllergy,
+          updateRequest
+        );
       } else {
         // Create new allergy
         const createRequest: CreateAllergyRequest = {
@@ -172,7 +180,7 @@ export const AllergiesCard: React.FC<AllergiesCardProps> = ({
           emergencyAction: formData.emergencyAction,
         };
 
-        await allergiesService.addAllergy(createRequest);
+        await allergiesService.addAllergy(patientId, createRequest);
       }
 
       // Refresh data
@@ -195,9 +203,12 @@ export const AllergiesCard: React.FC<AllergiesCardProps> = ({
   // Delete allergy
   const deleteAllergy = async (allergyId: string) => {
     setLoading(allergyId);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await allergiesService.deleteAllergy(allergyId);
+      await allergiesService.deleteAllergy(patientId, allergyId);
 
       // Refresh data
       if (onDataUpdate) {
@@ -216,9 +227,16 @@ export const AllergiesCard: React.FC<AllergiesCardProps> = ({
   // Update severity only
   const updateSeverity = async (allergyId: string, severity: string) => {
     setLoading(`${allergyId}-severity`);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await allergiesService.updateAllergySeverity(allergyId, severity);
+      await allergiesService.updateAllergySeverity(
+        patientId,
+        allergyId,
+        severity
+      );
 
       // Refresh data
       if (onDataUpdate) {
@@ -238,9 +256,12 @@ export const AllergiesCard: React.FC<AllergiesCardProps> = ({
     currentStatus: boolean
   ) => {
     setLoading(`${allergyId}-status`);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await allergiesService.partialUpdateAllergy(allergyId, {
+      await allergiesService.partialUpdateAllergy(patientId, allergyId, {
         isActive: !currentStatus,
       });
 

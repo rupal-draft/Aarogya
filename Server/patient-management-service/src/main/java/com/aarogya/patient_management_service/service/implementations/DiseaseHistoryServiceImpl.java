@@ -1,5 +1,6 @@
 package com.aarogya.patient_management_service.service.implementations;
 
+import com.aarogya.patient_management_service.annotations.EvictPatientCaches;
 import com.aarogya.patient_management_service.dto.request.CreateDiseaseHistoryRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateDiseaseHistoryRequest;
 import com.aarogya.patient_management_service.dto.response.DiseaseHistoryResponse;
@@ -11,7 +12,6 @@ import com.aarogya.patient_management_service.service.DiseaseHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
@@ -40,7 +40,7 @@ public class DiseaseHistoryServiceImpl implements DiseaseHistoryService {
     private final ModelMapper modelMapper;
 
     @Override
-    @CacheEvict(value = {"patientDashboard", "completePatientProfile", "diseaseHistory", "activeDiseases", "chronicDiseases"}, key = "#patientId")
+    @EvictPatientCaches
     public DiseaseHistoryResponse createDiseaseHistory(String patientId, CreateDiseaseHistoryRequest request) {
         try {
             log.info("Creating disease history for patient: {}", patientId);
@@ -131,7 +131,7 @@ public class DiseaseHistoryServiceImpl implements DiseaseHistoryService {
     }
 
     @Override
-    @CacheEvict(value = {"patientDashboard", "completePatientProfile", "diseaseHistory", "activeDiseases", "chronicDiseases"}, key = "#patientId")
+    @EvictPatientCaches
     public DiseaseHistoryResponse updateDiseaseHistory(String patientId, String diseaseId, UpdateDiseaseHistoryRequest request) {
         try {
             log.info("Updating disease history {} for patient: {}", diseaseId, patientId);
@@ -161,7 +161,7 @@ public class DiseaseHistoryServiceImpl implements DiseaseHistoryService {
     }
 
     @Override
-    @CacheEvict(value = {"patientDashboard", "completePatientProfile", "diseaseHistory", "activeDiseases", "chronicDiseases"}, key = "#patientId")
+    @EvictPatientCaches
     public void deleteDiseaseHistory(String patientId, String diseaseId) {
         try {
             log.info("Deleting disease history {} for patient: {}", diseaseId, patientId);

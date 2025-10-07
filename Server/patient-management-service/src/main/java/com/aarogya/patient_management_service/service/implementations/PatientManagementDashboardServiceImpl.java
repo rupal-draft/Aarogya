@@ -294,13 +294,13 @@ public class PatientManagementDashboardServiceImpl implements PatientManagementD
             ));
             LimitOperation limit = limit(1);
             Aggregation agg = newAggregation(match, limit,
-                    project("_id","contactName", "relationship", "phoneNumber", "secondaryPhone", "email", "address", "isPrimary")
+                    project("_id","contactName", "relationship", "phoneNumber", "secondaryPhone", "email", "address", "isPrimary", "isActive")
             );
             Document d = mongoTemplate.aggregate(agg, "emergency_contacts", Document.class).getUniqueMappedResult();
             if (d == null) {
                 Aggregation fallback = newAggregation(match(Criteria.where("patientId").is(patientId).and("isActive").is(true)),
                         sort(Sort.by(Sort.Direction.DESC, "createdAt")), limit(1),
-                        project("_id","contactName", "relationship", "phoneNumber", "secondaryPhone", "email", "address", "isPrimary")
+                        project("_id","contactName", "relationship", "phoneNumber", "secondaryPhone", "email", "address", "isPrimary", "isActive")
                 );
                 d = mongoTemplate.aggregate(fallback, "emergency_contacts", Document.class).getUniqueMappedResult();
             }
@@ -314,6 +314,7 @@ public class PatientManagementDashboardServiceImpl implements PatientManagementD
                     .email(asStringSafe(d.get("email")))
                     .address(asStringSafe(d.get("address")))
                     .isPrimary(asBooleanSafe(d.get("isPrimary")))
+                    .isActive(asBooleanSafe(d.get("isActive")))
                     .build();
         } catch (Exception ex) {
             log.error("Error fetching emergency contact for {}: {}", patientId, ex.getMessage(), ex);

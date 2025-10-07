@@ -20,4 +20,5 @@ public class EmergencyContactDTO {
     private String email;
     private String address;
     private Boolean isPrimary;
+    private Boolean isActive;
 }

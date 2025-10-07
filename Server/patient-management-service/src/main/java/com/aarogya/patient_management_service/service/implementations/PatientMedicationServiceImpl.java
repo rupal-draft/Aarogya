@@ -1,5 +1,6 @@
 package com.aarogya.patient_management_service.service.implementations;
 
+import com.aarogya.patient_management_service.annotations.EvictPatientCaches;
 import com.aarogya.patient_management_service.dto.request.CreateMedicationRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateMedicationRequest;
 import com.aarogya.patient_management_service.dto.response.PatientMedicationResponse;
@@ -39,7 +40,7 @@ public class PatientMedicationServiceImpl implements PatientMedicationService {
     private final ModelMapper modelMapper;
 
     @Override
-    @CacheEvict(value = {"patientMedications", "activeMedications"}, key = "#patientId")
+    @EvictPatientCaches
     public PatientMedicationResponse addMedication(String patientId, CreateMedicationRequest request) {
         try {
             log.info("Adding medication for patient: {}", patientId);
@@ -120,7 +121,7 @@ public class PatientMedicationServiceImpl implements PatientMedicationService {
     }
 
     @Override
-    @CacheEvict(value = {"patientMedications", "activeMedications"}, key = "#patientId")
+    @EvictPatientCaches
     public PatientMedicationResponse updateMedication(String patientId, String medicationId, UpdateMedicationRequest request) {
         try {
             log.info("Updating medication {} for patient: {}", medicationId, patientId);
@@ -150,7 +151,7 @@ public class PatientMedicationServiceImpl implements PatientMedicationService {
     }
 
     @Override
-    @CacheEvict(value = {"patientMedications", "activeMedications"}, key = "#patientId")
+    @EvictPatientCaches
     public PatientMedicationResponse partialUpdateMedication(String patientId, String medicationId, UpdateMedicationRequest request) {
         try {
             log.info("Partially updating medication {} for patient: {}", medicationId, patientId);
@@ -176,7 +177,7 @@ public class PatientMedicationServiceImpl implements PatientMedicationService {
     }
 
     @Override
-    @CacheEvict(value = {"patientMedications", "activeMedications"}, key = "#patientId")
+    @EvictPatientCaches
     public PatientMedicationResponse updateMedicationStatus(String patientId, String medicationId, String status) {
         try {
             log.info("Updating medication status {} for patient: {}", medicationId, patientId);
@@ -214,7 +215,7 @@ public class PatientMedicationServiceImpl implements PatientMedicationService {
     }
 
     @Override
-    @CacheEvict(value = {"patientMedications", "activeMedications"}, key = "#patientId")
+    @EvictPatientCaches
     public void deleteMedication(String patientId, String medicationId) {
         try {
             log.info("Deleting medication {} for patient: {}", medicationId, patientId);

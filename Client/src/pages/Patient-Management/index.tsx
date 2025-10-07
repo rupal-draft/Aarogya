@@ -23,11 +23,13 @@ import { useParams } from "react-router-dom";
 import { AllergiesCard } from "../../components/Patient-Management/AllergyCard";
 import { ViewAllModal } from "../../common/Modals/ViewAllModal";
 import { StatisticsCard } from "../../components/Patient-Management/StatisticsCard";
+import { useAuth } from "../../hooks/Redux/useAuth";
 
 function PatientManagement() {
   const { id } = useParams<{ id: string }>();
   const { data, loading, error } = usePatientData(id || "");
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const { userName, userId } = useAuth();
 
   const openModal = (modalName: string) => setActiveModal(modalName);
   const closeModal = () => setActiveModal(null);
@@ -119,10 +121,10 @@ function PatientManagement() {
   const previewMedications = safeMedications.slice(0, 2);
   const previewDoctorNotes = safeDoctorNotes.slice(0, 4);
   const previewHealthGoals = safeHealthGoals.slice(0, 2);
-  const previewAllergies = safeAllergies.slice(0, 3);
+  const previewAllergies = safeAllergies.slice(0, 4);
   const previewSymptoms = safeSymptoms.slice(0, 3);
   const previewMedicalHistory = safeMedicalHistory.slice(0, 3);
-  const previewDiseases = safeDiseases.slice(0, 3);
+  const previewDiseases = safeDiseases.slice(0, 4);
 
   const statisticsData = {
     totalMedications: safeMedications.length,
@@ -207,6 +209,7 @@ function PatientManagement() {
                   medications={previewMedications}
                   onViewAll={() => openModal("medications")}
                   totalCount={safeMedications.length}
+                  patientId={id}
                 />
               </motion.div>
 
@@ -220,6 +223,7 @@ function PatientManagement() {
                   symptoms={previewSymptoms}
                   onViewAll={() => openModal("symptoms")}
                   totalCount={safeSymptoms.length}
+                  patientId={id}
                 />
               </motion.div>
             </div>
@@ -236,6 +240,9 @@ function PatientManagement() {
                   notes={previewDoctorNotes}
                   onViewAll={() => openModal("doctorNotes")}
                   totalCount={safeDoctorNotes.length}
+                  doctorId={userId}
+                  doctorName={userName}
+                  patientId={id}
                 />
               </motion.div>
 
@@ -249,6 +256,7 @@ function PatientManagement() {
                   goals={previewHealthGoals}
                   onViewAll={() => openModal("healthGoals")}
                   totalCount={safeHealthGoals.length}
+                  patientId={id}
                 />
               </motion.div>
             </div>
@@ -265,6 +273,7 @@ function PatientManagement() {
                   history={previewMedicalHistory}
                   onViewAll={() => openModal("medicalHistory")}
                   totalCount={safeMedicalHistory.length}
+                  patientId={id}
                 />
               </motion.div>
 
@@ -278,6 +287,7 @@ function PatientManagement() {
                   diseases={previewDiseases}
                   onViewAll={() => openModal("diseases")}
                   totalCount={safeDiseases.length}
+                  patientId={id}
                 />
               </motion.div>
             </div>
@@ -291,7 +301,10 @@ function PatientManagement() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <EmergencyContactCard contact={primaryEmergencyContact} />
+              <EmergencyContactCard
+                contact={primaryEmergencyContact}
+                patientId={id}
+              />
             </motion.div>
 
             {/* Allergies */}
@@ -304,6 +317,7 @@ function PatientManagement() {
                 allergies={previewAllergies}
                 onViewAll={() => openModal("allergies")}
                 totalCount={safeAllergies.length}
+                patientId={id}
               />
             </motion.div>
             <motion.div
@@ -322,7 +336,7 @@ function PatientManagement() {
           onClose={closeModal}
           title="Doctor Notes"
           data={safeDoctorNotes}
-          renderItem={(note, index) => (
+          renderItem={(note) => (
             <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
@@ -362,7 +376,7 @@ function PatientManagement() {
           onClose={closeModal}
           title="Health Goals"
           data={safeHealthGoals}
-          renderItem={(goal, index) => {
+          renderItem={(goal) => {
             const progress = Math.min(
               (goal.currentValue / goal.targetValue) * 100,
               100
@@ -419,7 +433,7 @@ function PatientManagement() {
           onClose={closeModal}
           title="Medical History"
           data={safeMedicalHistory}
-          renderItem={(history, index) => (
+          renderItem={(history) => (
             <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 {history.conditionName || "Unknown Condition"}
@@ -449,7 +463,7 @@ function PatientManagement() {
           onClose={closeModal}
           title="Diseases"
           data={safeDiseases}
-          renderItem={(disease, index) => (
+          renderItem={(disease) => (
             <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 {disease.diseaseName || "Unknown Disease"}
@@ -495,7 +509,7 @@ function PatientManagement() {
           onClose={closeModal}
           title="Allergies"
           data={safeAllergies}
-          renderItem={(allergy, index) => (
+          renderItem={(allergy) => (
             <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 {allergy.allergen || "Unknown Allergen"}
@@ -539,7 +553,7 @@ function PatientManagement() {
           onClose={closeModal}
           title="Medications"
           data={safeMedications}
-          renderItem={(medication, index) => (
+          renderItem={(medication) => (
             <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 {medication.medicationName || "Unknown Medication"}
@@ -590,7 +604,7 @@ function PatientManagement() {
           onClose={closeModal}
           title="Symptoms"
           data={safeSymptoms}
-          renderItem={(symptom, index) => (
+          renderItem={(symptom) => (
             <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 {symptom.symptomName || "Unknown Symptom"}

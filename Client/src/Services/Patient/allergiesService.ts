@@ -4,17 +4,20 @@ import type {
   CreateAllergyRequest,
   UpdateAllergyRequest,
 } from "../../types/patientDashboard";
-import { api } from "../../utils/dashboardApi";
+import { api, ENDPOINTS } from "../../utils/dashboardApi";
 
 export class AllergiesService {
-  private readonly basePath = "/allergies";
+  private getBasePath(patientId: string) {
+    return `${ENDPOINTS.PATIENT}/${patientId}/allergies`;
+  }
 
   async addAllergy(
+    patientId: string,
     request: CreateAllergyRequest
   ): Promise<PatientAllergyResponse> {
     try {
       const response = await api.post<ApiResponse<PatientAllergyResponse>>(
-        this.basePath,
+        this.getBasePath(patientId),
         request
       );
       return response.data.data;
@@ -25,12 +28,13 @@ export class AllergiesService {
   }
 
   async updateAllergy(
+    patientId: string,
     allergyId: string,
     request: UpdateAllergyRequest
   ): Promise<PatientAllergyResponse> {
     try {
       const response = await api.put<ApiResponse<PatientAllergyResponse>>(
-        `${this.basePath}/${allergyId}`,
+        `${this.getBasePath(patientId)}/${allergyId}`,
         request
       );
       return response.data.data;
@@ -41,12 +45,13 @@ export class AllergiesService {
   }
 
   async partialUpdateAllergy(
+    patientId: string,
     allergyId: string,
     request: UpdateAllergyRequest
   ): Promise<PatientAllergyResponse> {
     try {
       const response = await api.patch<ApiResponse<PatientAllergyResponse>>(
-        `${this.basePath}/${allergyId}`,
+        `${this.getBasePath(patientId)}/${allergyId}`,
         request
       );
       return response.data.data;
@@ -57,12 +62,13 @@ export class AllergiesService {
   }
 
   async updateAllergySeverity(
+    patientId: string,
     allergyId: string,
     severity: string
   ): Promise<PatientAllergyResponse> {
     try {
       const response = await api.put<ApiResponse<PatientAllergyResponse>>(
-        `${this.basePath}/${allergyId}/severity`,
+        `${this.getBasePath(patientId)}/${allergyId}/severity`,
         null,
         { params: { severity } }
       );
@@ -73,10 +79,10 @@ export class AllergiesService {
     }
   }
 
-  async deleteAllergy(allergyId: string): Promise<string> {
+  async deleteAllergy(patientId: string, allergyId: string): Promise<string> {
     try {
       const response = await api.delete<ApiResponse<string>>(
-        `${this.basePath}/${allergyId}`
+        `${this.getBasePath(patientId)}/${allergyId}`
       );
       return response.data.data;
     } catch (error) {
