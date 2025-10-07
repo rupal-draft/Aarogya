@@ -140,6 +140,11 @@ export const DiseasesCard: React.FC<DiseasesCardProps> = ({
 
   // Save disease (create or update)
   const saveDisease = async () => {
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
+
     if (
       !formData.diseaseName ||
       !formData.diagnosisDate ||
@@ -168,6 +173,7 @@ export const DiseasesCard: React.FC<DiseasesCardProps> = ({
         };
 
         await diseaseHistoryService.updateDiseaseHistory(
+          patientId,
           editingDisease,
           updateRequest
         );
@@ -186,7 +192,10 @@ export const DiseasesCard: React.FC<DiseasesCardProps> = ({
           notes: formData.notes,
         };
 
-        await diseaseHistoryService.createDiseaseHistory(createRequest);
+        await diseaseHistoryService.createDiseaseHistory(
+          patientId,
+          createRequest
+        );
       }
 
       // Refresh data
@@ -209,9 +218,12 @@ export const DiseasesCard: React.FC<DiseasesCardProps> = ({
   // Delete disease
   const deleteDisease = async (diseaseId: string) => {
     setLoading(diseaseId);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await diseaseHistoryService.deleteDiseaseHistory(diseaseId);
+      await diseaseHistoryService.deleteDiseaseHistory(patientId, diseaseId);
 
       // Refresh data
       if (onDataUpdate) {

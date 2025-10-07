@@ -130,7 +130,7 @@ public class PatientManagementDashboardServiceImpl implements PatientManagementD
             Date now = new Date();
             MatchOperation match = match(new Criteria().andOperator(
                     Criteria.where("patientId").is(patientId),
-                    Criteria.where("status").is("ACTIVE"),
+                    Criteria.where("status").in("ACTIVE", "COMPLETED"),
                     new Criteria().orOperator(
                             Criteria.where("endDate").exists(false),
                             Criteria.where("endDate").gt(now)

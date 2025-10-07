@@ -3,50 +3,66 @@ import type {
   CreateMedicalHistoryRequest,
   MedicalHistoryResponse,
 } from "../../types/patientDashboard";
-import { api } from "../../utils/dashboardApi";
+import { api, ENDPOINTS } from "../../utils/dashboardApi";
 
 export class MedicalHistoryService {
-  private readonly basePath = "/medical-history";
+  private getBasePath(patientId: string) {
+    return `${ENDPOINTS.PATIENT}/${patientId}/medical-history`;
+  }
 
   async addMedicalHistory(
+    patientId: string,
     request: CreateMedicalHistoryRequest
   ): Promise<MedicalHistoryResponse> {
     try {
       const response = await api.post<ApiResponse<MedicalHistoryResponse>>(
-        this.basePath,
+        this.getBasePath(patientId),
         request
       );
       return response.data.data;
     } catch (error) {
-      console.error("Error adding medical history:", error);
+      console.error(
+        `Error adding medical history for patient ${patientId}:`,
+        error
+      );
       throw error;
     }
   }
 
   async updateMedicalHistory(
+    patientId: string,
     historyId: string,
     request: CreateMedicalHistoryRequest
   ): Promise<MedicalHistoryResponse> {
     try {
       const response = await api.put<ApiResponse<MedicalHistoryResponse>>(
-        `${this.basePath}/${historyId}`,
+        `${this.getBasePath(patientId)}/${historyId}`,
         request
       );
       return response.data.data;
     } catch (error) {
-      console.error(`Error updating medical history ${historyId}:`, error);
+      console.error(
+        `Error updating medical history ${historyId} for patient ${patientId}:`,
+        error
+      );
       throw error;
     }
   }
 
-  async deleteMedicalHistory(historyId: string): Promise<string> {
+  async deleteMedicalHistory(
+    patientId: string,
+    historyId: string
+  ): Promise<string> {
     try {
       const response = await api.delete<ApiResponse<string>>(
-        `${this.basePath}/${historyId}`
+        `${this.getBasePath(patientId)}/${historyId}`
       );
       return response.data.data;
     } catch (error) {
-      console.error(`Error deleting medical history ${historyId}:`, error);
+      console.error(
+        `Error deleting medical history ${historyId} for patient ${patientId}:`,
+        error
+      );
       throw error;
     }
   }

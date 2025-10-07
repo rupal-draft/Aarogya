@@ -173,7 +173,10 @@ export const HealthGoalsCard: React.FC<HealthGoalsCardProps> = ({
       alert("Please fill in all required fields");
       return;
     }
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     setLoading(editingGoal || "new");
 
     try {
@@ -191,7 +194,11 @@ export const HealthGoalsCard: React.FC<HealthGoalsCardProps> = ({
           notes: formData.notes,
         };
 
-        await healthGoalsService.updateHealthGoal(editingGoal, updateRequest);
+        await healthGoalsService.updateHealthGoal(
+          patientId,
+          editingGoal,
+          updateRequest
+        );
       } else {
         // Create new goal
         const createRequest: CreateHealthGoalRequest = {
@@ -206,7 +213,7 @@ export const HealthGoalsCard: React.FC<HealthGoalsCardProps> = ({
           notes: formData.notes,
         };
 
-        await healthGoalsService.createHealthGoal(createRequest);
+        await healthGoalsService.createHealthGoal(patientId, createRequest);
       }
 
       // Refresh data
@@ -229,9 +236,12 @@ export const HealthGoalsCard: React.FC<HealthGoalsCardProps> = ({
   // Delete goal
   const deleteGoal = async (goalId: string) => {
     setLoading(goalId);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await healthGoalsService.deleteHealthGoal(goalId);
+      await healthGoalsService.deleteHealthGoal(patientId, goalId);
 
       // Refresh data
       if (onDataUpdate) {
@@ -249,10 +259,14 @@ export const HealthGoalsCard: React.FC<HealthGoalsCardProps> = ({
 
   // Update progress
   const updateProgress = async (goalId: string, currentValue: number) => {
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     setLoading(`${goalId}-progress`);
 
     try {
-      await healthGoalsService.updateProgress(goalId, currentValue);
+      await healthGoalsService.updateProgress(patientId, goalId, currentValue);
 
       // Refresh data
       if (onDataUpdate) {
@@ -271,9 +285,12 @@ export const HealthGoalsCard: React.FC<HealthGoalsCardProps> = ({
   // Add to progress
   const addToProgress = async (goalId: string, increment: number) => {
     setLoading(`${goalId}-add`);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await healthGoalsService.addToProgress(goalId, increment);
+      await healthGoalsService.addToProgress(patientId, goalId, increment);
 
       // Refresh data
       if (onDataUpdate) {
@@ -290,9 +307,12 @@ export const HealthGoalsCard: React.FC<HealthGoalsCardProps> = ({
   // Update status
   const updateStatus = async (goalId: string, status: string) => {
     setLoading(`${goalId}-status`);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await healthGoalsService.updateStatus(goalId, status);
+      await healthGoalsService.updateStatus(patientId, goalId, status);
 
       // Refresh data
       if (onDataUpdate) {

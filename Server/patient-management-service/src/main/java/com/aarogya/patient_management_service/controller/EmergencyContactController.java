@@ -2,10 +2,12 @@ package com.aarogya.patient_management_service.controller;
 
 import com.aarogya.patient_management_service.advices.ApiError;
 import com.aarogya.patient_management_service.advices.ApiResponse;
+import com.aarogya.patient_management_service.auth.UserContext;
 import com.aarogya.patient_management_service.auth.UserContextHolder;
 import com.aarogya.patient_management_service.dto.request.CreateEmergencyContactRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateEmergencyContactRequest;
 import com.aarogya.patient_management_service.dto.response.EmergencyContactResponse;
+import com.aarogya.patient_management_service.exceptions.AccessForbidden;
 import com.aarogya.patient_management_service.service.EmergencyContactService;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
@@ -28,75 +30,64 @@ public class EmergencyContactController {
         this.emergencyContactService = emergencyContactService;
     }
 
-    @GetMapping
+    private String getEffectivePatientId(String patientIdFromPath) {
+        UserContext user = UserContextHolder.getUserDetails();
+        if ("PATIENT".equals(user.getRole())) {
+            return user.getUserId();
+        } else if ("DOCTOR".equals(user.getRole())) {
+            return patientIdFromPath;
+        } else {
+            throw new AccessForbidden("Unauthorized access");
+        }
+    }
+
+    @GetMapping("/{patientId}")
     @RateLimiter(name = "emergencyContactsRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<List<EmergencyContactResponse>> getPatientEmergencyContacts() {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
-        List<EmergencyContactResponse> response = emergencyContactService.getPatientEmergencyContacts(patientId);
+    public ResponseEntity<List<EmergencyContactResponse>> getPatientEmergencyContacts(
+            @PathVariable String patientId) {
+        String effectivePatientId = getEffectivePatientId(patientId);
+        List<EmergencyContactResponse> response = emergencyContactService.getPatientEmergencyContacts(effectivePatientId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{contactId}")
+    @GetMapping("/{patientId}/{contactId}")
     @RateLimiter(name = "emergencyContactsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<EmergencyContactResponse> getEmergencyContact(
+            @PathVariable String patientId,
             @PathVariable String contactId) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
-        EmergencyContactResponse response = emergencyContactService.getEmergencyContact(patientId, contactId);
+        String effectivePatientId = getEffectivePatientId(patientId);
+        EmergencyContactResponse response = emergencyContactService.getEmergencyContact(effectivePatientId, contactId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/primary")
-    @RateLimiter(name = "emergencyContactsRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<EmergencyContactResponse> getPrimaryContact() {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
-        EmergencyContactResponse response = emergencyContactService.getPrimaryContact(patientId);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping
+    @PostMapping("/{patientId}")
     @RateLimiter(name = "emergencyContactsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<EmergencyContactResponse> createEmergencyContact(
+            @PathVariable String patientId,
             @Valid @RequestBody CreateEmergencyContactRequest request) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
-        EmergencyContactResponse response = emergencyContactService.createEmergencyContact(patientId, request);
+        String effectivePatientId = getEffectivePatientId(patientId);
+        EmergencyContactResponse response = emergencyContactService.createEmergencyContact(effectivePatientId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping("/{contactId}")
+    @PutMapping("/{patientId}/{contactId}")
     @RateLimiter(name = "emergencyContactsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<EmergencyContactResponse> updateEmergencyContact(
+            @PathVariable String patientId,
             @PathVariable String contactId,
             @Valid @RequestBody UpdateEmergencyContactRequest request) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
-        EmergencyContactResponse response = emergencyContactService.updateEmergencyContact(patientId, contactId, request);
+        String effectivePatientId = getEffectivePatientId(patientId);
+        EmergencyContactResponse response = emergencyContactService.updateEmergencyContact(effectivePatientId, contactId, request);
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/{contactId}")
-    @RateLimiter(name = "emergencyContactsRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<EmergencyContactResponse> partialUpdateEmergencyContact(
-            @PathVariable String contactId,
-            @Valid @RequestBody UpdateEmergencyContactRequest request) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
-        EmergencyContactResponse response = emergencyContactService.partialUpdateEmergencyContact(patientId, contactId, request);
-        return ResponseEntity.ok(response);
-    }
-
-    @PutMapping("/{contactId}/primary")
-    @RateLimiter(name = "emergencyContactsRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<EmergencyContactResponse> setPrimaryContact(
-            @PathVariable String contactId) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
-        EmergencyContactResponse response = emergencyContactService.setPrimaryContact(patientId, contactId);
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/{contactId}")
+    @DeleteMapping("/{patientId}/{contactId}")
     @RateLimiter(name = "emergencyContactsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<ApiResponse<String>> deleteEmergencyContact(
+            @PathVariable String patientId,
             @PathVariable String contactId) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
-        emergencyContactService.deleteEmergencyContact(patientId, contactId);
+        String effectivePatientId = getEffectivePatientId(patientId);
+        emergencyContactService.deleteEmergencyContact(effectivePatientId, contactId);
         return ResponseEntity.ok(ApiResponse.success("Emergency contact deleted successfully!"));
     }
 

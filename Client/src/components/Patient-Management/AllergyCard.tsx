@@ -598,27 +598,26 @@ export const AllergiesCard: React.FC<AllergiesCardProps> = ({
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex flex-col items-end gap-2">
-                        <div className="flex items-center gap-2">
-                          <select
-                            value={allergy.severity}
-                            onChange={(e) =>
-                              updateSeverity(allergy.id, e.target.value)
-                            }
-                            className={`px-3 py-1 rounded-full text-xs font-bold border ${getSeverityColor(
-                              allergy.severity
-                            )} focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                            disabled={loading === `${allergy.id}-severity`}
-                          >
-                            <option value="MILD">Mild</option>
-                            <option value="MODERATE">Moderate</option>
-                            <option value="SEVERE">Severe</option>
-                            <option value="CRITICAL">Critical</option>
-                          </select>
-                          {loading === `${allergy.id}-severity` && (
-                            <Loader2 className="w-3 h-3 animate-spin text-gray-500" />
-                          )}
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={allergy.severity}
+                          onChange={(e) =>
+                            updateSeverity(allergy.id, e.target.value)
+                          }
+                          className={`px-3 py-1 rounded-full text-xs font-bold border ${getSeverityColor(
+                            allergy.severity
+                          )} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                          disabled={loading === `${allergy.id}-severity`}
+                        >
+                          <option value="MILD">Mild</option>
+                          <option value="MODERATE">Moderate</option>
+                          <option value="SEVERE">Severe</option>
+                          <option value="CRITICAL">Critical</option>
+                        </select>
+                        {loading === `${allergy.id}-severity` && (
+                          <Loader2 className="w-3 h-3 animate-spin text-gray-500" />
+                        )}
+
                         {allergy.severity?.toUpperCase() === "CRITICAL" && (
                           <motion.div
                             animate={{ scale: [1, 1.2, 1] }}

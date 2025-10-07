@@ -165,7 +165,10 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
       alert("Please fill in all required fields");
       return;
     }
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     setLoading(editingHistory || "new");
 
     try {
@@ -181,12 +184,13 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
 
       if (editingHistory) {
         await medicalHistoryService.updateMedicalHistory(
+          patientId,
           editingHistory,
           requestData
         );
       } else {
         // Create new medical history
-        await medicalHistoryService.addMedicalHistory(requestData);
+        await medicalHistoryService.addMedicalHistory(patientId, requestData);
       }
 
       // Refresh data
@@ -210,9 +214,12 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
   const deleteMedicalHistory = async (condition: MedicalHistory) => {
     const historyId = condition.id;
     setLoading(historyId);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await medicalHistoryService.deleteMedicalHistory(historyId);
+      await medicalHistoryService.deleteMedicalHistory(patientId, historyId);
 
       // Refresh data
       if (onDataUpdate) {
@@ -455,7 +462,7 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
               transition={{ duration: 0.4, delay: index * 0.05 }}
               whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
             >
-              {editingHistory === editingHistory ? (
+              {editingHistory === condition.id ? (
                 // Edit Form
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">

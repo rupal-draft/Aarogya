@@ -27,7 +27,7 @@ import { useAuth } from "../../hooks/Redux/useAuth";
 
 function PatientManagement() {
   const { id } = useParams<{ id: string }>();
-  const { data, loading, error } = usePatientData(id || "");
+  const { data, loading, error, refetch } = usePatientData(id || "");
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const { userName, userId } = useAuth();
 
@@ -210,6 +210,7 @@ function PatientManagement() {
                   onViewAll={() => openModal("medications")}
                   totalCount={safeMedications.length}
                   patientId={id}
+                  onDataUpdate={refetch}
                 />
               </motion.div>
 
@@ -224,6 +225,7 @@ function PatientManagement() {
                   onViewAll={() => openModal("symptoms")}
                   totalCount={safeSymptoms.length}
                   patientId={id}
+                  onDataUpdate={refetch}
                 />
               </motion.div>
             </div>
@@ -243,6 +245,7 @@ function PatientManagement() {
                   doctorId={userId}
                   doctorName={userName}
                   patientId={id}
+                  onDataUpdate={refetch}
                 />
               </motion.div>
 
@@ -257,6 +260,7 @@ function PatientManagement() {
                   onViewAll={() => openModal("healthGoals")}
                   totalCount={safeHealthGoals.length}
                   patientId={id}
+                  onDataUpdate={refetch}
                 />
               </motion.div>
             </div>
@@ -274,6 +278,7 @@ function PatientManagement() {
                   onViewAll={() => openModal("medicalHistory")}
                   totalCount={safeMedicalHistory.length}
                   patientId={id}
+                  onDataUpdate={refetch}
                 />
               </motion.div>
 
@@ -288,6 +293,7 @@ function PatientManagement() {
                   onViewAll={() => openModal("diseases")}
                   totalCount={safeDiseases.length}
                   patientId={id}
+                  onDataUpdate={refetch}
                 />
               </motion.div>
             </div>
@@ -304,6 +310,7 @@ function PatientManagement() {
               <EmergencyContactCard
                 contact={primaryEmergencyContact}
                 patientId={id}
+                onDataUpdate={refetch}
               />
             </motion.div>
 
@@ -318,6 +325,7 @@ function PatientManagement() {
                 onViewAll={() => openModal("allergies")}
                 totalCount={safeAllergies.length}
                 patientId={id}
+                onDataUpdate={refetch}
               />
             </motion.div>
             <motion.div

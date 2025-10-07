@@ -160,7 +160,12 @@ export const DoctorNotesCard: React.FC<DoctorNotesCardProps> = ({
       alert("Please fill in all required fields");
       return;
     }
-
+    if (!patientId || !doctorId) {
+      console.error(
+        "Patient ID or Doctor ID is missing — cannot update allergy."
+      );
+      return;
+    }
     setLoading(editingNote || "new");
 
     try {
@@ -219,7 +224,10 @@ export const DoctorNotesCard: React.FC<DoctorNotesCardProps> = ({
   // Delete note
   const deleteNote = async (noteId: string) => {
     setLoading(noteId);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
       await doctorNotesService.deleteDoctorNote(patientId, noteId);
 
@@ -240,7 +248,10 @@ export const DoctorNotesCard: React.FC<DoctorNotesCardProps> = ({
   // Toggle urgent status
   const toggleUrgentStatus = async (noteId: string, currentStatus: boolean) => {
     setLoading(`${noteId}-urgent`);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
       await doctorNotesService.updateDoctorNote(patientId, noteId, {
         isUrgent: !currentStatus,
@@ -264,7 +275,10 @@ export const DoctorNotesCard: React.FC<DoctorNotesCardProps> = ({
     currentStatus: boolean
   ) => {
     setLoading(`${noteId}-private`);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
       await doctorNotesService.updateDoctorNote(patientId, noteId, {
         isPrivate: !currentStatus,

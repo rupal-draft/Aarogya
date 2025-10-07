@@ -2,7 +2,6 @@ package com.aarogya.patient_management_service.controller;
 
 import com.aarogya.patient_management_service.advices.ApiError;
 import com.aarogya.patient_management_service.advices.ApiResponse;
-import com.aarogya.patient_management_service.auth.UserContextHolder;
 import com.aarogya.patient_management_service.dto.request.CreateHealthGoalRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateHealthGoalRequest;
 import com.aarogya.patient_management_service.dto.response.HealthGoalResponse;
@@ -22,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 
 @RestController
-@RequestMapping("/health-goals")
+@RequestMapping("/{patientId}/health-goals")
 @Validated
 public class HealthGoalController {
 
@@ -32,26 +31,30 @@ public class HealthGoalController {
         this.healthGoalService = healthGoalService;
     }
 
+    // -------------------- READ --------------------
     @GetMapping
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<Page<HealthGoalResponse>> getPatientHealthGoals(Pageable pageable) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<Page<HealthGoalResponse>> getPatientHealthGoals(
+            @PathVariable String patientId,
+            Pageable pageable) {
         Page<HealthGoalResponse> response = healthGoalService.getPatientHealthGoals(patientId, pageable);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{goalId}")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<HealthGoalResponse> getHealthGoal(@PathVariable String goalId) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<HealthGoalResponse> getHealthGoal(
+            @PathVariable String patientId,
+            @PathVariable String goalId) {
         HealthGoalResponse response = healthGoalService.getHealthGoal(patientId, goalId);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/active")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<Page<HealthGoalResponse>> getActiveGoals(Pageable pageable) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<Page<HealthGoalResponse>> getActiveGoals(
+            @PathVariable String patientId,
+            Pageable pageable) {
         Page<HealthGoalResponse> response = healthGoalService.getActiveGoals(patientId, pageable);
         return ResponseEntity.ok(response);
     }
@@ -59,9 +62,9 @@ public class HealthGoalController {
     @GetMapping("/type/{goalType}")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<Page<HealthGoalResponse>> getGoalsByType(
+            @PathVariable String patientId,
             @PathVariable String goalType,
             Pageable pageable) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
         Page<HealthGoalResponse> response = healthGoalService.getGoalsByType(patientId, goalType, pageable);
         return ResponseEntity.ok(response);
     }
@@ -69,17 +72,18 @@ public class HealthGoalController {
     @GetMapping("/priority/{priority}")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<Page<HealthGoalResponse>> getGoalsByPriority(
+            @PathVariable String patientId,
             @PathVariable String priority,
             Pageable pageable) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
         Page<HealthGoalResponse> response = healthGoalService.getGoalsByPriority(patientId, priority, pageable);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/overdue")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<Page<HealthGoalResponse>> getOverdueGoals(Pageable pageable) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<Page<HealthGoalResponse>> getOverdueGoals(
+            @PathVariable String patientId,
+            Pageable pageable) {
         Page<HealthGoalResponse> response = healthGoalService.getOverdueGoals(patientId, pageable);
         return ResponseEntity.ok(response);
     }
@@ -87,28 +91,30 @@ public class HealthGoalController {
     @GetMapping("/status/{status}")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<Page<HealthGoalResponse>> getGoalsByStatus(
+            @PathVariable String patientId,
             @PathVariable String status,
             Pageable pageable) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
         Page<HealthGoalResponse> response = healthGoalService.getGoalsByStatus(patientId, status, pageable);
         return ResponseEntity.ok(response);
     }
 
+    // -------------------- CREATE --------------------
     @PostMapping
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<HealthGoalResponse> createHealthGoal(
+            @PathVariable String patientId,
             @Valid @RequestBody CreateHealthGoalRequest request) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
         HealthGoalResponse response = healthGoalService.createHealthGoal(patientId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    // -------------------- UPDATE --------------------
     @PutMapping("/{goalId}")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<HealthGoalResponse> updateHealthGoal(
+            @PathVariable String patientId,
             @PathVariable String goalId,
             @Valid @RequestBody UpdateHealthGoalRequest request) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
         HealthGoalResponse response = healthGoalService.updateHealthGoal(patientId, goalId, request);
         return ResponseEntity.ok(response);
     }
@@ -116,9 +122,9 @@ public class HealthGoalController {
     @PatchMapping("/{goalId}")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<HealthGoalResponse> partialUpdateHealthGoal(
+            @PathVariable String patientId,
             @PathVariable String goalId,
             @Valid @RequestBody UpdateHealthGoalRequest request) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
         HealthGoalResponse response = healthGoalService.partialUpdateHealthGoal(patientId, goalId, request);
         return ResponseEntity.ok(response);
     }
@@ -126,9 +132,9 @@ public class HealthGoalController {
     @PutMapping("/{goalId}/progress")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<HealthGoalResponse> updateProgress(
+            @PathVariable String patientId,
             @PathVariable String goalId,
             @RequestParam @DecimalMin("0.0") BigDecimal currentValue) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
         HealthGoalResponse response = healthGoalService.updateProgress(patientId, goalId, currentValue);
         return ResponseEntity.ok(response);
     }
@@ -136,9 +142,9 @@ public class HealthGoalController {
     @PatchMapping("/{goalId}/progress/add")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<HealthGoalResponse> addToProgress(
+            @PathVariable String patientId,
             @PathVariable String goalId,
             @RequestParam @DecimalMin("0.0") BigDecimal increment) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
         HealthGoalResponse response = healthGoalService.addToProgress(patientId, goalId, increment);
         return ResponseEntity.ok(response);
     }
@@ -146,29 +152,33 @@ public class HealthGoalController {
     @PutMapping("/{goalId}/status")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<HealthGoalResponse> updateStatus(
+            @PathVariable String patientId,
             @PathVariable String goalId,
             @RequestParam String status) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
         HealthGoalResponse response = healthGoalService.updateStatus(patientId, goalId, status);
         return ResponseEntity.ok(response);
     }
 
+    // -------------------- DELETE --------------------
     @DeleteMapping("/{goalId}")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<ApiResponse<String>> deleteHealthGoal(@PathVariable String goalId) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<ApiResponse<String>> deleteHealthGoal(
+            @PathVariable String patientId,
+            @PathVariable String goalId) {
         healthGoalService.deleteHealthGoal(patientId, goalId);
         return ResponseEntity.ok(ApiResponse.success("Health goal deleted successfully!"));
     }
 
+    // -------------------- STATS --------------------
     @GetMapping("/stats")
     @RateLimiter(name = "healthGoalsRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<HealthGoalStatsResponse> getHealthGoalStats() {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<HealthGoalStatsResponse> getHealthGoalStats(
+            @PathVariable String patientId) {
         HealthGoalStatsResponse response = healthGoalService.getHealthGoalStats(patientId);
         return ResponseEntity.ok(response);
     }
 
+    // -------------------- RATE LIMITER FALLBACK --------------------
     public ResponseEntity<ApiError> rateLimiterFallback(RequestNotPermitted ex) {
         ApiError apiError = new ApiError.ApiErrorBuilder()
                 .setMessage("Too many requests. Please try again later.")

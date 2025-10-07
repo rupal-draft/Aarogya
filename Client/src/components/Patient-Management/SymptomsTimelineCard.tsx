@@ -142,7 +142,10 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
       alert("Please fill in all required fields");
       return;
     }
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     setLoading(editingSymptom || "new");
 
     try {
@@ -173,10 +176,14 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
           notes: formData.notes,
         };
 
-        await symptomsService.updateSymptom(editingSymptom, updateRequest);
+        await symptomsService.updateSymptom(
+          patientId,
+          editingSymptom,
+          updateRequest
+        );
       } else {
         // Create new symptom
-        await symptomsService.recordSymptom(requestData);
+        await symptomsService.recordSymptom(patientId, requestData);
       }
 
       // Refresh data
@@ -200,9 +207,12 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
   const deleteSymptom = async (symptom: RecentSymptom, index: number) => {
     const symptomId = symptom.id;
     setLoading(symptomId);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await symptomsService.deleteSymptom(symptomId);
+      await symptomsService.deleteSymptom(patientId, symptomId);
 
       if (onDataUpdate) {
         onDataUpdate();
@@ -225,13 +235,20 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
   ) => {
     const symptomId = symptom.id;
     setLoading(`${symptomId}-severity`);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
       const updateRequest: UpdateSymptomTrackerRequest = {
         severity: severity,
       };
 
-      await symptomsService.partialUpdateSymptom(symptom.id, updateRequest);
+      await symptomsService.partialUpdateSymptom(
+        patientId,
+        symptom.id,
+        updateRequest
+      );
 
       // Refresh data
       if (onDataUpdate) {

@@ -136,7 +136,10 @@ export const MedicationsCard: React.FC<MedicationsCardProps> = ({
       alert("Please fill in all required fields");
       return;
     }
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     setLoading(editingMedication || "new");
 
     try {
@@ -158,6 +161,7 @@ export const MedicationsCard: React.FC<MedicationsCardProps> = ({
         };
 
         await medicationsService.updateMedication(
+          patientId,
           editingMedication,
           updateRequest
         );
@@ -176,7 +180,7 @@ export const MedicationsCard: React.FC<MedicationsCardProps> = ({
           purpose: formData.purpose,
         };
 
-        await medicationsService.addMedication(createRequest);
+        await medicationsService.addMedication(patientId, createRequest);
       }
 
       // Refresh data
@@ -199,9 +203,12 @@ export const MedicationsCard: React.FC<MedicationsCardProps> = ({
   // Delete medication
   const deleteMedication = async (medicationId: string) => {
     setLoading(medicationId);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await medicationsService.deleteMedication(medicationId);
+      await medicationsService.deleteMedication(patientId, medicationId);
 
       // Refresh data
       if (onDataUpdate) {
@@ -220,9 +227,16 @@ export const MedicationsCard: React.FC<MedicationsCardProps> = ({
   // Update medication status
   const updateStatus = async (medicationId: string, status: string) => {
     setLoading(`${medicationId}-status`);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await medicationsService.updateMedicationStatus(medicationId, status);
+      await medicationsService.updateMedicationStatus(
+        patientId,
+        medicationId,
+        status
+      );
 
       // Refresh data
       if (onDataUpdate) {
@@ -242,11 +256,18 @@ export const MedicationsCard: React.FC<MedicationsCardProps> = ({
     currentStatus: boolean
   ) => {
     setLoading(`${medicationId}-reminder`);
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await medicationsService.partialUpdateMedication(medicationId, {
-        reminderEnabled: !currentStatus,
-      });
+      await medicationsService.partialUpdateMedication(
+        patientId,
+        medicationId,
+        {
+          reminderEnabled: !currentStatus,
+        }
+      );
 
       // Refresh data
       if (onDataUpdate) {

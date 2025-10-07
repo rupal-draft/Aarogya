@@ -4,66 +4,80 @@ import type {
   SymptomTrackerResponse,
   UpdateSymptomTrackerRequest,
 } from "../../types/patientDashboard";
-import { api } from "../../utils/dashboardApi";
+import { api, ENDPOINTS } from "../../utils/dashboardApi";
 
 export class SymptomsService {
-  private readonly basePath = "/symptoms";
+  private getBasePath(patientId: string) {
+    return `${ENDPOINTS.PATIENT}/${patientId}/symptoms`;
+  }
 
   async recordSymptom(
+    patientId: string,
     request: CreateSymptomTrackerRequest
   ): Promise<SymptomTrackerResponse> {
     try {
       const response = await api.post<ApiResponse<SymptomTrackerResponse>>(
-        this.basePath,
+        this.getBasePath(patientId),
         request
       );
       return response.data.data;
     } catch (error) {
-      console.error("Error recording symptom:", error);
+      console.error(`Error recording symptom for patient ${patientId}:`, error);
       throw error;
     }
   }
 
   async updateSymptom(
+    patientId: string,
     symptomId: string,
     request: UpdateSymptomTrackerRequest
   ): Promise<SymptomTrackerResponse> {
     try {
       const response = await api.put<ApiResponse<SymptomTrackerResponse>>(
-        `${this.basePath}/${symptomId}`,
+        `${this.getBasePath(patientId)}/${symptomId}`,
         request
       );
       return response.data.data;
     } catch (error) {
-      console.error(`Error updating symptom ${symptomId}:`, error);
+      console.error(
+        `Error updating symptom ${symptomId} for patient ${patientId}:`,
+        error
+      );
       throw error;
     }
   }
 
   async partialUpdateSymptom(
+    patientId: string,
     symptomId: string,
     request: UpdateSymptomTrackerRequest
   ): Promise<SymptomTrackerResponse> {
     try {
       const response = await api.patch<ApiResponse<SymptomTrackerResponse>>(
-        `${this.basePath}/${symptomId}`,
+        `${this.getBasePath(patientId)}/${symptomId}`,
         request
       );
       return response.data.data;
     } catch (error) {
-      console.error(`Error partially updating symptom ${symptomId}:`, error);
+      console.error(
+        `Error partially updating symptom ${symptomId} for patient ${patientId}:`,
+        error
+      );
       throw error;
     }
   }
 
-  async deleteSymptom(symptomId: string): Promise<string> {
+  async deleteSymptom(patientId: string, symptomId: string): Promise<string> {
     try {
       const response = await api.delete<ApiResponse<string>>(
-        `${this.basePath}/${symptomId}`
+        `${this.getBasePath(patientId)}/${symptomId}`
       );
       return response.data.data;
     } catch (error) {
-      console.error(`Error deleting symptom ${symptomId}:`, error);
+      console.error(
+        `Error deleting symptom ${symptomId} for patient ${patientId}:`,
+        error
+      );
       throw error;
     }
   }

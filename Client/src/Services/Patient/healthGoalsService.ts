@@ -4,32 +4,40 @@ import type {
   HealthGoalResponse,
   UpdateHealthGoalRequest,
 } from "../../types/patientDashboard";
-import { api } from "../../utils/dashboardApi";
+import { api, ENDPOINTS } from "../../utils/dashboardApi";
 
 export class HealthGoalsService {
-  private readonly basePath = "/health-goals";
+  private getBasePath(patientId: string) {
+    return `${ENDPOINTS.PATIENT}/${patientId}/health-goals`;
+  }
+
   async createHealthGoal(
+    patientId: string,
     request: CreateHealthGoalRequest
   ): Promise<HealthGoalResponse> {
     try {
       const response = await api.post<ApiResponse<HealthGoalResponse>>(
-        this.basePath,
+        this.getBasePath(patientId),
         request
       );
       return response.data.data;
     } catch (error) {
-      console.error("Error creating health goal:", error);
+      console.error(
+        `Error creating health goal for patient ${patientId}:`,
+        error
+      );
       throw error;
     }
   }
 
   async updateHealthGoal(
+    patientId: string,
     goalId: string,
     request: UpdateHealthGoalRequest
   ): Promise<HealthGoalResponse> {
     try {
       const response = await api.put<ApiResponse<HealthGoalResponse>>(
-        `${this.basePath}/${goalId}`,
+        `${this.getBasePath(patientId)}/${goalId}`,
         request
       );
       return response.data.data;
@@ -40,12 +48,13 @@ export class HealthGoalsService {
   }
 
   async partialUpdateHealthGoal(
+    patientId: string,
     goalId: string,
     request: UpdateHealthGoalRequest
   ): Promise<HealthGoalResponse> {
     try {
       const response = await api.patch<ApiResponse<HealthGoalResponse>>(
-        `${this.basePath}/${goalId}`,
+        `${this.getBasePath(patientId)}/${goalId}`,
         request
       );
       return response.data.data;
@@ -56,12 +65,13 @@ export class HealthGoalsService {
   }
 
   async updateProgress(
+    patientId: string,
     goalId: string,
     currentValue: number
   ): Promise<HealthGoalResponse> {
     try {
       const response = await api.put<ApiResponse<HealthGoalResponse>>(
-        `${this.basePath}/${goalId}/progress`,
+        `${this.getBasePath(patientId)}/${goalId}/progress`,
         null,
         { params: { currentValue } }
       );
@@ -73,12 +83,13 @@ export class HealthGoalsService {
   }
 
   async addToProgress(
+    patientId: string,
     goalId: string,
     increment: number
   ): Promise<HealthGoalResponse> {
     try {
       const response = await api.patch<ApiResponse<HealthGoalResponse>>(
-        `${this.basePath}/${goalId}/progress/add`,
+        `${this.getBasePath(patientId)}/${goalId}/progress/add`,
         null,
         { params: { increment } }
       );
@@ -90,12 +101,13 @@ export class HealthGoalsService {
   }
 
   async updateStatus(
+    patientId: string,
     goalId: string,
     status: string
   ): Promise<HealthGoalResponse> {
     try {
       const response = await api.put<ApiResponse<HealthGoalResponse>>(
-        `${this.basePath}/${goalId}/status`,
+        `${this.getBasePath(patientId)}/${goalId}/status`,
         null,
         { params: { status } }
       );
@@ -106,10 +118,10 @@ export class HealthGoalsService {
     }
   }
 
-  async deleteHealthGoal(goalId: string): Promise<string> {
+  async deleteHealthGoal(patientId: string, goalId: string): Promise<string> {
     try {
       const response = await api.delete<ApiResponse<string>>(
-        `${this.basePath}/${goalId}`
+        `${this.getBasePath(patientId)}/${goalId}`
       );
       return response.data.data;
     } catch (error) {

@@ -102,7 +102,10 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
       alert("Please fill in all required fields");
       return;
     }
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     setLoading("saving");
 
     try {
@@ -121,7 +124,8 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
 
         await emergencyContactsService.updateEmergencyContact(
           contact.id,
-          updateRequest
+          updateRequest,
+          patientId
         );
       } else {
         // Create new contact
@@ -136,7 +140,10 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
           isPrimary: formData.isPrimary || false,
         };
 
-        await emergencyContactsService.createEmergencyContact(createRequest);
+        await emergencyContactsService.createEmergencyContact(
+          createRequest,
+          patientId
+        );
       }
 
       // Refresh data
@@ -163,7 +170,10 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
     setLoading("deleting");
 
     try {
-      await emergencyContactsService.deleteEmergencyContact(contact.id);
+      await emergencyContactsService.deleteEmergencyContact(
+        contact.id,
+        patientId
+      );
 
       // Refresh data
       if (onDataUpdate) {
@@ -186,7 +196,7 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
     setLoading("primary");
 
     try {
-      await emergencyContactsService.setPrimaryContact(contact.id);
+      await emergencyContactsService.setPrimaryContact(contact.id, patientId);
 
       // Refresh data
       if (onDataUpdate) {
@@ -204,11 +214,18 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
     if (!contact?.id) return;
 
     setLoading("status");
-
+    if (!patientId) {
+      console.error("Patient ID is missing — cannot update allergy.");
+      return;
+    }
     try {
-      await emergencyContactsService.partialUpdateEmergencyContact(contact.id, {
-        isActive: !contact.isActive,
-      });
+      await emergencyContactsService.partialUpdateEmergencyContact(
+        contact.id,
+        {
+          isActive: !contact.isActive,
+        },
+        patientId
+      );
 
       if (onDataUpdate) {
         onDataUpdate();
@@ -455,7 +472,7 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
               />
               <span className="text-sm text-gray-700 flex items-center gap-1">
                 <Star className="w-4 h-4 text-yellow-500" />
-                Set as Primary Contact
+                Set as Primary
               </span>
             </label>
 
@@ -487,7 +504,7 @@ export const EmergencyContactCard: React.FC<EmergencyContactCardProps> = ({
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                {contact ? "Save Changes" : "Add Contact"}
+                {contact ? "Save" : "Add Contact"}
               </button>
             </div>
           </div>

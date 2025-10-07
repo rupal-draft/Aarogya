@@ -9,12 +9,19 @@ import { api } from "../../utils/dashboardApi";
 export class EmergencyContactsService {
   private readonly basePath = "/emergency-contacts";
 
+  /**
+   * Create emergency contact
+   * - If doctor → must pass patientId
+   * - If patient → backend will auto-detect from context
+   */
   async createEmergencyContact(
-    request: CreateEmergencyContactRequest
+    request: CreateEmergencyContactRequest,
+    patientId?: string
   ): Promise<EmergencyContactResponse> {
     try {
+      const url = patientId ? `${this.basePath}/${patientId}` : this.basePath;
       const response = await api.post<ApiResponse<EmergencyContactResponse>>(
-        this.basePath,
+        url,
         request
       );
       return response.data.data;
@@ -24,13 +31,20 @@ export class EmergencyContactsService {
     }
   }
 
+  /**
+   * Update full emergency contact
+   */
   async updateEmergencyContact(
     contactId: string,
-    request: UpdateEmergencyContactRequest
+    request: UpdateEmergencyContactRequest,
+    patientId?: string
   ): Promise<EmergencyContactResponse> {
     try {
+      const url = patientId
+        ? `${this.basePath}/${patientId}/${contactId}`
+        : `${this.basePath}/${contactId}`;
       const response = await api.put<ApiResponse<EmergencyContactResponse>>(
-        `${this.basePath}/${contactId}`,
+        url,
         request
       );
       return response.data.data;
@@ -40,13 +54,20 @@ export class EmergencyContactsService {
     }
   }
 
+  /**
+   * Partial update (PATCH)
+   */
   async partialUpdateEmergencyContact(
     contactId: string,
-    request: UpdateEmergencyContactRequest
+    request: UpdateEmergencyContactRequest,
+    patientId?: string
   ): Promise<EmergencyContactResponse> {
     try {
+      const url = patientId
+        ? `${this.basePath}/${patientId}/${contactId}`
+        : `${this.basePath}/${contactId}`;
       const response = await api.patch<ApiResponse<EmergencyContactResponse>>(
-        `${this.basePath}/${contactId}`,
+        url,
         request
       );
       return response.data.data;
@@ -59,12 +80,19 @@ export class EmergencyContactsService {
     }
   }
 
+  /**
+   * Set as primary contact
+   */
   async setPrimaryContact(
-    contactId: string
+    contactId: string,
+    patientId?: string
   ): Promise<EmergencyContactResponse> {
     try {
+      const url = patientId
+        ? `${this.basePath}/${patientId}/${contactId}/primary`
+        : `${this.basePath}/${contactId}/primary`;
       const response = await api.put<ApiResponse<EmergencyContactResponse>>(
-        `${this.basePath}/${contactId}/primary`
+        url
       );
       return response.data.data;
     } catch (error) {
@@ -73,14 +101,60 @@ export class EmergencyContactsService {
     }
   }
 
-  async deleteEmergencyContact(contactId: string): Promise<string> {
+  /**
+   * Delete contact
+   */
+  async deleteEmergencyContact(
+    contactId: string,
+    patientId?: string
+  ): Promise<string> {
     try {
-      const response = await api.delete<ApiResponse<string>>(
-        `${this.basePath}/${contactId}`
-      );
+      const url = patientId
+        ? `${this.basePath}/${patientId}/${contactId}`
+        : `${this.basePath}/${contactId}`;
+      const response = await api.delete<ApiResponse<string>>(url);
       return response.data.data;
     } catch (error) {
       console.error(`Error deleting emergency contact ${contactId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all contacts of a patient
+   */
+  async getPatientEmergencyContacts(
+    patientId?: string
+  ): Promise<EmergencyContactResponse[]> {
+    try {
+      const url = patientId ? `${this.basePath}/${patientId}` : this.basePath; // for patient dashboard
+      const response = await api.get<ApiResponse<EmergencyContactResponse[]>>(
+        url
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching emergency contacts:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get single contact
+   */
+  async getEmergencyContact(
+    contactId: string,
+    patientId?: string
+  ): Promise<EmergencyContactResponse> {
+    try {
+      const url = patientId
+        ? `${this.basePath}/${patientId}/${contactId}`
+        : `${this.basePath}/${contactId}`;
+      const response = await api.get<ApiResponse<EmergencyContactResponse>>(
+        url
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error(`Error fetching emergency contact ${contactId}:`, error);
       throw error;
     }
   }

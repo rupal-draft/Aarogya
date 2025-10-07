@@ -2,7 +2,6 @@ package com.aarogya.patient_management_service.controller;
 
 import com.aarogya.patient_management_service.advices.ApiError;
 import com.aarogya.patient_management_service.advices.ApiResponse;
-import com.aarogya.patient_management_service.auth.UserContextHolder;
 import com.aarogya.patient_management_service.dto.request.CreateMedicalHistoryRequest;
 import com.aarogya.patient_management_service.dto.response.MedicalHistoryResponse;
 import com.aarogya.patient_management_service.service.MedicalHistoryService;
@@ -20,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/medical-history")
+@RequestMapping("/{patientId}/medical-history")
 @Validated
 public class MedicalHistoryController {
 
@@ -32,16 +31,19 @@ public class MedicalHistoryController {
 
     @GetMapping
     @RateLimiter(name = "medicalHistoryRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<Page<MedicalHistoryResponse>> getPatientMedicalHistory(Pageable pageable) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<Page<MedicalHistoryResponse>> getPatientMedicalHistory(
+            @PathVariable String patientId,
+            Pageable pageable) {
+
         Page<MedicalHistoryResponse> response = medicalHistoryService.getPatientMedicalHistory(patientId, pageable);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/active")
     @RateLimiter(name = "medicalHistoryRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<List<MedicalHistoryResponse>> getActiveMedicalHistory() {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<List<MedicalHistoryResponse>> getActiveMedicalHistory(
+            @PathVariable String patientId) {
+
         List<MedicalHistoryResponse> response = medicalHistoryService.getActiveMedicalHistory(patientId);
         return ResponseEntity.ok(response);
     }
@@ -49,8 +51,9 @@ public class MedicalHistoryController {
     @PostMapping
     @RateLimiter(name = "medicalHistoryRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<MedicalHistoryResponse> addMedicalHistory(
+            @PathVariable String patientId,
             @Valid @RequestBody CreateMedicalHistoryRequest request) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+
         MedicalHistoryResponse response = medicalHistoryService.addMedicalHistory(patientId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -58,17 +61,20 @@ public class MedicalHistoryController {
     @PutMapping("/{historyId}")
     @RateLimiter(name = "medicalHistoryRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<MedicalHistoryResponse> updateMedicalHistory(
+            @PathVariable String patientId,
             @PathVariable String historyId,
             @Valid @RequestBody CreateMedicalHistoryRequest request) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+
         MedicalHistoryResponse response = medicalHistoryService.updateMedicalHistory(patientId, historyId, request);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{historyId}")
     @RateLimiter(name = "medicalHistoryRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<ApiResponse<String>> deleteMedicalHistory(@PathVariable String historyId) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<ApiResponse<String>> deleteMedicalHistory(
+            @PathVariable String patientId,
+            @PathVariable String historyId) {
+
         medicalHistoryService.deleteMedicalHistory(patientId, historyId);
         return ResponseEntity.ok(ApiResponse.success("Medical history deleted successfully!"));
     }
@@ -76,16 +82,19 @@ public class MedicalHistoryController {
     @GetMapping("/search")
     @RateLimiter(name = "medicalHistoryRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<List<MedicalHistoryResponse>> searchMedicalHistory(
+            @PathVariable String patientId,
             @RequestParam String query) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+
         List<MedicalHistoryResponse> response = medicalHistoryService.searchMedicalHistory(patientId, query);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{historyId}")
     @RateLimiter(name = "medicalHistoryRateLimiter", fallbackMethod = "rateLimiterFallback")
-    public ResponseEntity<MedicalHistoryResponse> getMedicalHistoryById(@PathVariable String historyId) {
-        String patientId = UserContextHolder.getUserDetails().getUserId();
+    public ResponseEntity<MedicalHistoryResponse> getMedicalHistoryById(
+            @PathVariable String patientId,
+            @PathVariable String historyId) {
+
         Optional<MedicalHistoryResponse> response = medicalHistoryService.getMedicalHistoryById(patientId, historyId);
         return response.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
