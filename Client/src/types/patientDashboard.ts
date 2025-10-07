@@ -178,9 +178,9 @@ export interface UpdateDoctorNoteRequest {
 export interface EmergencyContactResponse {
   id: string;
   patientId: string;
-  fullName: string;
+  contactName: string;
   relationship: string;
-  primaryPhone: string;
+  phoneNumber: string;
   secondaryPhone?: string;
   email?: string;
   address?: string;
@@ -316,6 +316,7 @@ export interface PatientAllergyResponse {
   symptoms: string[];
   emergencyAction: string;
   notes: string;
+  reaction: string;
   isActive: boolean;
   diagnosedDate: string;
   createdAt: string;

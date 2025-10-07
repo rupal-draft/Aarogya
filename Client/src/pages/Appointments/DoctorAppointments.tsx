@@ -22,6 +22,7 @@ import {
   Stethoscope,
   ArrowRight,
   FileText,
+  Pill,
 } from "lucide-react";
 import {
   getSpecializationIcon,
@@ -565,6 +566,20 @@ const DoctorAppointmentsDashboard = () => {
                                 <FileText className="w-3.5 h-3.5" />
                                 <span>Lab History</span>
                               </motion.button>
+
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() =>
+                                  navigate(
+                                    `/doctor/prescriptions/${appointment.patientDetails.id}`
+                                  )
+                                }
+                                className="flex items-center gap-2 px-3 py-2 bg-teal-500 text-white rounded-lg hover:bg-purple-600 transition-all text-sm font-medium"
+                              >
+                                <Pill className="w-3.5 h-3.5" />
+                                <span>Prescriptions</span>
+                              </motion.button>
                             </div>
                           </div>
 
@@ -655,14 +670,6 @@ const DoctorAppointmentsDashboard = () => {
                           >
                             <Edit className="w-4 h-4" />
                             Edit
-                          </motion.button>
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all flex items-center gap-2"
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                            Message
                           </motion.button>
                           {appointment.status === "APPROVED" && (
                             <motion.button

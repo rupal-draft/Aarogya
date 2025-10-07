@@ -12,6 +12,9 @@ server:
     context-path: /prescription
 
 eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
   client:
     serviceUrl:
       defaultZone: ${EUREKA_SERVER_URL}

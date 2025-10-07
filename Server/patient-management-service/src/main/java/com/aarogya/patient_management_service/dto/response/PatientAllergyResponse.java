@@ -22,6 +22,7 @@ public class PatientAllergyResponse {
     private List<String> symptoms;
     private String emergencyAction;
     private String notes;
+    private String reaction;
     private Boolean isActive;
     private LocalDateTime diagnosedDate;
     private LocalDateTime createdAt;

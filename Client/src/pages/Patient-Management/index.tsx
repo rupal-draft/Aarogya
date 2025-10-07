@@ -116,8 +116,8 @@ function PatientManagement() {
   };
 
   // Get first 3 items for preview
-  const previewMedications = safeMedications.slice(0, 3);
-  const previewDoctorNotes = safeDoctorNotes.slice(0, 3);
+  const previewMedications = safeMedications.slice(0, 2);
+  const previewDoctorNotes = safeDoctorNotes.slice(0, 4);
   const previewHealthGoals = safeHealthGoals.slice(0, 2);
   const previewAllergies = safeAllergies.slice(0, 3);
   const previewSymptoms = safeSymptoms.slice(0, 3);

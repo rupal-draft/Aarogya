@@ -1,159 +1,43 @@
 import type {
   ApiResponse,
+  CreateDoctorNoteRequest,
   DoctorNoteResponse,
-  PageResponse,
+  UpdateDoctorNoteRequest,
 } from "../../types/patientDashboard";
 import { api } from "../../utils/dashboardApi";
 
 export class DoctorNotesService {
   private readonly basePath = "/doctor-notes";
 
-  async getMyNotes(
-    page = 0,
-    size = 10
-  ): Promise<PageResponse<DoctorNoteResponse>> {
-    try {
-      const response = await api.get<
-        ApiResponse<PageResponse<DoctorNoteResponse>>
-      >(this.basePath, {
-        params: { page, size },
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching doctor notes:", error);
-      throw error;
-    }
-  }
-
-  async getPatientNote(
-    patientId: string,
-    noteId: string
+  async createDoctorNote(
+    request: CreateDoctorNoteRequest
   ): Promise<DoctorNoteResponse> {
     try {
-      const response = await api.get<ApiResponse<DoctorNoteResponse>>(
-        `${this.basePath}/${patientId}/${noteId}`
+      const response = await api.post<ApiResponse<DoctorNoteResponse>>(
+        this.basePath,
+        request
       );
       return response.data.data;
     } catch (error) {
-      console.error(
-        `Error fetching note ${noteId} for patient ${patientId}:`,
-        error
-      );
+      console.error("Error creating doctor note:", error);
       throw error;
     }
   }
 
-  async getPatientNotesByType(
+  async updateDoctorNote(
     patientId: string,
-    noteType: string,
-    page = 0,
-    size = 10
-  ): Promise<PageResponse<DoctorNoteResponse>> {
+    noteId: string,
+    request: UpdateDoctorNoteRequest
+  ): Promise<DoctorNoteResponse> {
     try {
-      const response = await api.get<
-        ApiResponse<PageResponse<DoctorNoteResponse>>
-      >(`${this.basePath}/${patientId}/type/${noteType}`, {
-        params: { page, size },
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error(
-        `Error fetching ${noteType} notes for patient ${patientId}:`,
-        error
+      const response = await api.put<ApiResponse<DoctorNoteResponse>>(
+        `${this.basePath}/${patientId}/${noteId}`,
+        request
       );
-      throw error;
-    }
-  }
-
-  async getPatientNotesByPriority(
-    patientId: string,
-    priority: string,
-    page = 0,
-    size = 10
-  ): Promise<PageResponse<DoctorNoteResponse>> {
-    try {
-      const response = await api.get<
-        ApiResponse<PageResponse<DoctorNoteResponse>>
-      >(`${this.basePath}/${patientId}/priority/${priority}`, {
-        params: { page, size },
-      });
       return response.data.data;
     } catch (error) {
       console.error(
-        `Error fetching ${priority} priority notes for patient ${patientId}:`,
-        error
-      );
-      throw error;
-    }
-  }
-
-  async getPatientNotesByCategory(
-    patientId: string,
-    category: string,
-    page = 0,
-    size = 10
-  ): Promise<PageResponse<DoctorNoteResponse>> {
-    try {
-      const response = await api.get<
-        ApiResponse<PageResponse<DoctorNoteResponse>>
-      >(`${this.basePath}/${patientId}/category/${category}`, {
-        params: { page, size },
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error(
-        `Error fetching ${category} category notes for patient ${patientId}:`,
-        error
-      );
-      throw error;
-    }
-  }
-
-  async getNonPrivateNotes(
-    page = 0,
-    size = 10
-  ): Promise<PageResponse<DoctorNoteResponse>> {
-    try {
-      const response = await api.get<
-        ApiResponse<PageResponse<DoctorNoteResponse>>
-      >(`${this.basePath}/non-private`, { params: { page, size } });
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching non-private notes:", error);
-      throw error;
-    }
-  }
-
-  async getUrgentNotes(
-    page = 0,
-    size = 10
-  ): Promise<PageResponse<DoctorNoteResponse>> {
-    try {
-      const response = await api.get<
-        ApiResponse<PageResponse<DoctorNoteResponse>>
-      >(`${this.basePath}/urgent`, {
-        params: { page, size },
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching urgent notes:", error);
-      throw error;
-    }
-  }
-
-  async getRecentNotes(
-    days: number,
-    page = 0,
-    size = 10
-  ): Promise<PageResponse<DoctorNoteResponse>> {
-    try {
-      const response = await api.get<
-        ApiResponse<PageResponse<DoctorNoteResponse>>
-      >(`${this.basePath}/recent/${days}`, { params: { page, size } });
-      return response.data.data;
-    } catch (error) {
-      console.error(
-        `Error fetching recent notes from last ${days} days:`,
+        `Error updating note ${noteId} for patient ${patientId}:`,
         error
       );
       throw error;
