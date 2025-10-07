@@ -72,7 +72,7 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
 
   // Start editing a symptom
   const startEdit = (symptom: RecentSymptom, index: number) => {
-    setEditingSymptom(`${symptom.symptomName}-${index}`);
+    setEditingSymptom(symptom.id);
     setFormData({
       symptomName: symptom.symptomName,
       severity: symptom.severity,
@@ -160,11 +160,6 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
       };
 
       if (editingSymptom) {
-        // Find the original symptom to get its ID
-        const originalIndex = parseInt(editingSymptom.split("-").pop() || "0");
-        const originalSymptom = symptoms[originalIndex];
-
-        // In a real implementation, you would use the actual ID
         const updateRequest: UpdateSymptomTrackerRequest = {
           symptomName: formData.symptomName,
           severity: formData.severity,
@@ -178,10 +173,7 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
           notes: formData.notes,
         };
 
-        await symptomsService.updateSymptom(
-          originalSymptom.symptomName,
-          updateRequest
-        );
+        await symptomsService.updateSymptom(editingSymptom, updateRequest);
       } else {
         // Create new symptom
         await symptomsService.recordSymptom(requestData);
@@ -206,14 +198,12 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
 
   // Delete symptom
   const deleteSymptom = async (symptom: RecentSymptom, index: number) => {
-    const symptomId = `${symptom.symptomName}-${index}`;
+    const symptomId = symptom.id;
     setLoading(symptomId);
 
     try {
-      // In a real implementation, you would use the actual ID
-      await symptomsService.deleteSymptom(symptom.symptomName);
+      await symptomsService.deleteSymptom(symptomId);
 
-      // Refresh data
       if (onDataUpdate) {
         onDataUpdate();
       }
@@ -233,7 +223,7 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
     index: number,
     severity: number
   ) => {
-    const symptomId = `${symptom.symptomName}-${index}`;
+    const symptomId = symptom.id;
     setLoading(`${symptomId}-severity`);
 
     try {
@@ -241,10 +231,7 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
         severity: severity,
       };
 
-      await symptomsService.partialUpdateSymptom(
-        symptom.symptomName,
-        updateRequest
-      );
+      await symptomsService.partialUpdateSymptom(symptom.id, updateRequest);
 
       // Refresh data
       if (onDataUpdate) {
@@ -574,7 +561,7 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
               transition={{ duration: 0.4, delay: index * 0.1 }}
               whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
             >
-              {editingSymptom === `${symptom.symptomName}-${index}` ? (
+              {editingSymptom === symptom.id ? (
                 // Edit Form
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -637,16 +624,16 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
                     <button
                       onClick={cancelEdit}
                       className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                      disabled={loading === `${symptom.symptomName}-${index}`}
+                      disabled={loading === symptom.id}
                     >
                       Cancel
                     </button>
                     <button
                       onClick={saveSymptom}
-                      disabled={loading === `${symptom.symptomName}-${index}`}
+                      disabled={loading === symptom.id}
                       className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
                     >
-                      {loading === `${symptom.symptomName}-${index}` ? (
+                      {loading === symptom.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <Save className="w-4 h-4" />
@@ -693,11 +680,7 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          onClick={() =>
-                            setShowDeleteConfirm(
-                              `${symptom.symptomName}-${index}`
-                            )
-                          }
+                          onClick={() => setShowDeleteConfirm(symptom.id)}
                           className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                           title="Delete Symptom"
                         >
@@ -725,10 +708,7 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
                             )
                           }
                           className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          disabled={
-                            loading ===
-                            `${symptom.symptomName}-${index}-severity`
-                          }
+                          disabled={loading === `${symptom.id}-severity`}
                         >
                           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                             <option key={num} value={num}>
@@ -771,7 +751,7 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
 
               {/* Delete Confirmation Modal */}
               <AnimatePresence>
-                {showDeleteConfirm === `${symptom.symptomName}-${index}` && (
+                {showDeleteConfirm === symptom.id && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -798,20 +778,16 @@ export const SymptomsTimelineCard: React.FC<SymptomsTimelineCardProps> = ({
                         <button
                           onClick={() => setShowDeleteConfirm(null)}
                           className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                          disabled={
-                            loading === `${symptom.symptomName}-${index}`
-                          }
+                          disabled={loading === symptom.id}
                         >
                           Cancel
                         </button>
                         <button
                           onClick={() => deleteSymptom(symptom, index)}
-                          disabled={
-                            loading === `${symptom.symptomName}-${index}`
-                          }
+                          disabled={loading === symptom.id}
                           className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors"
                         >
-                          {loading === `${symptom.symptomName}-${index}` ? (
+                          {loading === symptom.id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
                             <Trash2 className="w-4 h-4" />

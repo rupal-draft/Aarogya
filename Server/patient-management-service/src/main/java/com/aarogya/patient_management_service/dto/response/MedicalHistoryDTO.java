@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MedicalHistoryDTO {
+    private String id;
     private String conditionName;
     private LocalDate diagnosisDate;
     private String status;

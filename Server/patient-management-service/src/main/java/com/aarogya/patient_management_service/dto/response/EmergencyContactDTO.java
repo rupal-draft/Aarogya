@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EmergencyContactDTO {
+    private String id;
     private String contactName;
     private String relationship;
     private String phoneNumber;

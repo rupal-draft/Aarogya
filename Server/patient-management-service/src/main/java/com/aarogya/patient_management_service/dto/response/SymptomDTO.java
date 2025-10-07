@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SymptomDTO {
+    private String id;
     private String symptomName;
     private Integer severity;
     private String description;

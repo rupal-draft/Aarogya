@@ -59,6 +59,7 @@ export interface DoctorNote {
 }
 
 export interface Disease {
+  id: string;
   diseaseName: string;
   diseaseCode: string;
   diagnosisDate: string;
@@ -93,6 +94,7 @@ export interface HealthGoal {
 }
 
 export interface EmergencyContact {
+  id: string;
   contactName: string;
   relationship: string;
   phoneNumber: string;
@@ -100,9 +102,11 @@ export interface EmergencyContact {
   email: string;
   address: string;
   isPrimary: boolean;
+  isActive: boolean;
 }
 
 export interface RecentSymptom {
+  id: string;
   symptomName: string;
   severity: number;
   description: string;
@@ -112,6 +116,7 @@ export interface RecentSymptom {
 }
 
 export interface MedicalHistory {
+  id: string;
   conditionName: string;
   diagnosisDate: string;
   status: string;

@@ -113,7 +113,7 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
 
   // Start editing a medical history entry
   const startEdit = (condition: MedicalHistory, index: number) => {
-    setEditingHistory(`${condition.conditionName}-${index}`);
+    setEditingHistory(condition.id);
     setFormData({
       conditionName: condition.conditionName,
       diagnosisDate: condition.diagnosisDate,
@@ -180,13 +180,8 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
       };
 
       if (editingHistory) {
-        const originalIndex = parseInt(editingHistory.split("-").pop() || "0");
-        const originalCondition = history[originalIndex];
-
-        // In a real implementation, you would use the actual ID
-        // For now, we'll simulate update by using the condition name as identifier
         await medicalHistoryService.updateMedicalHistory(
-          originalCondition.conditionName,
+          editingHistory,
           requestData
         );
       } else {
@@ -212,16 +207,12 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
   };
 
   // Delete medical history
-  const deleteMedicalHistory = async (
-    condition: MedicalHistory,
-    index: number
-  ) => {
-    const historyId = `${condition.conditionName}-${index}`;
+  const deleteMedicalHistory = async (condition: MedicalHistory) => {
+    const historyId = condition.id;
     setLoading(historyId);
 
     try {
-      // In a real implementation, you would use the actual ID
-      await medicalHistoryService.deleteMedicalHistory(condition.conditionName);
+      await medicalHistoryService.deleteMedicalHistory(historyId);
 
       // Refresh data
       if (onDataUpdate) {
@@ -464,7 +455,7 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
               transition={{ duration: 0.4, delay: index * 0.05 }}
               whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
             >
-              {editingHistory === `${condition.conditionName}-${index}` ? (
+              {editingHistory === editingHistory ? (
                 // Edit Form
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -518,20 +509,16 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
                     <button
                       onClick={cancelEdit}
                       className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                      disabled={
-                        loading === `${condition.conditionName}-${index}`
-                      }
+                      disabled={loading === condition.id}
                     >
                       Cancel
                     </button>
                     <button
                       onClick={saveMedicalHistory}
-                      disabled={
-                        loading === `${condition.conditionName}-${index}`
-                      }
+                      disabled={loading === condition.id}
                       className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
                     >
-                      {loading === `${condition.conditionName}-${index}` ? (
+                      {loading === condition.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <Save className="w-4 h-4" />
@@ -590,11 +577,7 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          onClick={() =>
-                            setShowDeleteConfirm(
-                              `${condition.conditionName}-${index}`
-                            )
-                          }
+                          onClick={() => setShowDeleteConfirm(condition.id)}
                           className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                           title="Delete Condition"
                         >
@@ -638,8 +621,7 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
 
               {/* Delete Confirmation Modal */}
               <AnimatePresence>
-                {showDeleteConfirm ===
-                  `${condition.conditionName}-${index}` && (
+                {showDeleteConfirm === condition.id && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -666,20 +648,16 @@ export const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
                         <button
                           onClick={() => setShowDeleteConfirm(null)}
                           className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                          disabled={
-                            loading === `${condition.conditionName}-${index}`
-                          }
+                          disabled={loading === condition.id}
                         >
                           Cancel
                         </button>
                         <button
-                          onClick={() => deleteMedicalHistory(condition, index)}
-                          disabled={
-                            loading === `${condition.conditionName}-${index}`
-                          }
+                          onClick={() => deleteMedicalHistory(condition)}
+                          disabled={loading === condition.id}
                           className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors"
                         >
-                          {loading === `${condition.conditionName}-${index}` ? (
+                          {loading === condition.id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
                             <Trash2 className="w-4 h-4" />

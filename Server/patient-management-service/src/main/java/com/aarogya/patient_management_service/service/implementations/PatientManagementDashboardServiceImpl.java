@@ -211,11 +211,12 @@ public class PatientManagementDashboardServiceImpl implements PatientManagementD
             MatchOperation match = match(Criteria.where("patientId").is(patientId));
             SortOperation sort = sort(Sort.by(Sort.Direction.DESC, "diagnosisDate"));
             Aggregation agg = newAggregation(match, sort,
-                    project("diseaseName", "diseaseCode", "diagnosisDate", "recoveryDate", "status", "severity", "isChronic")
+                    project("_id","diseaseName", "diseaseCode", "diagnosisDate", "recoveryDate", "status", "severity", "isChronic")
             );
             return mongoTemplate.aggregate(agg, "disease_history", Document.class)
                     .getMappedResults().stream().map(d ->
                             DiseaseSummaryDTO.builder()
+                                    .id(asStringSafe(d.get("_id") != null ? d.get("_id").toString() : null))
                                     .diseaseName(asStringSafe(d.get("diseaseName")))
                                     .diseaseCode(asStringSafe(d.get("diseaseCode")))
                                     .diagnosisDate(optToLocalDate(d.get("diagnosisDate")))
@@ -293,18 +294,19 @@ public class PatientManagementDashboardServiceImpl implements PatientManagementD
             ));
             LimitOperation limit = limit(1);
             Aggregation agg = newAggregation(match, limit,
-                    project("contactName", "relationship", "phoneNumber", "secondaryPhone", "email", "address", "isPrimary")
+                    project("_id","contactName", "relationship", "phoneNumber", "secondaryPhone", "email", "address", "isPrimary")
             );
             Document d = mongoTemplate.aggregate(agg, "emergency_contacts", Document.class).getUniqueMappedResult();
             if (d == null) {
                 Aggregation fallback = newAggregation(match(Criteria.where("patientId").is(patientId).and("isActive").is(true)),
                         sort(Sort.by(Sort.Direction.DESC, "createdAt")), limit(1),
-                        project("contactName", "relationship", "phoneNumber", "secondaryPhone", "email", "address", "isPrimary")
+                        project("_id","contactName", "relationship", "phoneNumber", "secondaryPhone", "email", "address", "isPrimary")
                 );
                 d = mongoTemplate.aggregate(fallback, "emergency_contacts", Document.class).getUniqueMappedResult();
             }
             if (d == null) return null;
             return EmergencyContactDTO.builder()
+                    .id(asStringSafe(d.get("_id") != null ? d.get("_id").toString() : null))
                     .contactName(asStringSafe(d.get("contactName")))
                     .relationship(asStringSafe(d.get("relationship")))
                     .phoneNumber(asStringSafe(d.get("phoneNumber")))
@@ -325,11 +327,12 @@ public class PatientManagementDashboardServiceImpl implements PatientManagementD
             SortOperation sort = sort(Sort.by(Sort.Direction.DESC, "recordedAt"));
             LimitOperation limit = limit(RECENT_SYMPTOMS_LIMIT);
             Aggregation agg = newAggregation(match, sort, limit,
-                    project("symptomName", "severity", "description", "duration", "frequency", "recordedAt")
+                    project("_id","symptomName", "severity", "description", "duration", "frequency", "recordedAt")
             );
             return mongoTemplate.aggregate(agg, "symptom_tracker", Document.class)
                     .getMappedResults().stream().map(d ->
                             SymptomDTO.builder()
+                                    .id(asStringSafe(d.get("_id") != null ? d.get("_id").toString() : null))
                                     .symptomName(asStringSafe(d.get("symptomName")))
                                     .severity(asIntegerSafe(d.get("severity")))
                                     .description(asStringSafe(d.get("description")))
@@ -349,11 +352,12 @@ public class PatientManagementDashboardServiceImpl implements PatientManagementD
             MatchOperation match = match(Criteria.where("patientId").is(patientId));
             SortOperation sort = sort(Sort.by(Sort.Direction.DESC, "diagnosisDate"));
             Aggregation agg = newAggregation(match, sort,
-                    project("conditionName", "diagnosisDate", "status", "severity", "notes", "category")
+                    project("_id","conditionName", "diagnosisDate", "status", "severity", "notes", "category")
             );
             return mongoTemplate.aggregate(agg, "medical_history", Document.class)
                     .getMappedResults().stream().map(d ->
                             MedicalHistoryDTO.builder()
+                                    .id(asStringSafe(d.get("_id") != null ? d.get("_id").toString() : null))
                                     .conditionName(asStringSafe(d.get("conditionName")))
                                     .diagnosisDate(optToLocalDate(d.get("diagnosisDate")))
                                     .status(asStringSafe(d.get("status")))
