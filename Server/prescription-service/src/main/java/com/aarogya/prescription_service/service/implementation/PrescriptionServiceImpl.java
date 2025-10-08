@@ -353,11 +353,11 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     }
 
     private PrescribedMedicineResponse enrichMedicineDetails(PrescribedMedicine prescribedMedicine) {
+        log.info("Finding medicine with id: {}", prescribedMedicine.getMedicineId());
         PrescribedMedicineResponse response = modelMapper.map(prescribedMedicine, PrescribedMedicineResponse.class);
 
         Medicine medicine = medicineRepository.findById(prescribedMedicine.getMedicineId())
                 .orElse(null);
-
         if (medicine != null) {
             response.setMedicineName(medicine.getName());
 

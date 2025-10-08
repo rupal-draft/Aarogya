@@ -13,6 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MedicineDto {
+    private String id;
+    private String medicineId;
+
     @NotBlank(message = "Medicine name is required")
     private String name;
 

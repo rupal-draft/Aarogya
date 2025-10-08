@@ -43,22 +43,44 @@ public class PrescriptionStatsServiceImpl implements PrescriptionStatsService {
         );
 
         Aggregation topMedicinesAgg = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("doctorId").is(doctorId)),
                 Aggregation.unwind("medicines"),
-                Aggregation.group("medicines.medicineId", "medicines.medicineName")
+
+                Aggregation.lookup(
+                        "medicines",
+                        "medicines.medicineId",
+                        "medicineId",
+                        "medicineDetails"
+                ),
+
+                Aggregation.unwind("medicineDetails"),
+
+                Aggregation.match(Criteria.where("doctorId").is(doctorId)
+                        .and("medicineDetails.name").ne(null)),
+
+                Aggregation.group("medicines.medicineId", "medicineDetails.name")
                         .count().as("count"),
+
                 Aggregation.project()
                         .and("_id.medicineId").as("medicineId")
-                        .and("_id.medicineName").as("medicineName")
+                        .and("_id.name").as("medicineName")
                         .and("count").as("count"),
+
                 Aggregation.sort(Sort.by(Sort.Direction.DESC, "count")),
                 Aggregation.limit(3)
         );
 
-        List<TopMedicineDto> topMedicines = mongoTemplate.aggregate(topMedicinesAgg,
-                        Prescription.class,
-                        TopMedicineDto.class)
-                .getMappedResults();
+        List<TopMedicineDto> topMedicines = mongoTemplate.aggregate(
+                topMedicinesAgg,
+                Prescription.class,
+                TopMedicineDto.class
+        ).getMappedResults();
+
+        topMedicines.forEach(med -> {
+            if (med.getMedicineName() == null) {
+                log.warn("⚠️ Null medicine name found! medicineId={}, doctorId={}", med.getMedicineId(), doctorId);
+            }
+        });
+
 
         Aggregation favTemplatesAgg = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("doctorId").is(doctorId)),

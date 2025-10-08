@@ -10,12 +10,16 @@ import {
   Activity,
   CheckCircle,
 } from "lucide-react";
-import type { Prescription } from "../../types/prescription";
+import type {
+  Prescription,
+  PrescriptionRequest,
+} from "../../types/prescription";
 import { prescriptionService } from "../../Services/prescription";
 import CreatePrescriptionModal from "../../components/Prescription/CreatePrescriptionModal";
 import MedicineSearchModal from "../../components/Prescription/MedicineSearchModal";
 import PrescriptionCard from "../../components/Prescription/PrescriptionCard";
 import InteractionCheckModal from "../../components/Prescription/InteractionCheckModal";
+import UpdatePrescriptionModal from "../../components/Prescription/UpdatePrescriptionModal";
 
 const PrescriptionDashboard: React.FC = () => {
   const { patientId } = useParams<{ patientId: string }>();
@@ -26,6 +30,7 @@ const PrescriptionDashboard: React.FC = () => {
     Prescription[]
   >([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false); // Add this state
   const [showMedicineSearch, setShowMedicineSearch] = useState(false);
   const [showInteractionCheck, setShowInteractionCheck] = useState(false);
   const [selectedPrescription, setSelectedPrescription] =
@@ -37,25 +42,7 @@ const PrescriptionDashboard: React.FC = () => {
     totalMedicines: 0,
   });
 
-  useEffect(() => {
-    if (patientId) {
-      fetchPrescriptions();
-    }
-  }, [patientId]);
-
-  useEffect(() => {
-    const filtered = prescriptions.filter(
-      (prescription) =>
-        prescription.diagnosis
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        prescription.medicines.some((med) =>
-          med.medicineName.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-    );
-    setFilteredPrescriptions(filtered);
-  }, [prescriptions, searchQuery]);
-
+  // Auto-refetch function
   const fetchPrescriptions = async () => {
     if (!patientId) return;
 
@@ -85,7 +72,28 @@ const PrescriptionDashboard: React.FC = () => {
     }
   };
 
-  const handleCreatePrescription = async (prescriptionData: any) => {
+  useEffect(() => {
+    if (patientId) {
+      fetchPrescriptions();
+    }
+  }, [patientId]);
+
+  useEffect(() => {
+    const filtered = prescriptions.filter(
+      (prescription) =>
+        prescription.diagnosis
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        prescription.medicines.some((med) =>
+          med.medicineName.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+    );
+    setFilteredPrescriptions(filtered);
+  }, [prescriptions, searchQuery]);
+
+  const handleCreatePrescription = async (
+    prescriptionData: PrescriptionRequest
+  ) => {
     try {
       await prescriptionService.createPrescription(prescriptionData);
       await fetchPrescriptions();
@@ -98,7 +106,7 @@ const PrescriptionDashboard: React.FC = () => {
   const handleDeletePrescription = async (prescriptionId: string) => {
     try {
       await prescriptionService.deletePrescription(prescriptionId);
-      await fetchPrescriptions();
+      await fetchPrescriptions(); // Auto-refetch after delete
     } catch (error) {
       console.error("Error deleting prescription:", error);
     }
@@ -106,14 +114,28 @@ const PrescriptionDashboard: React.FC = () => {
 
   const handleUpdatePrescription = async (
     prescriptionId: string,
-    updates: any
+    updates: PrescriptionRequest
   ) => {
     try {
       await prescriptionService.updatePrescription(prescriptionId, updates);
       await fetchPrescriptions();
+      setShowUpdateModal(false);
+      setSelectedPrescription(null);
     } catch (error) {
       console.error("Error updating prescription:", error);
     }
+  };
+
+  // Handle edit prescription
+  const handleEditPrescription = (prescription: Prescription) => {
+    setSelectedPrescription(prescription);
+    setShowUpdateModal(true);
+  };
+
+  // Handle close update modal
+  const handleCloseUpdateModal = () => {
+    setShowUpdateModal(false);
+    setSelectedPrescription(null);
   };
 
   const containerVariants = {
@@ -330,7 +352,7 @@ const PrescriptionDashboard: React.FC = () => {
                 >
                   <PrescriptionCard
                     prescription={prescription}
-                    onEdit={() => setSelectedPrescription(prescription)}
+                    onEdit={() => handleEditPrescription(prescription)} // Fixed this line
                     onDelete={() => handleDeletePrescription(prescription.id)}
                     onUpdate={handleUpdatePrescription}
                   />
@@ -351,12 +373,23 @@ const PrescriptionDashboard: React.FC = () => {
             onSubmit={handleCreatePrescription}
           />
         )}
+
+        {showUpdateModal && selectedPrescription && (
+          <UpdatePrescriptionModal
+            prescription={selectedPrescription}
+            isOpen={showUpdateModal}
+            onClose={handleCloseUpdateModal}
+            onSubmit={handleUpdatePrescription}
+          />
+        )}
+
         {showMedicineSearch && (
           <MedicineSearchModal
             isOpen={showMedicineSearch}
             onClose={() => setShowMedicineSearch(false)}
           />
         )}
+
         {showInteractionCheck && (
           <InteractionCheckModal
             isOpen={showInteractionCheck}

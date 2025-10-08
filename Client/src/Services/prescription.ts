@@ -66,13 +66,7 @@ export const prescriptionService = {
   createPrescription: async (
     request: PrescriptionRequest
   ): Promise<Prescription> => {
-    const response = await api.post("/", request);
-    return response.data;
-  },
-
-  // Get prescription
-  getPrescription: async (id: string): Promise<Prescription> => {
-    const response = await api.get(`/${id}`);
+    const response = await api.post("", request);
     return response.data;
   },
 
@@ -82,6 +76,12 @@ export const prescriptionService = {
     request: PrescriptionRequest
   ): Promise<Prescription> => {
     const response = await api.put(`/${id}`, request);
+    return response.data;
+  },
+
+  // Get prescription
+  getPrescription: async (id: string): Promise<Prescription> => {
+    const response = await api.get(`/${id}`);
     return response.data;
   },
 

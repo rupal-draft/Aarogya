@@ -1,5 +1,6 @@
 package com.aarogya.prescription_service.controller;
 
+import com.aarogya.prescription_service.advices.ApiResponse;
 import com.aarogya.prescription_service.dto.request.*;
 import com.aarogya.prescription_service.dto.response.MedicineDto;
 import com.aarogya.prescription_service.dto.response.PrescriptionResponse;
@@ -9,6 +10,7 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -57,10 +59,10 @@ public class PrescriptionController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePrescription(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<String>> deletePrescription(@PathVariable String id) {
         log.info("Deleting prescription with ID: {}", id);
         prescriptionService.deletePrescription(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("Prescription deleted successfully!!"));
     }
 
     @GetMapping("/doctor")
