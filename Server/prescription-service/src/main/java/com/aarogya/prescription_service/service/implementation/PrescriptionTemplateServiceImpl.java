@@ -5,10 +5,8 @@ import com.aarogya.prescription_service.dto.request.*;
 import com.aarogya.prescription_service.dto.response.*;
 import com.aarogya.prescription_service.exceptions.BadRequestException;
 import com.aarogya.prescription_service.exceptions.ResourceNotFound;
-import com.aarogya.prescription_service.model.PrescribedMedicine;
-import com.aarogya.prescription_service.model.PrescriptionTemplate;
-import com.aarogya.prescription_service.model.TemplateCategory;
-import com.aarogya.prescription_service.model.TemplateUsageStat;
+import com.aarogya.prescription_service.model.*;
+import com.aarogya.prescription_service.repository.MedicineInteractionRepository;
 import com.aarogya.prescription_service.repository.PrescriptionTemplateRepository;
 import com.aarogya.prescription_service.repository.TemplateCategoryRepository;
 import com.aarogya.prescription_service.repository.TemplateUsageStatRepository;
@@ -45,6 +43,7 @@ public class PrescriptionTemplateServiceImpl implements PrescriptionTemplateServ
     private final ModelMapper modelMapper;
     private final MongoTemplate mongoTemplate;
     private final PrescriptionService prescriptionService;
+    private final MedicineInteractionRepository interactionRepository;
 
     @Override
     @Transactional
@@ -93,7 +92,7 @@ public class PrescriptionTemplateServiceImpl implements PrescriptionTemplateServ
 
     @Override
     @Cacheable(value = "prescriptionTemplates", key = "#filter.toString() + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
-    public Page<TemplateSummaryResponse> getTemplates(TemplateFilterRequest filter, Pageable pageable) {
+    public Page<TemplateResponse> getTemplates(TemplateFilterRequest filter, Pageable pageable) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.debug("Fetching prescription templates with filter: {}", filter);
 
@@ -602,10 +601,12 @@ public class PrescriptionTemplateServiceImpl implements PrescriptionTemplateServ
     private TemplateResponse convertToTemplateResponse(PrescriptionTemplate template) {
         TemplateResponse response = modelMapper.map(template, TemplateResponse.class);
 
-        response.setMedicines(template.getMedicines().stream()
-                .map(med -> modelMapper.map(med, PrescribedMedicineResponse.class))
-                .collect(Collectors.toList()));
-
+        List<PrescribedMedicineResponse> medicines = template.getMedicines().stream()
+                .map(med -> {
+                    return modelMapper.map(med, PrescribedMedicineResponse.class);
+                })
+                .toList();
+        response.setMedicines(medicines);
         if (template.getCategoryId() != null) {
             categoryRepository.findById(template.getCategoryId()).ifPresent(category -> {
                 response.setCategoryName(category.getName());
@@ -615,18 +616,9 @@ public class PrescriptionTemplateServiceImpl implements PrescriptionTemplateServ
         return response;
     }
 
-    private TemplateSummaryResponse convertToTemplateSummaryResponse(PrescriptionTemplate template) {
-        TemplateSummaryResponse response = modelMapper.map(template, TemplateSummaryResponse.class);
+    private TemplateResponse convertToTemplateSummaryResponse(PrescriptionTemplate template) {
 
-        if (template.getDiagnosis().length() > 100) {
-            response.setDiagnosisPreview(template.getDiagnosis().substring(0, 100) + "...");
-        } else {
-            response.setDiagnosisPreview(template.getDiagnosis());
-        }
-
-        response.setMedicineCount(template.getMedicines().size());
-
-        return response;
+        return modelMapper.map(template, TemplateResponse.class);
     }
 
     private CategoryResponse convertToCategoryResponse(TemplateCategory category) {

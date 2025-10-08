@@ -9,12 +9,33 @@ import type {
   PrescriptionRequest,
   AddMedicineRequest,
   RemoveMedicineRequest,
+  CreateTemplateRequest,
+  TemplateResponse,
+  TemplateFilterRequest,
+  TemplatePageResponse,
+  UpdateTemplateRequest,
+  ApplyTemplateRequest,
+  DuplicateTemplateRequest,
+  CreateCategoryRequest,
+  CategoryResponse,
+  TemplateStatsResponse,
+  TemplateSearchSuggestion,
 } from "../types/prescription";
 
 const API_BASE_URL = "http://localhost:8080/api/v1/prescription/core";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
+
+const TEMPLATE_BASE_URL = "http://localhost:8080/api/v1/prescription/template";
+
+const templateApi = axios.create({
+  baseURL: TEMPLATE_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -117,5 +138,109 @@ export const prescriptionService = {
   ): Promise<Prescription> => {
     const response = await api.patch(`/${id}`, updates);
     return response.data;
+  },
+};
+
+export const prescriptionTemplateService = {
+  // Create template
+  createTemplate: async (
+    request: CreateTemplateRequest
+  ): Promise<TemplateResponse> => {
+    const response = await templateApi.post("", request);
+    return response.data.data;
+  },
+
+  // Get template
+  getTemplate: async (templateId: string): Promise<TemplateResponse> => {
+    const response = await templateApi.get(`/${templateId}`);
+    return response.data.data;
+  },
+
+  // Get templates with filtering
+  getTemplates: async (
+    filter: TemplateFilterRequest,
+    page: number = 0,
+    size: number = 20,
+    sortBy: string = "name",
+    sortOrder: string = "ASC"
+  ): Promise<TemplatePageResponse> => {
+    const params = {
+      ...filter,
+      page,
+      size,
+      sortBy,
+      sortOrder,
+    };
+    const response = await templateApi.get("", { params });
+    return response.data.data;
+  },
+
+  // Update template
+  updateTemplate: async (
+    templateId: string,
+    request: UpdateTemplateRequest
+  ): Promise<TemplateResponse> => {
+    const response = await templateApi.put(`/${templateId}`, request);
+    return response.data.data;
+  },
+
+  // Delete template
+  deleteTemplate: async (templateId: string): Promise<void> => {
+    await templateApi.delete(`/${templateId}`);
+  },
+
+  // Apply template
+  applyTemplate: async (request: ApplyTemplateRequest): Promise<any> => {
+    const response = await templateApi.post("/apply", request);
+    return response.data.data;
+  },
+
+  // Duplicate template
+  duplicateTemplate: async (
+    templateId: string,
+    request: DuplicateTemplateRequest
+  ): Promise<TemplateResponse> => {
+    const response = await templateApi.post(
+      `/${templateId}/duplicate`,
+      request
+    );
+    return response.data.data;
+  },
+
+  // Toggle favorite
+  toggleFavorite: async (templateId: string): Promise<TemplateResponse> => {
+    const response = await templateApi.post(`/${templateId}/favorite`);
+    return response.data.data;
+  },
+
+  // Create category
+  createCategory: async (
+    request: CreateCategoryRequest
+  ): Promise<CategoryResponse> => {
+    const response = await templateApi.post("/categories", request);
+    return response.data.data;
+  },
+
+  // Get categories
+  getCategories: async (): Promise<CategoryResponse[]> => {
+    const response = await templateApi.get("/categories");
+    return response.data.data;
+  },
+
+  // Delete category
+  deleteCategory: async (categoryId: string): Promise<void> => {
+    await templateApi.delete(`/categories/${categoryId}`);
+  },
+
+  // Get template stats
+  getTemplateStats: async (): Promise<TemplateStatsResponse> => {
+    const response = await templateApi.get("/stats");
+    return response.data.data;
+  },
+
+  // Get template suggestions
+  getTemplateSuggestions: async (): Promise<TemplateSearchSuggestion> => {
+    const response = await templateApi.get("/suggestions");
+    return response.data.data;
   },
 };

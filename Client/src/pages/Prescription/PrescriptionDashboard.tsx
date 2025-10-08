@@ -9,6 +9,7 @@ import {
   FileText,
   Activity,
   CheckCircle,
+  Bookmark,
 } from "lucide-react";
 import type {
   Prescription,
@@ -20,6 +21,7 @@ import MedicineSearchModal from "../../components/Prescription/MedicineSearchMod
 import PrescriptionCard from "../../components/Prescription/PrescriptionCard";
 import InteractionCheckModal from "../../components/Prescription/InteractionCheckModal";
 import UpdatePrescriptionModal from "../../components/Prescription/UpdatePrescriptionModal";
+import PrescriptionTemplateModal from "../../components/Prescription/PrescriptionTemplateModal";
 
 const PrescriptionDashboard: React.FC = () => {
   const { patientId } = useParams<{ patientId: string }>();
@@ -32,6 +34,7 @@ const PrescriptionDashboard: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false); // Add this state
   const [showMedicineSearch, setShowMedicineSearch] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showInteractionCheck, setShowInteractionCheck] = useState(false);
   const [selectedPrescription, setSelectedPrescription] =
     useState<Prescription | null>(null);
@@ -236,6 +239,15 @@ const PrescriptionDashboard: React.FC = () => {
                 <Plus className="w-4 h-4" />
                 New Prescription
               </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowTemplateModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
+              >
+                <Bookmark className="w-4 h-4" />
+                Templates
+              </motion.button>
             </div>
           </div>
         </div>
@@ -394,6 +406,14 @@ const PrescriptionDashboard: React.FC = () => {
           <InteractionCheckModal
             isOpen={showInteractionCheck}
             onClose={() => setShowInteractionCheck(false)}
+          />
+        )}
+        {showTemplateModal && (
+          <PrescriptionTemplateModal
+            isOpen={showTemplateModal}
+            onClose={() => setShowTemplateModal(false)}
+            onApplyTemplate={fetchPrescriptions}
+            patientId={patientId}
           />
         )}
       </AnimatePresence>

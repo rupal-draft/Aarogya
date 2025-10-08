@@ -356,22 +356,9 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         log.info("Finding medicine with id: {}", prescribedMedicine.getMedicineId());
         PrescribedMedicineResponse response = modelMapper.map(prescribedMedicine, PrescribedMedicineResponse.class);
 
-        Medicine medicine = medicineRepository.findById(prescribedMedicine.getMedicineId())
-                .orElse(null);
-        if (medicine != null) {
-            response.setMedicineName(medicine.getName());
-
-            List<MedicineInteraction> interactions = interactionRepository.findByDrug1(medicine.getName());
-
-            if (!interactions.isEmpty()) {
-                Map<String, String> potentialInteractions = interactions.stream()
-                        .collect(Collectors.toMap(
-                                MedicineInteraction::getDrug2,
-                                MedicineInteraction::getInteractionDescription
-                        ));
-                response.setPotentialInteractions(potentialInteractions);
-            }
-        }
+        medicineRepository
+                .findById(prescribedMedicine.getMedicineId())
+                .ifPresent(medicine -> response.setMedicineName(medicine.getName()));
 
         return response;
     }

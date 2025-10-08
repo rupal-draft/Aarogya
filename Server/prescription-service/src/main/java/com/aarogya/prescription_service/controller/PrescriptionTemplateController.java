@@ -1,5 +1,6 @@
 package com.aarogya.prescription_service.controller;
 
+import com.aarogya.prescription_service.advices.ApiResponse;
 import com.aarogya.prescription_service.dto.request.*;
 import com.aarogya.prescription_service.dto.response.*;
 import com.aarogya.prescription_service.service.PrescriptionTemplateService;
@@ -26,7 +27,7 @@ public class PrescriptionTemplateController {
 
     private final PrescriptionTemplateService prescriptionTemplateService;
 
-    @PostMapping("/templates")
+    @PostMapping
     @CircuitBreaker(name = "prescriptionController", fallbackMethod = "createTemplateFallback")
     public ResponseEntity<TemplateResponse> createTemplate(@Valid @RequestBody CreateTemplateRequest request) {
         log.info("Creating prescription template");
@@ -34,15 +35,15 @@ public class PrescriptionTemplateController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/templates/{templateId}")
+    @GetMapping("/{templateId}")
     public ResponseEntity<TemplateResponse> getTemplate(@PathVariable String templateId) {
         log.debug("Fetching prescription template: {}", templateId);
         TemplateResponse response = prescriptionTemplateService.getTemplate(templateId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/templates")
-    public ResponseEntity<Page<TemplateSummaryResponse>> getTemplates(
+    @GetMapping
+    public ResponseEntity<Page<TemplateResponse>> getTemplates(
             @ModelAttribute TemplateFilterRequest filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -54,11 +55,11 @@ public class PrescriptionTemplateController {
                 Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<TemplateSummaryResponse> response = prescriptionTemplateService.getTemplates(filter, pageable);
+        Page<TemplateResponse> response = prescriptionTemplateService.getTemplates(filter, pageable);
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/templates/{templateId}")
+    @PutMapping("/{templateId}")
     @CircuitBreaker(name = "prescriptionController", fallbackMethod = "updateTemplateFallback")
     public ResponseEntity<TemplateResponse> updateTemplate(
             @PathVariable String templateId,
@@ -68,14 +69,14 @@ public class PrescriptionTemplateController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/templates/{templateId}")
-    public ResponseEntity<Void> deleteTemplate(@PathVariable String templateId) {
+    @DeleteMapping("/{templateId}")
+    public ResponseEntity<ApiResponse<String>> deleteTemplate(@PathVariable String templateId) {
         log.info("Deleting prescription template: {}", templateId);
         prescriptionTemplateService.deleteTemplate(templateId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("Template deleted successfully!"));
     }
 
-    @PostMapping("/templates/apply")
+    @PostMapping("/apply")
     @CircuitBreaker(name = "prescriptionController", fallbackMethod = "applyTemplateFallback")
     public ResponseEntity<PrescriptionResponse> applyTemplate(@Valid @RequestBody ApplyTemplateRequest request) {
         log.info("Applying prescription template");
@@ -83,7 +84,7 @@ public class PrescriptionTemplateController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/templates/{templateId}/duplicate")
+    @PostMapping("/{templateId}/duplicate")
     public ResponseEntity<TemplateResponse> duplicateTemplate(
             @PathVariable String templateId,
             @Valid @RequestBody DuplicateTemplateRequest request) {
@@ -92,42 +93,42 @@ public class PrescriptionTemplateController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/templates/{templateId}/favorite")
+    @PostMapping("/{templateId}/favorite")
     public ResponseEntity<TemplateResponse> toggleFavorite(@PathVariable String templateId) {
         log.info("Toggling favorite for template: {}", templateId);
         TemplateResponse response = prescriptionTemplateService.toggleFavorite(templateId);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/templates/categories")
+    @PostMapping("/categories")
     public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
         log.info("Creating template category");
         CategoryResponse response = prescriptionTemplateService.createCategory(request);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/templates/categories")
+    @GetMapping("/categories")
     public ResponseEntity<List<CategoryResponse>> getCategories() {
         log.debug("Fetching template categories");
         List<CategoryResponse> response = prescriptionTemplateService.getCategories();
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/templates/categories/{categoryId}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable String categoryId) {
+    @DeleteMapping("/categories/{categoryId}")
+    public ResponseEntity<ApiResponse<String>> deleteCategory(@PathVariable String categoryId) {
         log.info("Deleting template category: {}", categoryId);
         prescriptionTemplateService.deleteCategory(categoryId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("Category deleted successfully!"));
     }
 
-    @GetMapping("/templates/stats")
+    @GetMapping("/stats")
     public ResponseEntity<TemplateStatsResponse> getTemplateStats() {
         log.debug("Fetching template statistics");
         TemplateStatsResponse response = prescriptionTemplateService.getTemplateStats();
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/templates/suggestions")
+    @GetMapping("/suggestions")
     public ResponseEntity<TemplateSearchSuggestion> getTemplateSuggestions() {
         log.debug("Fetching template suggestions");
         TemplateSearchSuggestion response = prescriptionTemplateService.getTemplateSuggestions();

@@ -19,6 +19,4 @@ public class PrescribedMedicineResponse {
     private Integer duration;
     private String instructions;
     private Boolean isSubstitute;
-    private String originalMedicineId;
-    private Map<String, String> potentialInteractions;
 }
