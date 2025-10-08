@@ -32,7 +32,7 @@ const PrescriptionDashboard: React.FC = () => {
     Prescription[]
   >([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showUpdateModal, setShowUpdateModal] = useState(false); // Add this state
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showMedicineSearch, setShowMedicineSearch] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showInteractionCheck, setShowInteractionCheck] = useState(false);
@@ -109,7 +109,7 @@ const PrescriptionDashboard: React.FC = () => {
   const handleDeletePrescription = async (prescriptionId: string) => {
     try {
       await prescriptionService.deletePrescription(prescriptionId);
-      await fetchPrescriptions(); // Auto-refetch after delete
+      await fetchPrescriptions();
     } catch (error) {
       console.error("Error deleting prescription:", error);
     }
@@ -196,63 +196,136 @@ const PrescriptionDashboard: React.FC = () => {
       animate="visible"
       className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100"
     >
-      {/* Header */}
+      {/* Header - Optimized for single row */}
       <motion.div
         variants={itemVariants}
         className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-blue-100"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Prescription Dashboard
-              </h1>
-              <p className="text-gray-600">
-                Manage prescriptions for Patient ID: {patientId}
-              </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left side - Title and patient info */}
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Prescription Dashboard
+                </h1>
+                <p className="text-md text-gray-600">Patient ID: {patientId}</p>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-3">
+
+            {/* Right side - All buttons in one row with animated tooltips */}
+            <div className="flex items-center gap-2">
+              {/* Search Medicines Button with Tooltip */}
+              <div className="relative group">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowMedicineSearch(true)}
+                  className="flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm"
+                >
+                  <Search className="w-4 h-4" />
+                </motion.button>
+
+                {/* Animated Tooltip */}
+                <div className="absolute top-full right-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-1 z-50">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-2 rounded-lg shadow-lg whitespace-nowrap"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Search className="w-3 h-3" />
+                      <span className="text-xs font-medium">
+                        Search Medicines
+                      </span>
+                    </div>
+                    {/* Tooltip arrow */}
+                    <div className="absolute -top-1 right-2 w-3 h-3 bg-blue-500 transform rotate-45"></div>
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Check Interactions Button with Tooltip */}
+              <div className="relative group">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowInteractionCheck(true)}
+                  className="flex items-center gap-2 px-3 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors text-sm"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                </motion.button>
+
+                {/* Animated Tooltip */}
+                <div className="absolute top-full right-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-1 z-50">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-2 rounded-lg shadow-lg whitespace-nowrap"
+                  >
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="w-3 h-3" />
+                      <span className="text-xs font-medium">
+                        Check Interactions
+                      </span>
+                    </div>
+                    {/* Tooltip arrow */}
+                    <div className="absolute -top-1 right-2 w-3 h-3 bg-orange-500 transform rotate-45"></div>
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Templates Button with Tooltip */}
+              <div className="relative group">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowTemplateModal(true)}
+                  className="flex items-center gap-2 px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm"
+                >
+                  <Bookmark className="w-4 h-4" />
+                </motion.button>
+
+                {/* Animated Tooltip */}
+                <div className="absolute top-full right-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-1 z-50">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-2 rounded-lg shadow-lg whitespace-nowrap"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Bookmark className="w-3 h-3" />
+                      <span className="text-xs font-medium">
+                        Prescription Templates
+                      </span>
+                    </div>
+                    {/* Tooltip arrow */}
+                    <div className="absolute -top-1 right-2 w-3 h-3 bg-purple-500 transform rotate-45"></div>
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* New Prescription Button */}
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowMedicineSearch(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-              >
-                <Search className="w-4 h-4" />
-                Search Medicines
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowInteractionCheck(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors"
-              >
-                <AlertTriangle className="w-4 h-4" />
-                Check Interactions
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.4)",
+                }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg text-sm relative overflow-hidden group"
               >
-                <Plus className="w-4 h-4" />
-                New Prescription
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowTemplateModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
-              >
-                <Bookmark className="w-4 h-4" />
-                Templates
+                {/* Animated background effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <Plus className="w-4 h-4 relative z-10" />
+                <span className="relative z-10">New Prescription</span>
               </motion.button>
             </div>
           </div>
         </div>
       </motion.div>
 
+      {/* Rest of the component remains the same */}
       {/* Stats Cards */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -364,7 +437,7 @@ const PrescriptionDashboard: React.FC = () => {
                 >
                   <PrescriptionCard
                     prescription={prescription}
-                    onEdit={() => handleEditPrescription(prescription)} // Fixed this line
+                    onEdit={() => handleEditPrescription(prescription)}
                     onDelete={() => handleDeletePrescription(prescription.id)}
                     onUpdate={handleUpdatePrescription}
                   />
