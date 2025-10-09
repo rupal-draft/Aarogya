@@ -1,20 +1,34 @@
+// Updated ArticlesDashboard.tsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { useArticles } from "../../hooks/Articles/useArticles";
 import { useArticleDetail } from "../../hooks/Articles/useArticleDetail";
 import { ArticleDetail } from "../../components/Articles/ArticleDetail";
 import { ArticlesList } from "../../components/Articles/ArticlesList";
 
+import type {
+  ArticleRequestDTO,
+  ArticleUpdateRequestDto,
+} from "../../types/article";
+import {
+  createArticle,
+  deleteArticle,
+  updateArticle,
+} from "../../Services/articleService";
+
 export const ArticlesDashboard: React.FC = () => {
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(
     null
   );
+
   const {
     data: articlesData,
     loading: articlesLoading,
     error: articlesError,
+    refetch: refetchArticles,
   } = useArticles();
+
   const {
     article,
     comments,
@@ -29,6 +43,23 @@ export const ArticlesDashboard: React.FC = () => {
 
   const handleBackToList = () => {
     setSelectedArticleId(null);
+  };
+
+  const handleRefresh = async () => await refetchArticles();
+
+  const handleCreateArticle = async (articleData: ArticleRequestDTO) => {
+    await createArticle(articleData);
+  };
+
+  const handleUpdateArticle = async (
+    id: string,
+    articleData: ArticleUpdateRequestDto
+  ) => {
+    await updateArticle(id, articleData);
+  };
+
+  const handleDeleteArticle = async (id: string) => {
+    await deleteArticle(id);
   };
 
   // Loading state
@@ -72,13 +103,15 @@ export const ArticlesDashboard: React.FC = () => {
             Unable to Load Data
           </h2>
           <p className="text-gray-600 mb-4">
-            {articlesError ||
-              detailError ||
-              "Something went wrong while fetching data."}
+            {articlesError || "Something went wrong while fetching data."}
           </p>
-          <p className="text-sm text-gray-500">
-            Please ensure the API server is running on localhost:8080
-          </p>
+          <button
+            onClick={handleRefresh}
+            className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors flex items-center gap-2 mx-auto"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Try Again
+          </button>
         </motion.div>
       </div>
     );
@@ -96,12 +129,16 @@ export const ArticlesDashboard: React.FC = () => {
     );
   }
 
-  // Show articles list
+  // Show articles list with CRUD functionality
   if (articlesData && articlesData.data) {
     return (
       <ArticlesList
         articles={articlesData.data}
         onArticleClick={handleArticleClick}
+        onArticleCreate={handleCreateArticle}
+        onArticleUpdate={handleUpdateArticle}
+        onArticleDelete={handleDeleteArticle}
+        onRefresh={handleRefresh}
       />
     );
   }

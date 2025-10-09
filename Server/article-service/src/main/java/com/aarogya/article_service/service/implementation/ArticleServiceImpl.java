@@ -145,7 +145,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(
-            value = "myArticles",
+            value = "articles",
             key = "#root.methodName + '_' + T(com.aarogya.article_service.auth.UserContextHolder).getUserDetails().getUserId()"
     )
     public List<ArticleResponseDTO> getMyArticles() {
