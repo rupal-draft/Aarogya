@@ -1,5 +1,6 @@
 package com.aarogya.doctor_service.services.availability;
 
+import com.aarogya.appointment_service.events.IncreaseBookingCountEvent;
 import com.aarogya.doctor_service.dto.availability.request.*;
 import com.aarogya.doctor_service.dto.availability.response.*;
 import com.aarogya.doctor_service.models.availability.AvailabilityOverride;
@@ -25,4 +26,5 @@ public interface AvailabilityService {
     SlotAvailabilityResponse checkSlotAvailability(SlotAvailabilityRequest request);
     void generateAvailabilities(LocalDate startDate, LocalDate endDate);
     void updateSlotBooking(String appointmentId, LocalDate date, LocalTime startTime, int delta);
+    void increaseBookingCount(IncreaseBookingCountEvent increaseBookingCountEvent);
 }

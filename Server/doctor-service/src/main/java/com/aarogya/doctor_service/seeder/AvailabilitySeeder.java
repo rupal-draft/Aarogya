@@ -28,8 +28,9 @@ public class AvailabilitySeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (mongoTemplate.exists(new Query(), AvailabilitySchedule.class)) {
-            log.info("⚠️ Availability data already seeded. Skipping...");
+        if (mongoTemplate.exists(new Query(), AvailabilitySchedule.class)
+                && mongoTemplate.exists(new Query(), DoctorAvailability.class)) {
+            log.info("⚠️ All collections already seeded. Skipping...");
             return;
         }
 

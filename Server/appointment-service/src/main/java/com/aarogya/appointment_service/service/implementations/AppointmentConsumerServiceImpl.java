@@ -6,6 +6,7 @@ import com.aarogya.appointment_service.dto.grpc.PatientStatsDto;
 import com.aarogya.appointment_service.enums.AppointmentStatus;
 import com.aarogya.appointment_service.enums.AppointmentType;
 import com.aarogya.appointment_service.enums.FollowUpStatus;
+import com.aarogya.appointment_service.events.IncreaseBookingCountEvent;
 import com.aarogya.appointment_service.exceptions.DataIntegrityViolation;
 import com.aarogya.appointment_service.exceptions.ResourceNotFound;
 import com.aarogya.appointment_service.exceptions.ServiceUnavailable;
@@ -29,6 +30,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,7 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
     private final AppointmentRepository appointmentRepository;
     private final NotificationService notificationService;
     private final MongoTemplate mongoTemplate;
+    private final KafkaTemplate<String, IncreaseBookingCountEvent> increaseBookingCountKafkaTemplate;
 
     private static final String APPOINTMENT_CACHE = "appointments";
 
@@ -68,6 +71,14 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
             appointment.setPaymentId(paymentId);
             appointmentRepository.save(appointment);
             notificationService.sendAppointmentStatusUpdateNotification(appointment, AppointmentStatus.APPROVED);
+            IncreaseBookingCountEvent increaseBookingCountEvent = IncreaseBookingCountEvent
+                    .builder()
+                    .doctorId(appointment.getDoctorId())
+                    .date(appointment.getAppointmentDate())
+                    .startTime(appointment.getStartTime())
+                    .endTime(appointment.getEndTime())
+                    .build();
+            increaseBookingCountKafkaTemplate.send("increase-booking-count", appointment.getDoctorId(), increaseBookingCountEvent);
             log.info("Appointment approved with payment id: {}", paymentId);
         } catch (ResourceNotFound e) {
             log.error("Appointment not found: {}", e.getMessage());

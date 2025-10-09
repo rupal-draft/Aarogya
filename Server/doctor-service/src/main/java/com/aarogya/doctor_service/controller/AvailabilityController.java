@@ -1,5 +1,6 @@
 package com.aarogya.doctor_service.controller;
 
+import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.dto.availability.request.*;
 import com.aarogya.doctor_service.dto.availability.response.*;
 import com.aarogya.doctor_service.models.availability.AvailabilityOverride;
@@ -43,6 +44,14 @@ public class AvailabilityController {
     public ResponseEntity<AvailabilityResponse> getAvailability(@PathVariable String doctorId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         log.debug("Fetching availability for date: {}", date);
+        AvailabilityResponse response = availabilityService.getAvailability(doctorId,date);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{date}")
+    public ResponseEntity<AvailabilityResponse> getMyAvailability(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        log.debug("Fetching logged in doctor's availability for date: {}", date);
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
         AvailabilityResponse response = availabilityService.getAvailability(doctorId,date);
         return ResponseEntity.ok(response);
     }

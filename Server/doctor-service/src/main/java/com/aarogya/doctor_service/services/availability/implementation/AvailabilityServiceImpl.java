@@ -1,5 +1,6 @@
 package com.aarogya.doctor_service.services.availability.implementation;
 
+import com.aarogya.appointment_service.events.IncreaseBookingCountEvent;
 import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.dto.availability.request.*;
 import com.aarogya.doctor_service.dto.availability.response.*;
@@ -18,6 +19,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,16 +46,14 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     private final SpecialAvailabilityRepository specialAvailabilityRepository;
     private final AvailabilityOverrideRepository overrideRepository;
     private final ModelMapper modelMapper;
+    private final MongoTemplate mongoTemplate;
 
     private static final String AVAILABILITY_CACHE = "doctorAvailability";
     private static final String SCHEDULE_CACHE = "doctorSchedule";
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = AVAILABILITY_CACHE, key = "#request.date.toString()"),
-            @CacheEvict(value = AVAILABILITY_CACHE, key = "'range_' + #request.date.toString()")
-    })
+    @CacheEvict(value = AVAILABILITY_CACHE, allEntries = true)
     public AvailabilityResponse setAvailability(AvailabilityRequest request) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.info("Setting availability for doctor {} on date {}", doctorId, request.getDate());
@@ -355,6 +358,61 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
         availabilityRepository.save(availability);
         log.debug("Slot booking updated successfully");
+    }
+
+    @Override
+    @Transactional
+    @KafkaListener(
+            topics = "increase-booking-count",
+            groupId = "increase-booking-count-group",
+            containerFactory = "increaseBookingCountKafkaListenerFactory"
+    )
+    @CacheEvict(value = AVAILABILITY_CACHE, allEntries = true)
+    public void increaseBookingCount(IncreaseBookingCountEvent event) {
+        log.info("📩 Received booking count increment event: {}", event);
+
+        DoctorAvailability availability = mongoTemplate.findOne(
+                new Query(Criteria.where("doctorId").is(event.getDoctorId())
+                        .and("date").is(event.getDate())),
+                DoctorAvailability.class
+        );
+
+        if (availability == null) {
+            log.warn("⚠️ No availability found for doctorId={} on date={}",
+                    event.getDoctorId(), event.getDate());
+            return;
+        }
+
+        boolean updated = false;
+        List<TimeSlot> updatedSlots = new ArrayList<>();
+
+        for (TimeSlot slot : availability.getTimeSlots()) {
+            if (slot.getStartTime().equals(event.getStartTime())
+                    && slot.getEndTime().equals(event.getEndTime())) {
+
+                if (slot.getBookedCount() < slot.getAvailableSlots()) {
+                    slot.setBookedCount(slot.getBookedCount() + 1);
+
+                    if (slot.getBookedCount() >= slot.getAvailableSlots()) {
+                        slot.setIsAvailable(false);
+                    }
+
+                    updated = true;
+                } else {
+                    log.warn("⚠️ Slot already full for {} - {}", slot.getStartTime(), slot.getEndTime());
+                }
+            }
+            updatedSlots.add(slot);
+        }
+
+        if (updated) {
+            availability.setTimeSlots(updatedSlots);
+            mongoTemplate.save(availability);
+            log.info("✅ Booking count updated for doctorId={} on {}", event.getDoctorId(), event.getDate());
+        } else {
+            log.warn("⚠️ No matching slot found for given startTime={} and endTime={}",
+                    event.getStartTime(), event.getEndTime());
+        }
     }
 
     @Scheduled(cron = "0 0 0 * * ?") // Run daily at midnight

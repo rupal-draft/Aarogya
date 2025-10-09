@@ -436,7 +436,7 @@ const ScheduleManager: React.FC<ScheduleManagerProps> = ({
 
                     <div className="space-y-3">
                       <AnimatePresence>
-                        {daySchedule.availableSlots.map((slot, index) => (
+                        {daySchedule?.availableSlots?.map((slot, index) => (
                           <motion.div
                             key={index}
                             initial={{ opacity: 0, x: -20 }}
@@ -488,7 +488,7 @@ const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                       </AnimatePresence>
                     </div>
 
-                    {daySchedule.availableSlots.length === 0 && (
+                    {daySchedule?.availableSlots?.length === 0 && (
                       <div className="text-center py-4 text-gray-500">
                         <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                         <p className="text-sm">

@@ -5,6 +5,8 @@ spring:
     mongodb:
       uri: ${MONGO_URI}
       database: ${MONGO_DATABASE}
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKER_URL}
   cache:
     caffeine:
       spec: maximumSize=500,expireAfterWrite=10m,recordStats

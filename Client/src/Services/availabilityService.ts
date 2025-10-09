@@ -31,7 +31,7 @@ export const availabilityService = {
   setAvailability: async (
     request: AvailabilityRequest
   ): Promise<AvailabilityResponse> => {
-    const response = await api.post("/", request);
+    const response = await api.post("", request);
     return response.data;
   },
 
