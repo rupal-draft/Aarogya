@@ -8,5 +8,5 @@ public enum EntryType {
     PATIENT_FOLLOWUP,
     MEETING_NOTES,
     EDUCATIONAL,
-    PERSONAL_REFlection
+    PERSONAL_REFlECTION
 }

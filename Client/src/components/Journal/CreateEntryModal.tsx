@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { CreateJournalEntryRequest } from "../../types/journal";
 import { journalService } from "../../Services/journalService";
+import { EntryType } from "../../Data/enums/Journal";
 
 interface CreateEntryModalProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ const CreateEntryModal: React.FC<CreateEntryModalProps> = ({
     content: "",
     patientId: "",
     tags: [],
-    type: "PERSONAL_NOTE",
+    type: EntryType.NOTE,
     priority: "MEDIUM",
     isEncrypted: false,
     encryptionKey: "",
@@ -86,7 +87,7 @@ const CreateEntryModal: React.FC<CreateEntryModalProps> = ({
         content: "",
         patientId: "",
         tags: [],
-        type: "PERSONAL_NOTE",
+        type: EntryType.NOTE,
         priority: "MEDIUM",
         isEncrypted: false,
         encryptionKey: "",
@@ -182,11 +183,22 @@ const CreateEntryModal: React.FC<CreateEntryModalProps> = ({
                   onChange={(e) => handleInputChange("type", e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 >
-                  <option value="PERSONAL_NOTE">Personal Note</option>
-                  <option value="PATIENT_NOTE">Patient Note</option>
-                  <option value="RESEARCH">Research</option>
-                  <option value="CASE_STUDY">Case Study</option>
-                  <option value="OBSERVATION">Observation</option>
+                  <option value={EntryType.NOTE}>Note</option>
+                  <option value={EntryType.CLINICAL_OBSERVATION}>
+                    Clinical Observation
+                  </option>
+                  <option value={EntryType.TREATMENT_PLAN}>
+                    Treatment Plan
+                  </option>
+                  <option value={EntryType.RESEARCH_IDEA}>Research Idea</option>
+                  <option value={EntryType.PATIENT_FOLLOWUP}>
+                    Patient Follow-up
+                  </option>
+                  <option value={EntryType.MEETING_NOTES}>Meeting Notes</option>
+                  <option value={EntryType.EDUCATIONAL}>Educational</option>
+                  <option value={EntryType.PERSONAL_REFLECTION}>
+                    Personal Reflection
+                  </option>
                 </select>
               </div>
               <div>

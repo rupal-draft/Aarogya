@@ -22,6 +22,7 @@ public class JournalEntrySummaryResponse {
     private String type;
     private String priority;
     private Boolean isBookmarked;
+    private Boolean isEncrypted;
     private Boolean isPinned;
     private Integer wordCount;
     private LocalDateTime createdAt;

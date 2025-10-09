@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Grid,
   List,
+  Eye,
 } from "lucide-react";
 import type {
   JournalEntrySummaryResponse,
@@ -24,6 +25,7 @@ import FilterSidebar from "../../components/Journal/FilterSidebar";
 import ReminderPanel from "../../components/Journal/ReminderPanel";
 import TemplateModal from "../../components/Journal/TemplateModal";
 import CreateEntryModal from "../../components/Journal/CreateEntryModal";
+import JournalEntryModal from "../../components/Journal/JournalEntryModal";
 
 const JournalDashboard: React.FC = () => {
   const [entries, setEntries] = useState<JournalEntrySummaryResponse[]>([]);
@@ -34,6 +36,8 @@ const JournalDashboard: React.FC = () => {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showFilterSidebar, setShowFilterSidebar] = useState(false);
   const [showReminderPanel, setShowReminderPanel] = useState(false);
+  const [showEntryModal, setShowEntryModal] = useState(false);
+  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("updatedAt");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
@@ -90,6 +94,16 @@ const JournalDashboard: React.FC = () => {
     fetchStats();
   };
 
+  const handleViewEntry = (entryId: string) => {
+    setSelectedEntryId(entryId);
+    setShowEntryModal(true);
+  };
+
+  const handleEntryModalClose = () => {
+    setShowEntryModal(false);
+    setSelectedEntryId(null);
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -141,6 +155,24 @@ const JournalDashboard: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Quick View Stats */}
+              {stats && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="hidden md:flex items-center gap-4 text-sm text-gray-600"
+                >
+                  <div className="flex items-center gap-1">
+                    <FileText className="w-4 h-4 text-blue-500" />
+                    <span>{stats.totalEntries} entries</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Eye className="w-4 h-4 text-green-500" />
+                    <span>{stats.entriesThisWeek} this week</span>
+                  </div>
+                </motion.div>
+              )}
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -149,7 +181,7 @@ const JournalDashboard: React.FC = () => {
               >
                 <Bell className="w-5 h-5" />
                 {stats && stats.entriesThisWeek > 0 && (
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
                 )}
               </motion.button>
 
@@ -164,13 +196,18 @@ const JournalDashboard: React.FC = () => {
               </motion.button>
 
               <motion.button
-                whileHover={{ scale: 1.05 }}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: "0 8px 20px -5px rgba(59, 130, 246, 0.3)",
+                }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg relative overflow-hidden group"
               >
-                <Plus className="w-4 h-4" />
-                New Entry
+                {/* Animated background effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <Plus className="w-4 h-4 relative z-10" />
+                <span className="relative z-10">New Entry</span>
               </motion.button>
             </div>
           </div>
@@ -193,7 +230,7 @@ const JournalDashboard: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search entries..."
+                placeholder="Search entries by title, content, or tags..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-white/80 backdrop-blur-sm border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -210,6 +247,9 @@ const JournalDashboard: React.FC = () => {
               >
                 <Filter className="w-4 h-4" />
                 Filters
+                {Object.keys(filters).length > 0 && (
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                )}
               </motion.button>
 
               <div className="flex items-center bg-white/80 border border-blue-200 rounded-lg overflow-hidden">
@@ -220,7 +260,7 @@ const JournalDashboard: React.FC = () => {
                   className={`p-2 ${
                     viewMode === "grid"
                       ? "bg-blue-100 text-blue-600"
-                      : "text-gray-600"
+                      : "text-gray-600 hover:bg-gray-100"
                   } transition-colors`}
                 >
                   <Grid className="w-4 h-4" />
@@ -232,7 +272,7 @@ const JournalDashboard: React.FC = () => {
                   className={`p-2 ${
                     viewMode === "list"
                       ? "bg-blue-100 text-blue-600"
-                      : "text-gray-600"
+                      : "text-gray-600 hover:bg-gray-100"
                   } transition-colors`}
                 >
                   <List className="w-4 h-4" />
@@ -247,7 +287,7 @@ const JournalDashboard: React.FC = () => {
                     setSortBy(field);
                     setSortOrder(order as "ASC" | "DESC");
                   }}
-                  className="appearance-none bg-white/80 border border-blue-200 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="appearance-none bg-white/80 border border-blue-200 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 >
                   <option value="updatedAt-DESC">Latest First</option>
                   <option value="updatedAt-ASC">Oldest First</option>
@@ -255,6 +295,8 @@ const JournalDashboard: React.FC = () => {
                   <option value="title-DESC">Title Z-A</option>
                   <option value="wordCount-DESC">Most Words</option>
                   <option value="wordCount-ASC">Least Words</option>
+                  <option value="priority-DESC">Priority (High to Low)</option>
+                  <option value="priority-ASC">Priority (Low to High)</option>
                 </select>
                 <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
@@ -272,10 +314,17 @@ const JournalDashboard: React.FC = () => {
               className="flex items-center justify-center py-12"
             >
               <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full"
-              />
+                className="flex flex-col items-center gap-4"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-12 h-12 border-3 border-blue-500 border-t-transparent rounded-full"
+                />
+                <p className="text-gray-600">Loading your journal entries...</p>
+              </motion.div>
             </motion.div>
           ) : entries.length === 0 ? (
             <motion.div
@@ -321,11 +370,13 @@ const JournalDashboard: React.FC = () => {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -2 }}
                 >
                   <JournalEntryCard
                     entry={entry}
                     viewMode={viewMode}
                     onUpdate={handleEntryUpdate}
+                    onViewEntry={handleViewEntry}
                   />
                 </motion.div>
               ))}
@@ -344,10 +395,34 @@ const JournalDashboard: React.FC = () => {
               whileTap={{ scale: 0.95 }}
               onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
               disabled={currentPage === 0}
-              className="px-4 py-2 bg-white border border-blue-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50 transition-colors"
+              className="px-4 py-2 bg-white border border-blue-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50 transition-colors flex items-center gap-2"
             >
+              <ChevronDown className="w-4 h-4 rotate-90" />
               Previous
             </motion.button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const pageNum = i + Math.max(0, currentPage - 2);
+                if (pageNum >= totalPages) return null;
+
+                return (
+                  <motion.button
+                    key={pageNum}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-10 h-10 rounded-lg transition-all ${
+                      currentPage === pageNum
+                        ? "bg-blue-600 text-white shadow-lg"
+                        : "bg-white border border-blue-200 text-gray-700 hover:bg-blue-50"
+                    }`}
+                  >
+                    {pageNum + 1}
+                  </motion.button>
+                );
+              })}
+            </div>
 
             <span className="px-4 py-2 text-sm text-gray-600">
               Page {currentPage + 1} of {totalPages}
@@ -360,9 +435,10 @@ const JournalDashboard: React.FC = () => {
                 setCurrentPage(Math.min(totalPages - 1, currentPage + 1))
               }
               disabled={currentPage === totalPages - 1}
-              className="px-4 py-2 bg-white border border-blue-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50 transition-colors"
+              className="px-4 py-2 bg-white border border-blue-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50 transition-colors flex items-center gap-2"
             >
               Next
+              <ChevronDown className="w-4 h-4 -rotate-90" />
             </motion.button>
           </motion.div>
         )}
@@ -377,6 +453,7 @@ const JournalDashboard: React.FC = () => {
             onSuccess={handleEntryUpdate}
           />
         )}
+
         {showTemplateModal && (
           <TemplateModal
             isOpen={showTemplateModal}
@@ -384,6 +461,7 @@ const JournalDashboard: React.FC = () => {
             onSuccess={handleEntryUpdate}
           />
         )}
+
         {showFilterSidebar && (
           <FilterSidebar
             isOpen={showFilterSidebar}
@@ -392,10 +470,20 @@ const JournalDashboard: React.FC = () => {
             onFiltersChange={handleFilterChange}
           />
         )}
+
         {showReminderPanel && (
           <ReminderPanel
             isOpen={showReminderPanel}
             onClose={() => setShowReminderPanel(false)}
+          />
+        )}
+
+        {showEntryModal && selectedEntryId && (
+          <JournalEntryModal
+            isOpen={showEntryModal}
+            onClose={handleEntryModalClose}
+            entryId={selectedEntryId}
+            onEntryUpdate={handleEntryUpdate}
           />
         )}
       </AnimatePresence>

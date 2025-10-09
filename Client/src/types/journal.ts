@@ -156,6 +156,7 @@ export interface JournalEntrySummaryResponse {
   type: string;
   priority: string;
   isBookmarked: boolean;
+  isEncrypted: boolean;
   isPinned: boolean;
   wordCount: number;
   createdAt: string;
