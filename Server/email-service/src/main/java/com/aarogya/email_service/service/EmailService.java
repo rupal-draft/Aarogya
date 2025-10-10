@@ -1,7 +1,10 @@
 package com.aarogya.email_service.service;
 
+import com.aarogya.appointment_service.events.AppointmentConfirmationEvent;
 import com.aarogya.auth_service.events.SendOtpEvent;
 
 public interface EmailService {
     void sendPasswordResetOtp(SendOtpEvent otpEvent);
+
+    void sentAppointmentConfirmationEmail(AppointmentConfirmationEvent appointmentConfirmationEvent);
 }

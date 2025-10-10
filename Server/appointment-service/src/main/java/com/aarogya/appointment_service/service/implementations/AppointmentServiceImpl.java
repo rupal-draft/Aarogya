@@ -15,7 +15,6 @@ import com.aarogya.appointment_service.exceptions.ServiceUnavailable;
 import com.aarogya.appointment_service.models.Appointment;
 import com.aarogya.appointment_service.repository.AppointmentRepository;
 import com.aarogya.appointment_service.service.AppointmentService;
-import com.aarogya.appointment_service.service.NotificationService;
 import com.aarogya.appointment_service.utils.AppointmentValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +52,6 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final UserGrpcClient authServiceClient;
     private final ModelMapper modelMapper;
-    private final NotificationService notificationService;
     private final AppointmentValidator appointmentValidator;
 
     @Transactional
@@ -72,7 +70,6 @@ public class AppointmentServiceImpl implements AppointmentService {
             Appointment appointment = buildAppointmentFromRequest(requestDto, patientId);
             appointment = appointmentRepository.save(appointment);
 
-            notificationService.sendAppointmentRequestNotification(appointment);
             log.info("{} Appointment created successfully with ID: {}", REGULAR_APPOINTMENT_LOG_PREFIX, appointment.getId());
 
             return mapToResponseDto(appointment);
@@ -104,10 +101,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             appointment = appointmentRepository.save(appointment);
 
-            if (!oldStatus.equals(appointment.getStatus())) {
-                notificationService.sendAppointmentStatusUpdateNotification(appointment, oldStatus);
-            }
-
             log.info("Appointment status updated successfully for ID: {}", appointmentId);
             return mapToResponseDto(appointment);
         } catch (ResourceNotFound e) {
@@ -138,7 +131,6 @@ public class AppointmentServiceImpl implements AppointmentService {
             Appointment appointment = buildEmergencyAppointment(emergencyDto, patientId, doctorId, currentTime, endTime);
             appointment = appointmentRepository.save(appointment);
 
-            notificationService.sendEmergencyAppointmentNotification(appointment);
             log.info("{} Emergency appointment created successfully with ID: {}", EMERGENCY_APPOINTMENT_LOG_PREFIX, appointment.getId());
 
             return mapToResponseDto(appointment);

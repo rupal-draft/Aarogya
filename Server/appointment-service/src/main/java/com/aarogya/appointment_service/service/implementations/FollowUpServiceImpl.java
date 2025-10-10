@@ -13,7 +13,6 @@ import com.aarogya.appointment_service.models.FollowUp;
 import com.aarogya.appointment_service.repository.AppointmentRepository;
 import com.aarogya.appointment_service.repository.FollowUpRepository;
 import com.aarogya.appointment_service.service.FollowUpService;
-import com.aarogya.appointment_service.service.NotificationService;
 import com.aarogya.appointment_service.utils.FollowUpValidator;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -54,7 +53,6 @@ public class FollowUpServiceImpl implements FollowUpService {
     private final FollowUpRepository followUpRepository;
     private final AppointmentRepository appointmentRepository;
     private final ModelMapper modelMapper;
-    private final NotificationService notificationService;
     private final FollowUpValidator followUpValidator;
 
     @Override
@@ -77,7 +75,6 @@ public class FollowUpServiceImpl implements FollowUpService {
             Appointment originalAppointment = appointmentRepository.findById(originalAppointmentId)
                     .orElseThrow(() -> new ResourceNotFound("Original appointment not found"));
 
-            notificationService.sendFollowUpScheduledNotification(followUp, originalAppointment);
 
             log.info("Follow-up scheduled successfully with ID: {}", followUp.getId());
             return mapToResponseDto(followUp);
@@ -153,7 +150,6 @@ public class FollowUpServiceImpl implements FollowUpService {
                 followUp.setStatus(FollowUpStatus.OVERDUE);
                 followUp.setUpdatedAt(LocalDateTime.now());
                 followUpRepository.save(followUp);
-                notificationService.sendFollowUpStatusNotification(followUp);
             });
 
             log.info("Marked {} follow-ups as overdue", overdueFollowUps.size());
@@ -185,10 +181,6 @@ public class FollowUpServiceImpl implements FollowUpService {
             FollowUpStatus followUpStatus = status != null ? FollowUpStatus.valueOf(status.toUpperCase()) : null;
             updateFollowUpStatus(followUp, followUpStatus, userId);
             followUp = followUpRepository.save(followUp);
-
-            if (!previousStatus.equals(status)) {
-                notificationService.sendFollowUpStatusNotification(followUp);
-            }
 
             log.info("Follow-up {} status updated to {}", followUpId, status);
             return mapToResponseDto(followUp);

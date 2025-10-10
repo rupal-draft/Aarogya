@@ -1,5 +1,6 @@
 package com.aarogya.email_service.service.implementation;
 
+import com.aarogya.appointment_service.events.AppointmentConfirmationEvent;
 import com.aarogya.auth_service.events.SendOtpEvent;
 import com.aarogya.email_service.exceptions.*;
 import com.aarogya.email_service.service.EmailConsumerService;
@@ -38,6 +39,28 @@ public class EmailConsumerServiceImpl implements EmailConsumerService {
             throw new KafkaConsumerException("send-otp", e);
         } catch (Exception e) {
             log.error("Unexpected error processing OTP event for email: {}", sendOtpEvent.getEmail(), e);
+            throw new KafkaConsumerException("send-otp", e);
+        }
+    }
+
+    @Override
+    @KafkaListener(
+            topics = "appointment-confirm-email",
+            groupId = "appointment-confirmation-group",
+            containerFactory = "appointmentConfirmationKafkaListenerFactory"
+    )
+    public void consumeAppointmentConfirmationEvent(AppointmentConfirmationEvent appointmentConfirmationEvent) {
+        try {
+            log.info("Received appointment confirmation event for emails: {}, {}",
+                    appointmentConfirmationEvent.getDoctorEmail(), appointmentConfirmationEvent.getPatientEmail());
+            emailService.sentAppointmentConfirmationEmail(appointmentConfirmationEvent);
+            log.info("Successfully processed otp events for:{}, {}",
+                    appointmentConfirmationEvent.getDoctorEmail(), appointmentConfirmationEvent.getPatientEmail());
+        } catch (EmailSendingException | EmailTemplateException e) {
+            log.error("Retractable error processing appointment confirmation event event: {}", e.getMessage());
+            throw new KafkaConsumerException("send-otp", e);
+        } catch (Exception e) {
+            log.error("Unexpected error processing appointment confirmation event for appointment id: {}", appointmentConfirmationEvent.getAppointmentId(), e);
             throw new KafkaConsumerException("send-otp", e);
         }
     }

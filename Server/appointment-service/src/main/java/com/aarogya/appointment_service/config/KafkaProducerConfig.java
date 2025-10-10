@@ -1,8 +1,7 @@
 package com.aarogya.appointment_service.config;
 
+import com.aarogya.appointment_service.events.AppointmentConfirmationEvent;
 import com.aarogya.appointment_service.events.IncreaseBookingCountEvent;
-import com.aarogya.appointment_service.events.NotificationEmailEvent;
-import com.aarogya.appointment_service.events.NotificationSaveEvent;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.TopicConfig;
@@ -28,7 +27,7 @@ public class KafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, NotificationEmailEvent> emailNotificationProducerFactory() {
+    public ProducerFactory<String, AppointmentConfirmationEvent> apoointmentConfirmationEmailNotificationProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -40,26 +39,10 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, NotificationEmailEvent> emailNotificationKafkaTemplate() {
-        return new KafkaTemplate<>(emailNotificationProducerFactory());
+    public KafkaTemplate<String, AppointmentConfirmationEvent> apoointmentConfirmationEmailNotificationKafkaTemplate() {
+        return new KafkaTemplate<>(apoointmentConfirmationEmailNotificationProducerFactory());
     }
 
-    @Bean
-    public ProducerFactory<String, NotificationSaveEvent> saveNotificationProducerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
-        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
-        configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
-        return new DefaultKafkaProducerFactory<>(configProps);
-    }
-
-    @Bean
-    public KafkaTemplate<String, NotificationSaveEvent> saveNotificationKafkaTemplate() {
-        return new KafkaTemplate<>(saveNotificationProducerFactory());
-    }
 
     @Bean
     public ProducerFactory<String, IncreaseBookingCountEvent> increaseBookingCountProducerFactory() {
@@ -78,54 +61,8 @@ public class KafkaProducerConfig {
         return new KafkaTemplate<>(increaseBookingCountProducerFactory());
     }
 
-    @Bean
-    public NewTopic appointmentRequestTopic() {
-        return TopicBuilder.name("appointment-request")
-                .partitions(3)
-                .replicas(1)
-                .config(TopicConfig.RETENTION_MS_CONFIG, "604800000")
-                .build();
-    }
-
-    @Bean
-    public NewTopic appointmentUpdateStatusTopic() {
-        return TopicBuilder.name("appointment-update-status")
-                .partitions(3)
-                .replicas(1)
-                .config(TopicConfig.RETENTION_MS_CONFIG, "604800000")
-                .build();
-    }
-
-    @Bean
-    public NewTopic emergencyAppointmentRequestTopic() {
-        return TopicBuilder.name("emergency-appointment-request")
-                .partitions(3)
-                .replicas(1)
-                .config(TopicConfig.RETENTION_MS_CONFIG, "604800000")
-                .build();
-    }
-
-    @Bean
-    public NewTopic followUpScheduleTopic() {
-        return TopicBuilder.name("follow-up-schedule")
-                .partitions(3)
-                .replicas(1)
-                .config(TopicConfig.RETENTION_MS_CONFIG, "604800000")
-                .build();
-    }
-
-    @Bean
-    public NewTopic followUpUpdateStatusTopic() {
-        return TopicBuilder.name("follow-up-update-status")
-                .partitions(3)
-                .replicas(1)
-                .config(TopicConfig.RETENTION_MS_CONFIG, "604800000")
-                .build();
-    }
-
-    @Bean
-    public NewTopic notificationSaveTopic() {
-        return TopicBuilder.name("notification-save")
+    @Bean NewTopic appointmentConfirmationEmailTopic() {
+        return TopicBuilder.name("appointment-confirm-email")
                 .partitions(3)
                 .replicas(1)
                 .config(TopicConfig.RETENTION_MS_CONFIG, "604800000")

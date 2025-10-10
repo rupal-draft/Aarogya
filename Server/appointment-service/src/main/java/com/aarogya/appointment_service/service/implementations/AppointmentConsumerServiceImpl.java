@@ -1,11 +1,11 @@
 package com.aarogya.appointment_service.service.implementations;
 
-import com.aarogya.appointment_service.dto.grpc.AppointmentCountByDateDto;
-import com.aarogya.appointment_service.dto.grpc.AppointmentStatsDto;
-import com.aarogya.appointment_service.dto.grpc.PatientStatsDto;
+import com.aarogya.appointment_service.clients.UserGrpcClient;
+import com.aarogya.appointment_service.dto.grpc.*;
 import com.aarogya.appointment_service.enums.AppointmentStatus;
 import com.aarogya.appointment_service.enums.AppointmentType;
 import com.aarogya.appointment_service.enums.FollowUpStatus;
+import com.aarogya.appointment_service.events.AppointmentConfirmationEvent;
 import com.aarogya.appointment_service.events.IncreaseBookingCountEvent;
 import com.aarogya.appointment_service.exceptions.DataIntegrityViolation;
 import com.aarogya.appointment_service.exceptions.ResourceNotFound;
@@ -14,7 +14,6 @@ import com.aarogya.appointment_service.models.Appointment;
 import com.aarogya.appointment_service.models.FollowUp;
 import com.aarogya.appointment_service.repository.AppointmentRepository;
 import com.aarogya.appointment_service.service.AppointmentConsumerService;
-import com.aarogya.appointment_service.service.NotificationService;
 import com.aarogya.payment_service.events.AppointmentApproveEvent;
 import com.aarogya.payment_service.events.AppointmentRejectEvent;
 import com.mongodb.BasicDBObject;
@@ -43,9 +42,10 @@ import java.util.List;
 public class AppointmentConsumerServiceImpl implements AppointmentConsumerService {
 
     private final AppointmentRepository appointmentRepository;
-    private final NotificationService notificationService;
+    private final UserGrpcClient userGrpcClient;
     private final MongoTemplate mongoTemplate;
     private final KafkaTemplate<String, IncreaseBookingCountEvent> increaseBookingCountKafkaTemplate;
+    private final KafkaTemplate<String, AppointmentConfirmationEvent> apoointmentConfirmationEmailNotificationKafkaTemplate;
 
     private static final String APPOINTMENT_CACHE = "appointments";
 
@@ -70,7 +70,31 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
             appointment.setStatus(AppointmentStatus.APPROVED);
             appointment.setPaymentId(paymentId);
             appointmentRepository.save(appointment);
-            notificationService.sendAppointmentStatusUpdateNotification(appointment, AppointmentStatus.APPROVED);
+            DoctorResponseDTO doctor = userGrpcClient.getDoctor(appointment.getDoctorId());
+            PatientResponseDTO patient = userGrpcClient.getPatient(appointment.getPatientId());
+            AppointmentConfirmationEvent appointmentConfirmationEvent = AppointmentConfirmationEvent
+                    .builder()
+                    .appointmentId(appointmentId)
+                    .appointmentDate(appointment.getAppointmentDate())
+                    .startTime(appointment.getStartTime())
+                    .endTime(appointment.getEndTime())
+                    .type(appointment.getType())
+                    .isVirtual(appointment.getIsVirtual())
+                    .meetingLink(appointment.getMeetingLink())
+                    .status(appointment.getStatus())
+                    .consultationFee(doctor.getConsultationFee())
+                    .currency(doctor.getCurrency())
+                    .doctorId(appointment.getDoctorId())
+                    .doctorName(doctor.getFirstName() + " " + doctor.getLastName())
+                    .doctorSpecialization(doctor.getSpecialization())
+                    .doctorEmail(doctor.getEmail())
+                    .doctorImageUrl(doctor.getImageUrl())
+                    .patientId(appointment.getPatientId())
+                    .patientName(patient.getFirstName() + " " + patient.getLastName())
+                    .patientDob(patient.getDateOfBirth())
+                    .patientEmail(patient.getEmail())
+                    .patientGender(patient.getGender())
+                    .build();
             IncreaseBookingCountEvent increaseBookingCountEvent = IncreaseBookingCountEvent
                     .builder()
                     .doctorId(appointment.getDoctorId())
@@ -79,6 +103,7 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
                     .endTime(appointment.getEndTime())
                     .build();
             increaseBookingCountKafkaTemplate.send("increase-booking-count", appointment.getDoctorId(), increaseBookingCountEvent);
+            apoointmentConfirmationEmailNotificationKafkaTemplate.send("appointment-confirm-email", appointmentId, appointmentConfirmationEvent);
             log.info("Appointment approved with payment id: {}", paymentId);
         } catch (ResourceNotFound e) {
             log.error("Appointment not found: {}", e.getMessage());
@@ -110,7 +135,6 @@ public class AppointmentConsumerServiceImpl implements AppointmentConsumerServic
 
             appointment.setStatus(AppointmentStatus.REJECTED);
             appointmentRepository.save(appointment);
-            notificationService.sendAppointmentStatusUpdateNotification(appointment, AppointmentStatus.REJECTED);
             log.info("Appointment with id: {} rejected for failed payment", appointmentId);
         } catch (ResourceNotFound e) {
             log.error("Appointment not found: {}", e.getMessage());

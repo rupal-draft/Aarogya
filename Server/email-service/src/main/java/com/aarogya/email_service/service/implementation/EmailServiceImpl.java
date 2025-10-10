@@ -1,8 +1,10 @@
 package com.aarogya.email_service.service.implementation;
 
+import com.aarogya.appointment_service.events.AppointmentConfirmationEvent;
 import com.aarogya.auth_service.events.SendOtpEvent;
 import com.aarogya.email_service.exceptions.*;
 import com.aarogya.email_service.service.EmailService;
+import com.aarogya.email_service.utils.EventValidationUtil;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +15,9 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.io.File;
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
 
 @Service
 @Slf4j
@@ -23,11 +26,14 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
+    private final EventValidationUtil eventValidationUtil;
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm a");
+
 
     @Override
     public void sendPasswordResetOtp(SendOtpEvent otpEvent) {
         try {
-            validateOtpEvent(otpEvent);
+            eventValidationUtil.validateOtpEvent(otpEvent);
 
             Context context = new Context();
             context.setVariable("recipientName", otpEvent.getRecipientName());
@@ -43,7 +49,7 @@ public class EmailServiceImpl implements EmailService {
                 throw new EmailTemplateException("password-reset-otp", e);
             }
 
-            sendEmail(otpEvent, htmlContent);
+            sendEmail(otpEvent.getEmail(), otpEvent.getSubject(), htmlContent);
 
             log.info("Password reset OTP email sent successfully to: {}", otpEvent.getEmail());
 
@@ -54,32 +60,59 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    private void validateOtpEvent(SendOtpEvent event) {
-        if (event.getEmail() == null || event.getEmail().trim().isEmpty()) {
-            throw new EmailValidationException("email", event.getEmail());
-        }
-        if (event.getOtp() == null || event.getOtp().trim().isEmpty()) {
-            throw new OtpValidationException("OTP cannot be null or empty", event.getOtp(), event.getEmail());
-        }
-        if (event.getRecipientName() == null || event.getRecipientName().trim().isEmpty()) {
-            throw new EmailValidationException("recipientName", event.getRecipientName());
-        }
+    @Override
+    public void sentAppointmentConfirmationEmail(AppointmentConfirmationEvent event) {
+        try {
+            eventValidationUtil.validateAppointmentEvent(event);
 
-        if (event.getGeneratedAt() != null) {
-            LocalDateTime now = LocalDateTime.now();
-            if (event.getGeneratedAt().plusMinutes(10).isBefore(now)) {
-                throw new OtpExpiredException(event.getGeneratedAt(), now);
+            Context context = new Context(Locale.forLanguageTag("en-US"));
+
+            context.setVariable("appointmentId", event.getAppointmentId());
+            context.setVariable("appointmentDate", event.getAppointmentDate());
+            context.setVariable("startTime", event.getStartTime().format(timeFormatter));
+            context.setVariable("endTime", event.getEndTime().format(timeFormatter));
+            context.setVariable("type", event.getType());
+            context.setVariable("isVirtual", event.getIsVirtual());
+            context.setVariable("meetingLink", event.getMeetingLink());
+            context.setVariable("consultationFee", event.getConsultationFee());
+            context.setVariable("currency", event.getCurrency());
+
+            context.setVariable("doctorName", event.getDoctorName());
+            context.setVariable("doctorSpecialization", event.getDoctorSpecialization());
+            context.setVariable("doctorEmail", event.getDoctorEmail());
+            context.setVariable("doctorImageUrl", event.getDoctorImageUrl());
+
+            context.setVariable("patientName", event.getPatientName());
+            context.setVariable("patientEmail", event.getPatientEmail());
+            context.setVariable("patientGender", event.getPatientGender());
+            context.setVariable("patientDob", event.getPatientDob());
+
+            String doctorHtmlContent;
+            String patientHtmlContent;
+            try {
+                doctorHtmlContent = templateEngine.process("doctor-appointment-confirmation", context);
+                patientHtmlContent = templateEngine.process("patient-appointment-confirmation", context);
+            } catch (Exception e) {
+                throw new EmailTemplateException("appointment-confirmation", e);
             }
+
+            String doctorSubject = "New Appointment Scheduled — ID: " + event.getAppointmentId();
+            String patientSubject = "Appointment Confirmation — ID: " + event.getAppointmentId();
+
+            sendEmail(event.getDoctorEmail(), doctorSubject, doctorHtmlContent);
+            sendEmail(event.getPatientEmail(), patientSubject, patientHtmlContent);
+        } catch (Exception e) {
+            throw new EmailSendingException(event.getDoctorEmail(), e);
         }
     }
 
-    private void sendEmail(SendOtpEvent otpEvent, String htmlContent) {
+    private void sendEmail(String email, String subject, String htmlContent) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setTo(otpEvent.getEmail());
-            helper.setSubject(otpEvent.getSubject());
+            helper.setTo(email);
+            helper.setSubject(email);
             helper.setText(htmlContent, true);
 
             ClassPathResource logo = new ClassPathResource("static/images/Logo.png");
@@ -87,7 +120,7 @@ public class EmailServiceImpl implements EmailService {
 
             mailSender.send(message);
         } catch (Exception e) {
-            throw new EmailSendingException(otpEvent.getEmail(), e);
+            throw new EmailSendingException(email, e);
         }
     }
 }
