@@ -41,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
     private final ModelMapper modelMapper;
     private final JwtService jwtService;
     private final OtpRepository otpRepository;
-    private final KafkaTemplate<String, SendOtpEvent> otpKafkaTemplate;
+    private final KafkaTemplate<String, SendOtpEvent> sendOtpEmailKafkaTemplate;
     private static final String topicName = "send-otp";
 
     @Override
@@ -279,22 +279,19 @@ public class AuthServiceImpl implements AuthService {
             String name;
             Role userRole = Role.valueOf(role.toUpperCase());
 
-            switch (userRole) {
-                case DOCTOR:
+            name = switch (userRole) {
+                case DOCTOR -> {
                     Doctor doctor = doctorRepository.findByEmail(email)
                             .orElseThrow(() -> new ResourceNotFound("Doctor not found with email: " + email));
-                    name = doctor.getFirstName() + " " + doctor.getLastName();
-                    break;
-
-                case PATIENT:
+                    yield doctor.getFirstName() + " " + doctor.getLastName();
+                }
+                case PATIENT -> {
                     Patient patient = patientRepository.findByEmail(email)
                             .orElseThrow(() -> new ResourceNotFound("Patient not found with email: " + email));
-                    name = patient.getFirstName() + " " + patient.getLastName();
-                    break;
-
-                default:
-                    throw new IllegalArgumentException("Unsupported user role: " + userRole);
-            }
+                    yield patient.getFirstName() + " " + patient.getLastName();
+                }
+                default -> throw new IllegalArgumentException("Unsupported user role: " + userRole);
+            };
 
             String otp = GenerateOtp.generateOtp();
             PasswordResetOtp passwordResetOtp = PasswordResetOtp
@@ -315,7 +312,7 @@ public class AuthServiceImpl implements AuthService {
                     .purpose("Password Reset")
                     .generatedAt(LocalDateTime.now())
                     .build();
-            otpKafkaTemplate.send(topicName, sendOtpEvent.getOtp(), sendOtpEvent);
+            sendOtpEmailKafkaTemplate.send(topicName, sendOtpEvent.getOtp(), sendOtpEvent);
             log.info("Kafka message sent for forgot password request for email: {}", email);
         } catch (DataAccessException ex) {
             log.error("Database error during forgot password request for email: {}", email, ex);

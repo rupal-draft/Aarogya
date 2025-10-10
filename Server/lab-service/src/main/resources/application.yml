@@ -22,7 +22,7 @@ spring:
 
 logging:
   level:
-    com.healthcare.lab: DEBUG
+    com.aarogya.lab_service: DEBUG
     org.springframework.data.mongodb: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

@@ -1,124 +1,127 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
-import InputField from "../../common/Fields/InputField"
-import { toast } from "react-toastify"
-import axios from "axios"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import InputField from "../../common/Fields/InputField";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 interface ResetPasswordProps {
-  onSuccess: () => void
+  onSuccess: () => void;
 }
 
 const ResetPassword: React.FC<ResetPasswordProps> = ({ onSuccess }) => {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const [email, setEmail] = useState<string>("")
-  const [otp, setOtp] = useState<string>("")
-  const [password, setPassword] = useState<string>("")
-  const [confirmPassword, setConfirmPassword] = useState<string>("")
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isSuccess, setIsSuccess] = useState<boolean>(false)
-  const [timeLeft, setTimeLeft] = useState<number>(300) // 5 minutes in seconds
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState<string>("");
+  const [otp, setOtp] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [timeLeft, setTimeLeft] = useState<number>(300); // 5 minutes in seconds
 
   // Get email from query params
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search)
-    const emailParam = searchParams.get("email")
+    const searchParams = new URLSearchParams(location.search);
+    const emailParam = searchParams.get("email");
     if (emailParam) {
-      setEmail(emailParam)
+      setEmail(emailParam);
     }
-  }, [location])
+  }, [location]);
 
   // OTP timer countdown
   useEffect(() => {
-    if (timeLeft <= 0) return
+    if (timeLeft <= 0) return;
 
     const timer = setTimeout(() => {
-      setTimeLeft(timeLeft - 1)
-    }, 1000)
+      setTimeLeft(timeLeft - 1);
+    }, 1000);
 
-    return () => clearTimeout(timer)
-  }, [timeLeft])
+    return () => clearTimeout(timer);
+  }, [timeLeft]);
 
   // Format time as MM:SS
   const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (!otp) {
-      newErrors.otp = "OTP is required"
-    } else if (otp.length !== 6 || !/^\d+$/.test(otp)) {
-      newErrors.otp = "OTP must be 6 digits"
+      newErrors.otp = "OTP is required";
+    } else if (otp.length !== 4 || !/^\d+$/.test(otp)) {
+      newErrors.otp = "OTP must be 4 digits";
     }
 
     if (!password) {
-      newErrors.password = "Password is required"
+      newErrors.password = "Password is required";
     } else if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters"
+      newErrors.password = "Password must be at least 8 characters";
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password"
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    if (!validateForm()) return;
 
-  if (!validateForm()) return;
+    setIsLoading(true);
 
-  setIsLoading(true);
+    try {
+      await axios.patch(
+        "http://localhost:8080/api/v1/auth/core/reset-password",
+        {
+          email,
+          otp,
+          newPassword: password,
+        }
+      );
 
-  try {
-    await axios.patch("http://localhost:8080/api/v1/auth/core/reset-password", {
-      email,
-      otp,
-      newPassword: password,
-    });
+      setIsSuccess(true);
 
-    setIsSuccess(true);
-
-    navigate("/auth")
-    setTimeout(() => {
-      onSuccess();
-    }, 2000);
-  } catch (error) {
-    console.error("Password reset failed", error);
-    toast.error("Failed to reset password. Please try again.");
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+      navigate("/auth");
+      setTimeout(() => {
+        onSuccess();
+      }, 2000);
+    } catch (error) {
+      console.error("Password reset failed", error);
+      toast.error("Failed to reset password. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleResendOTP = () => {
-    setIsLoading(true)
+    setIsLoading(true);
 
     // Simulate API call to resend OTP
     setTimeout(() => {
-      console.log("Resending OTP to", email)
-      setIsLoading(false)
-      setTimeLeft(300) // Reset timer to 5 minutes
+      console.log("Resending OTP to", email);
+      setIsLoading(false);
+      setTimeLeft(300); // Reset timer to 5 minutes
 
       // Show success message
-      setErrors((prev) => ({ ...prev, otp: "" }))
-      alert("OTP has been resent to your email")
-    }, 1500)
-  }
+      setErrors((prev) => ({ ...prev, otp: "" }));
+      alert("OTP has been resent to your email");
+    }, 1500);
+  };
 
   return (
     <div className="w-full">
@@ -144,9 +147,12 @@ const handleSubmit = async (e: React.FormEvent) => {
             />
           </svg>
         </div>
-        <p className="text-gray-600 mb-2">Almost there! Create your new password.</p>
+        <p className="text-gray-600 mb-2">
+          Almost there! Create your new password.
+        </p>
         <p className="text-gray-500 text-sm">
-          We've sent a verification code to <span className="font-medium text-blue-600">{email}</span>
+          We've sent a verification code to{" "}
+          <span className="font-medium text-blue-600">{email}</span>
         </p>
       </div>
 
@@ -177,7 +183,10 @@ const handleSubmit = async (e: React.FormEvent) => {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="otp-input-container">
-            <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="otp"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Verification Code <span className="text-red-500">*</span>
             </label>
             <div className="flex flex-col">
@@ -204,9 +213,11 @@ const handleSubmit = async (e: React.FormEvent) => {
                   name="otp"
                   value={otp}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 6)
-                    setOtp(value)
-                    if (errors.otp) setErrors((prev) => ({ ...prev, otp: "" }))
+                    const value = e.target.value
+                      .replace(/[^0-9]/g, "")
+                      .slice(0, 6);
+                    setOtp(value);
+                    if (errors.otp) setErrors((prev) => ({ ...prev, otp: "" }));
                   }}
                   className={`block w-full pl-10 pr-3 py-2 border ${
                     errors.otp ? "border-red-300" : "border-gray-300"
@@ -215,7 +226,9 @@ const handleSubmit = async (e: React.FormEvent) => {
                   maxLength={6}
                 />
               </div>
-              {errors.otp && <p className="mt-1 text-sm text-red-600">{errors.otp}</p>}
+              {errors.otp && (
+                <p className="mt-1 text-sm text-red-600">{errors.otp}</p>
+              )}
               <div className="flex justify-between items-center mt-2">
                 <span className="text-sm text-gray-500 flex items-center">
                   <svg
@@ -239,7 +252,9 @@ const handleSubmit = async (e: React.FormEvent) => {
                   onClick={handleResendOTP}
                   disabled={isLoading || timeLeft > 270} // Only allow resend after 30 seconds
                   className={`text-sm text-blue-600 hover:text-blue-500 font-medium ${
-                    isLoading || timeLeft > 270 ? "opacity-50 cursor-not-allowed" : ""
+                    isLoading || timeLeft > 270
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
                   }`}
                 >
                   Resend Code
@@ -254,8 +269,9 @@ const handleSubmit = async (e: React.FormEvent) => {
             type="password"
             value={password}
             onChange={(e) => {
-              setPassword(e.target.value)
-              if (errors.password) setErrors((prev) => ({ ...prev, password: "" }))
+              setPassword(e.target.value);
+              if (errors.password)
+                setErrors((prev) => ({ ...prev, password: "" }));
             }}
             error={errors.password}
             required
@@ -283,8 +299,9 @@ const handleSubmit = async (e: React.FormEvent) => {
             type="password"
             value={confirmPassword}
             onChange={(e) => {
-              setConfirmPassword(e.target.value)
-              if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: "" }))
+              setConfirmPassword(e.target.value);
+              if (errors.confirmPassword)
+                setErrors((prev) => ({ ...prev, confirmPassword: "" }));
             }}
             error={errors.confirmPassword}
             required
@@ -321,7 +338,14 @@ const handleSubmit = async (e: React.FormEvent) => {
                   fill="none"
                   viewBox="0 0 24 24"
                 >
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
                   <path
                     className="opacity-75"
                     fill="currentColor"
@@ -379,7 +403,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         </ul>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ResetPassword
+export default ResetPassword;
