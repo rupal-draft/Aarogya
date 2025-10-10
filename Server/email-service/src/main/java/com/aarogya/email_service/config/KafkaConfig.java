@@ -2,6 +2,8 @@ package com.aarogya.email_service.config;
 
 import com.aarogya.appointment_service.events.AppointmentConfirmationEvent;
 import com.aarogya.auth_service.events.SendOtpEvent;
+import com.aarogya.lab_service.events.LabOrderConfirmationEvent;
+import com.aarogya.lab_service.events.LabResultCreatedEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,6 +68,52 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, AppointmentConfirmationEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(appointmentConfirmationConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, LabOrderConfirmationEvent> labTestOrderConfirmationConsumerFactory() {
+        JsonDeserializer<LabOrderConfirmationEvent> deserializer =
+                new JsonDeserializer<>(LabOrderConfirmationEvent.class);
+        deserializer.addTrustedPackages("*");
+
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "lab-test-order-confirmation-group");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
+
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, LabOrderConfirmationEvent> labTestOrderConfirmationKafkaListenerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, LabOrderConfirmationEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(labTestOrderConfirmationConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, LabResultCreatedEvent> labResultCreatedConsumerFactory() {
+        JsonDeserializer<LabResultCreatedEvent> deserializer =
+                new JsonDeserializer<>(LabResultCreatedEvent.class);
+        deserializer.addTrustedPackages("*");
+
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "lab-result-created-group");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
+
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, LabResultCreatedEvent> labResultCreatedKafkaListenerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, LabResultCreatedEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(labResultCreatedConsumerFactory());
         return factory;
     }
 }

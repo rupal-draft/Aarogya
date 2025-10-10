@@ -3,23 +3,20 @@ package com.aarogya.email_service.exceptions;
 import lombok.Getter;
 
 @Getter
-public class EventValidationException extends OtpServiceException {
+public class EventValidationException extends EventProcessingException {
+    private final String fieldName;
+    private final Object invalidValue;
 
-    private final String eventType;
-    private final Object invalidEvent;
-
-    public EventValidationException(String eventType, Object invalidEvent, String validationMessage) {
-        super(String.format("Event validation failed for %s: %s", eventType, validationMessage),
-                "OTP_EVENT_001");
-        this.eventType = eventType;
-        this.invalidEvent = invalidEvent;
+    public EventValidationException(String message, String eventType, String eventId, String fieldName, Object invalidValue) {
+        super(message, "EVENT_VALIDATION_001", eventType, eventId);
+        this.fieldName = fieldName;
+        this.invalidValue = invalidValue;
     }
 
-    public EventValidationException(String eventType, Object invalidEvent, String validationMessage, Throwable cause) {
-        super(String.format("Event validation failed for %s: %s", eventType, validationMessage),
-                cause, "OTP_EVENT_002");
-        this.eventType = eventType;
-        this.invalidEvent = invalidEvent;
+    public EventValidationException(String message, String eventType, String eventId, String fieldName, Object invalidValue, Throwable cause) {
+        super(message, "EVENT_VALIDATION_002", eventType, eventId, cause);
+        this.fieldName = fieldName;
+        this.invalidValue = invalidValue;
     }
 
 }

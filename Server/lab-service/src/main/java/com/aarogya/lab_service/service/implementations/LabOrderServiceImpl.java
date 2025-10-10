@@ -9,6 +9,7 @@ import com.aarogya.lab_service.dto.response.LabOrderResponse;
 import com.aarogya.lab_service.enums.OrderStatus;
 import com.aarogya.lab_service.enums.PaymentStatus;
 import com.aarogya.lab_service.enums.TestStatus;
+import com.aarogya.lab_service.events.LabOrderConfirmationEvent;
 import com.aarogya.lab_service.exceptions.*;
 import com.aarogya.lab_service.models.LabOrder;
 import com.aarogya.lab_service.models.LabTest;
@@ -27,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +48,7 @@ public class LabOrderServiceImpl implements LabOrderService {
     private final ModelMapper modelMapper;
     private final UserGrpcClient userGrpcClient;
     private final LabResultService labResultService;
+    private final KafkaTemplate<String, LabOrderConfirmationEvent> labOrderConfirmationEmailNotificationKafkaTemplate;
 
     @Override
     @Transactional
@@ -291,6 +294,29 @@ public class LabOrderServiceImpl implements LabOrderService {
             order.setPaymentStatus(PaymentStatus.PAID);
             order.setPaymentId(orderStatusUpdateEvent.getPaymentId());
             labOrderRepository.save(order);
+            PatientResponseDTO patient = userGrpcClient.getPatient(order.getPatientId());
+            DoctorResponseDTO doctor = userGrpcClient.getDoctor(order.getDoctorId());
+            LabOrderConfirmationEvent event = LabOrderConfirmationEvent.builder()
+                    .orderId(order.getId())
+                    .orderNumber(order.getOrderNumber())
+                    .patientId(order.getPatientId())
+                    .patientName(patient.getFirstName() + " " + patient.getLastName())
+                    .patientEmail(patient.getEmail())
+                    .doctorId(order.getDoctorId())
+                    .doctorName(doctor.getFirstName() + " " + doctor.getLastName())
+                    .doctorEmail(doctor.getEmail())
+                    .tests(order.getOrderedTests().stream()
+                            .map(t -> new LabOrderConfirmationEvent.TestItem(
+                                    t.getTestId(), t.getTestName(), t.getPrice()))
+                            .toList())
+                    .totalAmount(order.getTotalAmount())
+                    .scheduledDateTime(order.getScheduledDateTime())
+                    .location(order.getLocation())
+                    .specialInstructions(order.getSpecialInstructions())
+                    .orderStatus(order.getStatus().name())
+                    .paymentStatus(order.getPaymentStatus().name())
+                    .build();
+            labOrderConfirmationEmailNotificationKafkaTemplate.send("lab-order-confirm-email", order.getOrderNumber(), event);
             log.info("Order processed with id: {}", order.getId());
         } catch (ResourceNotFoundException e) {
             log.error("Order not found: {}", e.getMessage());

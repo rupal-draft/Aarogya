@@ -8,96 +8,80 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EmailSendingException.class)
-    public ResponseEntity<ErrorResponse> handleEmailSendingException(EmailSendingException ex) {
-        log.error("Email sending failed: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = new ErrorResponse(
-                ex.getErrorCode(),
-                ex.getMessage(),
-                ex.getTimestamp()
-        );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-    }
+    @ExceptionHandler(EventProcessingException.class)
+    public ResponseEntity<ErrorResponse> handleEventProcessingException(EventProcessingException ex) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(ex.getErrorCode())
+                .message(ex.getMessage())
+                .timestamp(ex.getTimestamp())
+                .details(buildErrorDetails(ex))
+                .build();
 
-    @ExceptionHandler(EmailTemplateException.class)
-    public ResponseEntity<ErrorResponse> handleEmailTemplateException(EmailTemplateException ex) {
-        log.error("Email template processing failed: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = new ErrorResponse(
-                ex.getErrorCode(),
-                ex.getMessage(),
-                ex.getTimestamp()
-        );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-    }
+        HttpStatus status = determineHttpStatus(ex);
+        logErrorBasedOnType(ex, status);
 
-    @ExceptionHandler(KafkaConsumerException.class)
-    public ResponseEntity<ErrorResponse> handleKafkaConsumerException(KafkaConsumerException ex) {
-        log.error("Kafka consumer error: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = new ErrorResponse(
-                ex.getErrorCode(),
-                ex.getMessage(),
-                ex.getTimestamp()
-        );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-    }
-
-    @ExceptionHandler(EventValidationException.class)
-    public ResponseEntity<ErrorResponse> handleEventValidationException(EventValidationException ex) {
-        log.warn("Event validation failed: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                ex.getErrorCode(),
-                ex.getMessage(),
-                ex.getTimestamp()
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-
-    @ExceptionHandler(OtpValidationException.class)
-    public ResponseEntity<ErrorResponse> handleOtpValidationException(OtpValidationException ex) {
-        log.warn("OTP validation failed: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                ex.getErrorCode(),
-                ex.getMessage(),
-                ex.getTimestamp()
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-
-    @ExceptionHandler(OtpExpiredException.class)
-    public ResponseEntity<ErrorResponse> handleOtpExpiredException(OtpExpiredException ex) {
-        log.warn("OTP expired: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                ex.getErrorCode(),
-                ex.getMessage(),
-                ex.getTimestamp()
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-
-    @ExceptionHandler(ConfigurationException.class)
-    public ResponseEntity<ErrorResponse> handleConfigurationException(ConfigurationException ex) {
-        log.error("Configuration error: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = new ErrorResponse(
-                ex.getErrorCode(),
-                ex.getMessage(),
-                ex.getTimestamp()
-        );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        return ResponseEntity.status(status).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
         log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = new ErrorResponse(
-                "OTP_UNKNOWN_001",
-                "An unexpected error occurred",
-                Instant.now()
-        );
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode("UNKNOWN_ERROR_001")
+                .message("An unexpected error occurred")
+                .timestamp(Instant.now())
+                .build();
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    private HttpStatus determineHttpStatus(EventProcessingException ex) {
+        if (ex instanceof EventValidationException) {
+            return HttpStatus.BAD_REQUEST;
+        } else if (ex instanceof EventEmailException || ex instanceof EventEmailTemplateException) {
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        } else if (ex instanceof EventKafkaException) {
+            return HttpStatus.SERVICE_UNAVAILABLE;
+        } else {
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    private void logErrorBasedOnType(EventProcessingException ex, HttpStatus status) {
+        if (status.is4xxClientError()) {
+            log.warn("Client error for {} event {}: {}", ex.getEventType(), ex.getEventId(), ex.getMessage());
+        } else {
+            log.error("Server error for {} event {}: {}", ex.getEventType(), ex.getEventId(), ex.getMessage(), ex);
+        }
+    }
+
+    private Map<String, Object> buildErrorDetails(EventProcessingException ex) {
+        Map<String, Object> details = new HashMap<>();
+        details.put("eventType", ex.getEventType());
+        details.put("eventId", ex.getEventId());
+        details.put("timestamp", ex.getTimestamp().toString());
+
+        switch (ex) {
+            case EventValidationException validationEx -> {
+                details.put("fieldName", validationEx.getFieldName());
+                details.put("invalidValue", validationEx.getInvalidValue());
+            }
+            case EventEmailException eventEmailException -> details.put("errorCategory", "EMAIL_SENDING");
+            case EventEmailTemplateException eventEmailTemplateException ->
+                    details.put("errorCategory", "TEMPLATE_PROCESSING");
+            case EventKafkaException eventKafkaException -> details.put("errorCategory", "KAFKA_PROCESSING");
+            default -> {
+            }
+        }
+
+        return details;
     }
 }

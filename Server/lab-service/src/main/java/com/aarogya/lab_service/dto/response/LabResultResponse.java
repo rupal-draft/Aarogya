@@ -38,5 +38,4 @@ public class LabResultResponse {
     private boolean isDoctorNotified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
 }

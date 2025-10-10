@@ -495,6 +495,7 @@ export const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
                     key={appointment.id}
                     appointment={appointment}
                     index={index}
+                    refresh={fetchAppointments}
                   />
                 ))}
               </motion.div>

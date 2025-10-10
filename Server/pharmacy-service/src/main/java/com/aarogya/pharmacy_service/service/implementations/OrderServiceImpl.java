@@ -13,12 +13,12 @@ import com.aarogya.pharmacy_service.dto.order.OrderDTO;
 import com.aarogya.pharmacy_service.dto.order.OrderItemCreationDTO;
 import com.aarogya.pharmacy_service.dto.order.OrderStatusUpdateDTO;
 import com.aarogya.pharmacy_service.dto.patient.PatientResponseDTO;
+import com.aarogya.pharmacy_service.events.OrderConfirmationEvent;
 import com.aarogya.pharmacy_service.exceptions.*;
 import com.aarogya.pharmacy_service.mapper.OrderMapper;
 import com.aarogya.pharmacy_service.repository.MedicineRepository;
 import com.aarogya.pharmacy_service.repository.OrderRepository;
 import com.aarogya.pharmacy_service.service.CartService;
-import com.aarogya.pharmacy_service.service.NotificationService;
 import com.aarogya.pharmacy_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +26,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,8 +44,8 @@ public class OrderServiceImpl implements OrderService {
     private final MedicineRepository medicineRepository;
     private final OrderMapper orderMapper;
     private final CartService cartService;
-    private final NotificationService notificationService;
     private final UserGrpcClient userGrpcClient;
+    private final KafkaTemplate<String, OrderConfirmationEvent> orderConfirmNotificationKafkaTemplate;
 
     @Transactional
     @CacheEvict(value = "orders", allEntries = true)
@@ -91,7 +92,6 @@ public class OrderServiceImpl implements OrderService {
                     .build();
 
             Order savedOrder = orderRepository.save(order);
-            notificationService.sendOrderCreatedNotification(savedOrder);
             OrderDTO orderDTO = orderMapper.toDTO(savedOrder);
             orderDTO.setPatientName(patientResponseDTO.getFirstName() + " " + patientResponseDTO.getLastName());
             return orderDTO;
@@ -183,7 +183,6 @@ public class OrderServiceImpl implements OrderService {
             order.setUpdatedAt(LocalDateTime.now());
 
             Order updatedOrder = orderRepository.save(order);
-            notificationService.sendOrderStatusUpdateNotification(updatedOrder, statusUpdateDTO);
             return orderMapper.toDTO(updatedOrder);
         } catch (IllegalArgumentException e) {
             throw new InvalidOrderStatusException(statusUpdateDTO.getStatus());
@@ -221,7 +220,32 @@ public class OrderServiceImpl implements OrderService {
             order.setStatus(OrderStatus.PROCESSED);
             order.setPaymentId(orderStatusUpdateEvent.getPaymentId());
             orderRepository.save(order);
-            notificationService.sendOrderStatusUpdateNotification(order, new OrderStatusUpdateDTO(OrderStatus.PROCESSED.toString()));
+
+            PatientResponseDTO patient = userGrpcClient.getPatient(order.getPatientId());
+            OrderConfirmationEvent event = OrderConfirmationEvent.builder()
+                    .orderId(order.getId())
+                    .patientId(patient.getId())
+                    .patientName(patient.getFirstName() + " " + patient.getLastName())
+                    .patientEmail(patient.getEmail())
+                    .totalAmount(order.getTotalAmount())
+                    .paymentMethod(order.getPaymentMethod())
+                    .paymentId(order.getPaymentId())
+                    .shippingAddress(order.getShippingAddress())
+                    .orderDate(order.getOrderDate())
+                    .orderStatus(order.getStatus().name())
+                    .items(
+                            order.getItems().stream()
+                                    .map(item -> OrderConfirmationEvent.OrderItem.builder()
+                                            .medicineId(item.getMedicineId())
+                                            .medicineName(item.getMedicineName())
+                                            .medicineImage(item.getMedicineImage())
+                                            .quantity(item.getQuantity())
+                                            .price(item.getPrice())
+                                            .build())
+                                    .toList()
+                    )
+                    .build();
+            orderConfirmNotificationKafkaTemplate.send("order-confirm-email", order.getId(), event);
             log.info("Order processed with id: {}", order.getId());
         } catch (ResourceNotFound e) {
             log.error("Order not found: {}", e.getMessage());

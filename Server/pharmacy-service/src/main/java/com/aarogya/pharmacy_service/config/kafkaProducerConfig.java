@@ -1,6 +1,6 @@
 package com.aarogya.pharmacy_service.config;
 
-import com.aarogya.pharmacy_service.events.NotificationEvent;
+import com.aarogya.pharmacy_service.events.OrderConfirmationEvent;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.TopicConfig;
@@ -26,7 +26,7 @@ public class kafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, NotificationEvent> notificationProducerFactory() {
+    public ProducerFactory<String, OrderConfirmationEvent> orderConfirmdProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -37,22 +37,13 @@ public class kafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, NotificationEvent> orderNotificationKafkaTemplate() {
-        return new KafkaTemplate<>(notificationProducerFactory());
+    public KafkaTemplate<String, OrderConfirmationEvent> orderConfirmNotificationKafkaTemplate() {
+        return new KafkaTemplate<>(orderConfirmdProducerFactory());
     }
 
     @Bean
-    public NewTopic orderCreationTopic() {
-        return TopicBuilder.name("order-creation")
-                .partitions(3)
-                .replicas(1)
-                .config(TopicConfig.RETENTION_MS_CONFIG, "604800000")
-                .build();
-    }
-
-    @Bean
-    public NewTopic orderStatusUpdateTopic() {
-        return TopicBuilder.name("order-status-update")
+    public NewTopic orderConfirmTopic() {
+        return TopicBuilder.name("order-confirm-email")
                 .partitions(3)
                 .replicas(1)
                 .config(TopicConfig.RETENTION_MS_CONFIG, "604800000")

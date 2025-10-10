@@ -8,6 +8,7 @@ import com.aarogya.lab_service.dto.request.CreateLabResultRequest;
 import com.aarogya.lab_service.dto.request.UpdateLabResultRequest;
 import com.aarogya.lab_service.dto.response.LabResultResponse;
 import com.aarogya.lab_service.enums.OrderStatus;
+import com.aarogya.lab_service.events.LabResultCreatedEvent;
 import com.aarogya.lab_service.exceptions.AccessForbidden;
 import com.aarogya.lab_service.exceptions.BadRequestException;
 import com.aarogya.lab_service.exceptions.ResourceNotFoundException;
@@ -25,6 +26,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,7 @@ public class LabResultServiceImpl implements LabResultService {
     private final LabOrderRepository labOrderRepository;
     private final ModelMapper modelMapper;
     private final UserGrpcClient userGrpcClient;
+    private final KafkaTemplate<String, LabResultCreatedEvent> labResultCreatedEmailNotificationKafkaTemplate;
 
     @Override
     @Transactional
@@ -75,6 +78,38 @@ public class LabResultServiceImpl implements LabResultService {
         result.setVerified(false);
 
         LabResult savedResult = labResultRepository.save(result);
+
+        PatientResponseDTO patient = userGrpcClient.getPatient(order.getPatientId());
+        DoctorResponseDTO doctor = userGrpcClient.getDoctor(order.getDoctorId());
+        LabResultCreatedEvent event = LabResultCreatedEvent.builder()
+                .resultId(savedResult.getId())
+                .orderId(savedResult.getOrderId())
+                .orderNumber(order.getOrderNumber())
+                .patientId(order.getPatientId())
+                .patientName(patient.getFirstName() + " " + patient.getLastName())
+                .patientEmail(patient.getEmail())
+                .doctorId(order.getDoctorId())
+                .doctorName(doctor.getFirstName() + " " + doctor.getLastName())
+                .doctorEmail(doctor.getEmail())
+                .testId(savedResult.getTestId())
+                .testName(savedResult.getTestName())
+                .testCode(savedResult.getTestCode())
+                .overallResult(savedResult.getOverallResult())
+                .interpretation(savedResult.getInterpretation())
+                .reportUrl(savedResult.getReportUrl())
+                .resultGeneratedAt(savedResult.getResultGeneratedAt())
+                .isCritical(savedResult.isCritical())
+                .parameters(savedResult.getParameters().stream()
+                        .map(p -> LabResultCreatedEvent.ResultParameter.builder()
+                                .parameterName(p.getParameterName())
+                                .value(p.getValue())
+                                .unit(p.getUnit())
+                                .normalRange(p.getNormalRange())
+                                .status(p.getStatus().name())
+                                .build())
+                        .toList())
+                .build();
+        labResultCreatedEmailNotificationKafkaTemplate.send("lab-result-created-email", savedResult.getId(), event);
         log.info("Lab result created successfully with ID: {}", savedResult.getId());
 
         return mapToResultResponse(savedResult);

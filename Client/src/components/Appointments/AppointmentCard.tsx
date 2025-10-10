@@ -24,11 +24,13 @@ import { PaymentModal } from "../Payment/AppointmentPaymentModal";
 interface AppointmentCardProps {
   appointment: AppointmentResponseDto;
   index: number;
+  refresh: () => Promise<void>;
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({
   appointment,
   index,
+  refresh,
 }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
@@ -75,9 +77,11 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
     return appointment.paymentId && appointment.paymentId !== "Not paid yet";
   };
 
-  const handlePaymentSuccess = (details: any) => {
+  const handlePaymentSuccess = async (details: any) => {
     setPaymentDetails(details);
     setShowPaymentModal(false);
+    await refresh();
+    await loadPaymentDetails();
   };
 
   const handlePaymentFailure = (error: string) => {

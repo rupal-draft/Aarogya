@@ -7,7 +7,6 @@ import com.aarogya.pharmacy_service.events.NotificationEvent;
 import com.aarogya.pharmacy_service.events.enums.NotificationOrderStatus;
 import com.aarogya.pharmacy_service.events.messaging.OrderItemNotificationDto;
 import com.aarogya.pharmacy_service.events.messaging.OrderNotificationDto;
-import com.aarogya.pharmacy_service.service.NotificationService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
