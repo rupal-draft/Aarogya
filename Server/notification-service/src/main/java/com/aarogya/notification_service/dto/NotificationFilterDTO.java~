@@ -1,4 +1,0 @@
-package com.aarogya.notification_service.dto;
-
-public class NotificationFilterDTO {
-}
