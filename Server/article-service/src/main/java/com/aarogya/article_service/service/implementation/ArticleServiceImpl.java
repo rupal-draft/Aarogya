@@ -19,7 +19,6 @@ import com.aarogya.article_service.repository.ArticleRepository;
 import com.aarogya.article_service.repository.CommentRepository;
 import com.aarogya.article_service.repository.LikeRepository;
 import com.aarogya.article_service.service.ArticleService;
-import com.aarogya.article_service.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.MappingException;
@@ -44,7 +43,6 @@ public class ArticleServiceImpl implements ArticleService {
     private final CommentRepository commentRepository;
     private final ModelMapper modelMapper;
     private final UserGrpcClient userGrpcClient;
-    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -67,7 +65,6 @@ public class ArticleServiceImpl implements ArticleService {
             articles.setDoctorId(userId);
 
             articleRepository.save(articles);
-            notificationService.sendPostCreatedNotification(articles);
         } catch (DataAccessException e) {
             log.error("error while saving article {}", articleRequestDTO, e);
             throw new DataIntegrityViolation("Error while saving article");
@@ -279,7 +276,6 @@ public class ArticleServiceImpl implements ArticleService {
                     .build();
 
             likeRepository.save(articleLikes);
-            notificationService.sendPostLikedNotification(articleLikes);
         } catch (DataAccessException e) {
             log.error("error while liking article {}", articleId, e);
             throw new DataIntegrityViolation("Error while liking article");
@@ -328,8 +324,6 @@ public class ArticleServiceImpl implements ArticleService {
         log.info("Liked Article check request received with id: {}", id);
         try {
             return likeRepository.existsByArticleIdAndUserId(id, UserContextHolder.getUserDetails().getUserId());
-        } catch (DataAccessException e) {
-            log.error("error while checking if user has liked article {}", id, e);
         } catch (Exception e) {
             log.error("error while checking if user has liked article {}", id, e);
         }
@@ -359,7 +353,6 @@ public class ArticleServiceImpl implements ArticleService {
                     .build();
 
             commentRepository.save(articleComments);
-            notificationService.sendPostCommentedNotification(articleComments);
         } catch (DataAccessException e) {
             log.error("error while commenting article {}", articleCommentRequestDTO, e);
             throw new DataIntegrityViolation("Error while commenting article");

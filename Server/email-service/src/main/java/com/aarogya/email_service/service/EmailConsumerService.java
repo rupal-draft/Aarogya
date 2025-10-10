@@ -4,10 +4,12 @@ import com.aarogya.appointment_service.events.AppointmentConfirmationEvent;
 import com.aarogya.auth_service.events.SendOtpEvent;
 import com.aarogya.lab_service.events.LabOrderConfirmationEvent;
 import com.aarogya.lab_service.events.LabResultCreatedEvent;
+import com.aarogya.pharmacy_service.events.OrderConfirmationEvent;
 
 public interface EmailConsumerService {
     void consumeSendOtpEvent(SendOtpEvent sendOtpEvent);
     void consumeAppointmentConfirmationEvent(AppointmentConfirmationEvent appointmentConfirmationEvent);
     void consumeLabTestOrderConfirmationEvent(LabOrderConfirmationEvent labOrderConfirmationEvent);
     void consumeLabResultCreatedEvent(LabResultCreatedEvent labResultCreatedEvent);
+    void consumeOrderConfirmationEvent(OrderConfirmationEvent orderConfirmationEvent);
 }

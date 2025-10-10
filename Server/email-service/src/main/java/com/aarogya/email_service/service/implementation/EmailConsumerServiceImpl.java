@@ -8,6 +8,7 @@ import com.aarogya.email_service.service.EmailService;
 import com.aarogya.email_service.utils.EventValidationUtil;
 import com.aarogya.lab_service.events.LabOrderConfirmationEvent;
 import com.aarogya.lab_service.events.LabResultCreatedEvent;
+import com.aarogya.pharmacy_service.events.OrderConfirmationEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -171,6 +172,45 @@ public class EmailConsumerServiceImpl implements EmailConsumerService {
             throw new EventKafkaException(
                     "Unexpected error processing lab result created event",
                     eventType, eventId, "lab-result-created-email", e
+            );
+        }
+    }
+
+    @Override
+    @KafkaListener(
+            topics = "order-confirm-email",
+            groupId = "order-confirm-group",
+            containerFactory = "orderConfirmationKafkaListenerFactory"
+    )
+    public void consumeOrderConfirmationEvent(OrderConfirmationEvent orderConfirmationEvent) {
+        String eventType = "ORDER_CONFIRMATION";
+        String eventId = orderConfirmationEvent.getOrderId();
+
+        try {
+            log.info("Received order confirmation event for order: {}, patient: {}",
+                    orderConfirmationEvent.getOrderId(), orderConfirmationEvent.getPatientEmail());
+
+            eventValidationUtil.validateOrderConfirmationEvent(orderConfirmationEvent);
+
+            emailService.sendOrderConfirmationEmail(orderConfirmationEvent);
+            log.info("Successfully processed order confirmation event for: {}",
+                    orderConfirmationEvent.getOrderId());
+
+        } catch (EventValidationException e) {
+            log.warn("Validation error processing order confirmation event: {}", e.getMessage());
+            throw e;
+        } catch (EventEmailException | EventEmailTemplateException e) {
+            log.error("Retryable error processing order confirmation event: {}", e.getMessage());
+            throw new EventKafkaException(
+                    "Failed to process order confirmation event",
+                    eventType, eventId, "order-confirm-email", e
+            );
+        } catch (Exception e) {
+            log.error("Unexpected error processing order confirmation event for order id: {}",
+                    orderConfirmationEvent.getOrderId(), e);
+            throw new EventKafkaException(
+                    "Unexpected error processing order confirmation event",
+                    eventType, eventId, "order-confirm-email", e
             );
         }
     }

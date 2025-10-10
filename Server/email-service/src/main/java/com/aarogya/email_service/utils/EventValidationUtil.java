@@ -6,6 +6,7 @@ import com.aarogya.email_service.exceptions.EventProcessingException;
 import com.aarogya.email_service.exceptions.EventValidationException;
 import com.aarogya.lab_service.events.LabOrderConfirmationEvent;
 import com.aarogya.lab_service.events.LabResultCreatedEvent;
+import com.aarogya.pharmacy_service.events.OrderConfirmationEvent;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -413,6 +414,150 @@ public class EventValidationUtil {
                         eventType, eventId, "reportUrl", event.getReportUrl()
                 );
             }
+        }
+    }
+
+    public void validateOrderConfirmationEvent(OrderConfirmationEvent event) {
+        String eventType = "ORDER_CONFIRMATION";
+        String eventId = event.getOrderId();
+
+        // Validate order details
+        if (event.getOrderId() == null || event.getOrderId().trim().isEmpty()) {
+            throw new EventValidationException(
+                    "Order ID cannot be null or empty",
+                    eventType, eventId, "orderId", event.getOrderId()
+            );
+        }
+
+        // Validate patient information
+        if (event.getPatientId() == null || event.getPatientId().trim().isEmpty()) {
+            throw new EventValidationException(
+                    "Patient ID cannot be null or empty",
+                    eventType, eventId, "patientId", event.getPatientId()
+            );
+        }
+
+        if (event.getPatientName() == null || event.getPatientName().trim().isEmpty()) {
+            throw new EventValidationException(
+                    "Patient name cannot be null or empty",
+                    eventType, eventId, "patientName", event.getPatientName()
+            );
+        }
+
+        if (event.getPatientEmail() == null || event.getPatientEmail().trim().isEmpty()) {
+            throw new EventValidationException(
+                    "Patient email cannot be null or empty",
+                    eventType, eventId, "patientEmail", event.getPatientEmail()
+            );
+        }
+
+        if (!isValidEmail(event.getPatientEmail())) {
+            throw new EventValidationException(
+                    "Invalid patient email format",
+                    eventType, eventId, "patientEmail", event.getPatientEmail()
+            );
+        }
+
+        // Validate financial information
+        if (event.getTotalAmount() == null || event.getTotalAmount().compareTo(BigDecimal.ZERO) < 0) {
+            throw new EventValidationException(
+                    "Total amount cannot be null or negative",
+                    eventType, eventId, "totalAmount", event.getTotalAmount()
+            );
+        }
+
+        if (event.getPaymentMethod() == null || event.getPaymentMethod().trim().isEmpty()) {
+            throw new EventValidationException(
+                    "Payment method cannot be null or empty",
+                    eventType, eventId, "paymentMethod", event.getPaymentMethod()
+            );
+        }
+
+        if (event.getPaymentId() == null || event.getPaymentId().trim().isEmpty()) {
+            throw new EventValidationException(
+                    "Payment ID cannot be null or empty",
+                    eventType, eventId, "paymentId", event.getPaymentId()
+            );
+        }
+
+        if (event.getShippingAddress() == null || event.getShippingAddress().trim().isEmpty()) {
+            throw new EventValidationException(
+                    "Shipping address cannot be null or empty",
+                    eventType, eventId, "shippingAddress", event.getShippingAddress()
+            );
+        }
+
+        if (event.getOrderDate() == null) {
+            throw new EventValidationException(
+                    "Order date cannot be null",
+                    eventType, eventId, "orderDate", null
+            );
+        }
+
+        if (event.getOrderDate().isAfter(LocalDateTime.now())) {
+            throw new EventValidationException(
+                    "Order date cannot be in the future",
+                    eventType, eventId, "orderDate", event.getOrderDate()
+            );
+        }
+
+        if (event.getOrderStatus() == null || event.getOrderStatus().trim().isEmpty()) {
+            throw new EventValidationException(
+                    "Order status cannot be null or empty",
+                    eventType, eventId, "orderStatus", event.getOrderStatus()
+            );
+        }
+
+        // Validate order items
+        if (event.getItems() == null || event.getItems().isEmpty()) {
+            throw new EventValidationException(
+                    "Order items cannot be null or empty",
+                    eventType, eventId, "items", event.getItems()
+            );
+        }
+
+        for (int i = 0; i < event.getItems().size(); i++) {
+            OrderConfirmationEvent.OrderItem item = event.getItems().get(i);
+
+            if (item.getMedicineId() == null || item.getMedicineId().trim().isEmpty()) {
+                throw new EventValidationException(
+                        "Medicine ID cannot be null or empty for item at index " + i,
+                        eventType, eventId, "items[" + i + "].medicineId", item.getMedicineId()
+                );
+            }
+
+            if (item.getMedicineName() == null || item.getMedicineName().trim().isEmpty()) {
+                throw new EventValidationException(
+                        "Medicine name cannot be null or empty for item at index " + i,
+                        eventType, eventId, "items[" + i + "].medicineName", item.getMedicineName()
+                );
+            }
+
+            if (item.getQuantity() == null || item.getQuantity() <= 0) {
+                throw new EventValidationException(
+                        "Quantity must be greater than 0 for item at index " + i,
+                        eventType, eventId, "items[" + i + "].quantity", item.getQuantity()
+                );
+            }
+
+            if (item.getPrice() == null || item.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+                throw new EventValidationException(
+                        "Price cannot be null or negative for item at index " + i,
+                        eventType, eventId, "items[" + i + "].price", item.getPrice()
+                );
+            }
+        }
+
+        BigDecimal calculatedTotal = event.getItems().stream()
+                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (calculatedTotal.compareTo(event.getTotalAmount()) != 0) {
+            throw new EventValidationException(
+                    String.format("Total amount mismatch. Expected: %s, Calculated: %s",
+                            event.getTotalAmount(), calculatedTotal),
+                    eventType, eventId, "totalAmount", event.getTotalAmount()
+            );
         }
     }
 

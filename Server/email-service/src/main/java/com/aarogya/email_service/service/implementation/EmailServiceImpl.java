@@ -4,9 +4,9 @@ import com.aarogya.appointment_service.events.AppointmentConfirmationEvent;
 import com.aarogya.auth_service.events.SendOtpEvent;
 import com.aarogya.email_service.exceptions.*;
 import com.aarogya.email_service.service.EmailService;
-import com.aarogya.email_service.utils.EventValidationUtil;
 import com.aarogya.lab_service.events.LabOrderConfirmationEvent;
 import com.aarogya.lab_service.events.LabResultCreatedEvent;
+import com.aarogya.pharmacy_service.events.OrderConfirmationEvent;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,6 @@ public class EmailServiceImpl implements EmailService {
     private final TemplateEngine templateEngine;
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm a");
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
-    private final DateTimeFormatter labDateTimeFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a");
 
     @Override
     public void sendPasswordResetOtp(SendOtpEvent otpEvent) {
@@ -274,6 +273,67 @@ public class EmailServiceImpl implements EmailService {
         } catch (Exception e) {
             throw new EventEmailException(
                     "Failed to send lab result email",
+                    eventType, eventId, event.getPatientEmail(), e
+            );
+        }
+    }
+
+    @Override
+    public void sendOrderConfirmationEmail(OrderConfirmationEvent event) {
+        String eventType = "ORDER_CONFIRMATION";
+        String eventId = event.getOrderId();
+
+        try {
+            Context context = new Context(Locale.forLanguageTag("en-US"));
+
+            context.setVariable("orderId", event.getOrderId());
+            context.setVariable("orderDate", event.getOrderDate().format(dateTimeFormatter));
+            context.setVariable("orderStatus", event.getOrderStatus());
+            context.setVariable("totalAmount", event.getTotalAmount());
+            context.setVariable("paymentMethod", event.getPaymentMethod());
+            context.setVariable("paymentId", event.getPaymentId());
+            context.setVariable("shippingAddress", event.getShippingAddress());
+
+            context.setVariable("patientName", event.getPatientName());
+            context.setVariable("patientEmail", event.getPatientEmail());
+
+            List<OrderConfirmationEvent.OrderItem> formattedItems = event.getItems().stream()
+                    .map(item -> OrderConfirmationEvent.OrderItem.builder()
+                            .medicineId(item.getMedicineId())
+                            .medicineName(item.getMedicineName())
+                            .medicineImage(item.getMedicineImage() != null ? item.getMedicineImage() : "")
+                            .quantity(item.getQuantity())
+                            .price(item.getPrice())
+                            .build())
+                    .collect(Collectors.toList());
+
+            context.setVariable("items", formattedItems);
+
+            context.setVariable("itemsCount", event.getItems().size());
+            context.setVariable("subtotal", event.getTotalAmount());
+            context.setVariable("estimatedDelivery",
+                    event.getOrderDate().plusDays(3).format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")));
+
+            String htmlContent;
+            try {
+                htmlContent = templateEngine.process("order-confirmation", context);
+            } catch (Exception e) {
+                throw new EventEmailTemplateException(
+                        "Failed to process order confirmation template",
+                        eventType, eventId, "order-confirmation", e
+                );
+            }
+
+            String subject = "✅ Order Confirmed - #" + event.getOrderId();
+            sendEmail(event.getPatientEmail(), subject, htmlContent, eventType, eventId);
+
+            log.info("Order confirmation email sent successfully for order: {}", eventId);
+
+        } catch (EventEmailException | EventEmailTemplateException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new EventEmailException(
+                    "Failed to send order confirmation email",
                     eventType, eventId, event.getPatientEmail(), e
             );
         }
