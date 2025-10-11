@@ -5,20 +5,17 @@ spring:
     bootstrap-servers: ${KAFKA_BROKER_URL}
   data:
     mongodb:
-      uri: ${MONGO_URI}
-      database: ${MONGO_DATABASE}
-      auto-index-creation: true
-
+      host: localhost
+      port: 27017
+      username: admin
+      password: password
+      database: aarogyadb
+      authentication-database: admin
+    redis:
+      host: localhost
+      port: 6379
   cache:
-    type: caffeine
-    caffeine:
-      spec: maximumSize=1000,expireAfterWrite=30m
-    cache-names:
-      - labTests
-      - labOrders
-      - patientOrders
-      - patientResults
-      - doctorResults
+    type: redis
 
 logging:
   level:

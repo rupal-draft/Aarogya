@@ -21,15 +21,6 @@ public class LabDataController {
         this.dataSeedingService = dataSeedingService;
     }
 
-    @PostMapping("/seed-lab-tests")
-    public ResponseEntity<ApiResponse<String>> seedLabTests() {
-        logger.info("POST /api/v1/lab/admin/seed-lab-tests - Seeding initial lab tests");
-
-        int count = dataSeedingService.seedLabTests();
-        return ResponseEntity.ok(ApiResponse.success("Lab tests seeded successfully",
-                count + " tests created"));
-    }
-
     @DeleteMapping("/clear-all-data")
     public ResponseEntity<ApiResponse<String>> clearAllData() {
         logger.info("DELETE /api/v1/lab/admin/clear-all-data - Clearing all lab data");

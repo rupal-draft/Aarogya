@@ -3,14 +3,19 @@ spring:
     name: appointment-service
   data:
     mongodb:
-      uri: ${MONGO_URI}
-      database: ${MONGO_DATABASE}
+      host: localhost
+      port: 27017
+      username: admin
+      password: password
+      database: aarogyadb
+      authentication-database: admin
+    redis:
+      host: localhost
+      port: 6379
   kafka:
     bootstrap-servers: ${KAFKA_BROKER_URL}
   cache:
-    type: caffeine
-    caffeine:
-      spec: maximumSize=1000,expireAfterWrite=30m
+    type: redis
 
 server:
   port: ${APPOINTMENT_SERVICE_PORT}

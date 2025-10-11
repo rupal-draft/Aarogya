@@ -10,7 +10,7 @@
         <module name="api-gateway" />
         <module name="discovery-server" />
       </profile>
-      <profile name="Annotation profile for email-service" enabled="true">
+      <profile name="Annotation profile for prescription-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -24,8 +24,8 @@
         <module name="appointment-service" />
         <module name="prescription-service" />
         <module name="article-service" />
-        <module name="email-service" />
         <module name="doctor-service" />
+        <module name="email-service" />
         <module name="lab-service" />
       </profile>
     </annotationProcessing>

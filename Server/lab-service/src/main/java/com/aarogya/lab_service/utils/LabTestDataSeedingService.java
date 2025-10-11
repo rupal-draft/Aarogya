@@ -6,17 +6,20 @@ import com.aarogya.lab_service.repository.LabResultRepository;
 import com.aarogya.lab_service.repository.LabTestRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Service
+@Component
 @RequiredArgsConstructor
 @Slf4j
-public class LabTestDataSeedingService {
-
+@Order(1)
+public class LabTestDataSeedingService implements CommandLineRunner {
 
     private final LabTestRepository labTestRepository;
     private final LabOrderRepository labOrderRepository;
@@ -306,7 +309,6 @@ public class LabTestDataSeedingService {
         return savedTests.size();
     }
 
-
     @Transactional
     public void clearAllData() {
         log.info("Clearing all lab data");
@@ -317,5 +319,12 @@ public class LabTestDataSeedingService {
 
         log.info("All lab data cleared successfully");
     }
+
+    @Override
+    public void run(String... args) throws Exception {
+        seedLabTests();
+    }
 }
+
+
 

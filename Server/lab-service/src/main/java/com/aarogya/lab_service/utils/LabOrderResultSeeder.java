@@ -10,6 +10,7 @@ import com.aarogya.lab_service.models.LabTest;
 import com.aarogya.lab_service.repository.LabTestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
+@Order(2)
 public class LabOrderResultSeeder implements CommandLineRunner {
 
     private final MongoTemplate mongoTemplate;

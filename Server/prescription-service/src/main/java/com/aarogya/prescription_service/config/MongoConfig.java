@@ -1,5 +1,7 @@
 package com.aarogya.prescription_service.config;
 
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,11 +19,23 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @EnableMongoRepositories(basePackages = "com.aarogya.prescription_service.repository")
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
+    @Value("${spring.data.mongodb.host}")
+    private String host;
+
+    @Value("${spring.data.mongodb.port}")
+    private int port;
+
+    @Value("${spring.data.mongodb.username}")
+    private String username;
+
+    @Value("${spring.data.mongodb.password}")
+    private String password;
+
     @Value("${spring.data.mongodb.database}")
     private String databaseName;
 
-    @Value("${spring.data.mongodb.uri}")
-    private String mongoUri;
+    @Value("${spring.data.mongodb.authentication-database}")
+    private String authDatabase;
 
     @Override
     protected String getDatabaseName() {
@@ -30,7 +44,17 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
 
     @Override
     public MongoClient mongoClient() {
-        return MongoClients.create(mongoUri);
+        String uri = String.format(
+                "mongodb://%s:%s@%s:%d/%s?authSource=%s",
+                username, password, host, port, databaseName, authDatabase
+        );
+
+        ConnectionString connectionString = new ConnectionString(uri);
+        MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
+                .applyConnectionString(connectionString)
+                .build();
+
+        return MongoClients.create(mongoClientSettings);
     }
 
     @Bean
