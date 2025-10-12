@@ -1,3 +1,5 @@
+from collections import Counter
+
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -22,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class EnhancedMedicalAssistantChatbot:
     """
-    Enhanced Medical Assistant Chatbot with MedGemma and MedSigLIP integration
+    Enhanced Medical Assistant Chatbot with comprehensive medical database integration
     """
 
     def __init__(self, df_path: str, model_config: Optional[ModelConfig] = None):
@@ -98,10 +100,15 @@ class EnhancedMedicalAssistantChatbot:
     def _download_nltk_data(self):
         """Download required NLTK data"""
         logger.info("⬇️ Checking and downloading required NLTK packages...")
-        nltk_packages = ['punkt', 'stopwords', 'wordnet']
+        nltk_packages = ['punkt', 'stopwords', 'wordnet', 'averaged_perceptron_tagger']
         for package in nltk_packages:
             try:
-                nltk.data.find(f'tokenizers/{package}' if package == 'punkt' else f'corpora/{package}')
+                if package == 'punkt':
+                    nltk.data.find(f'tokenizers/{package}')
+                elif package == 'averaged_perceptron_tagger':
+                    nltk.data.find(f'taggers/{package}')
+                else:
+                    nltk.data.find(f'corpora/{package}')
                 logger.info(f"✔️ {package} already available")
             except LookupError:
                 logger.info(f"📦 Downloading {package}...")
@@ -128,7 +135,7 @@ class EnhancedMedicalAssistantChatbot:
             # Continue without AI models - chatbot will use traditional methods
 
     def _preprocess_data(self):
-        """Enhanced preprocessing of medical dialogue data"""
+        """Enhanced preprocessing of medical dialogue data using comprehensive medical analysis"""
         logger.info("⚙️ Preprocessing medical dataset...")
         logger.info(f"📊 Processing {len(self.df)} dialogues...")
 
@@ -147,8 +154,8 @@ class EnhancedMedicalAssistantChatbot:
 
         logger.info("✅ Text cleaning completed.")
 
-        # Extract entities
-        self._enhanced_extract_medical_entities()
+        # Extract comprehensive medical entities
+        self._comprehensive_extract_medical_entities()
 
         # Combine for vectorization
         self.df['combined_text'] = (
@@ -163,37 +170,37 @@ class EnhancedMedicalAssistantChatbot:
 
         logger.info(f"✅ Preprocessing complete. Total dialogues processed: {len(self.df)}\n")
 
-    def _enhanced_extract_medical_entities(self):
-        """Enhanced medical entity extraction using comprehensive databases"""
-        logger.info("🔍 Extracting medical entities (symptoms, conditions, medications)...")
+    def _comprehensive_extract_medical_entities(self):
+        """Comprehensive medical entity extraction using all database components"""
+        logger.info("🔍 Performing comprehensive medical entity extraction...")
 
-        logger.info("🔬 Extracting symptoms from patient texts...")
-        tqdm.pandas(desc="Symptoms")
-        self.df['symptoms'] = self.df['clean_patient'].progress_apply(lambda x: self.text_processor.extract_symptoms(x))
+        # Extract all medical entities using the comprehensive analysis
+        logger.info("🔬 Performing comprehensive medical analysis...")
+        tqdm.pandas(desc="Comprehensive Analysis")
+        self.df['comprehensive_analysis'] = self.df['clean_patient'].progress_apply(
+            lambda x: self.text_processor.comprehensive_medical_analysis(x)
+        )
 
-        logger.info("🧾 Extracting conditions from doctor texts...")
-        tqdm.pandas(desc="Conditions")
-        self.df['conditions'] = self.df['clean_doctor'].progress_apply(
-            lambda x: self.text_processor.extract_conditions(x))
+        # Extract individual components for easier access
+        logger.info("📋 Extracting analysis components...")
+        tqdm.pandas(desc="Components")
+        self.df['symptoms'] = self.df['comprehensive_analysis'].progress_apply(lambda x: x.get('symptoms', []))
+        self.df['conditions'] = self.df['comprehensive_analysis'].progress_apply(lambda x: x.get('conditions', []))
+        self.df['medications'] = self.df['comprehensive_analysis'].progress_apply(lambda x: x.get('medications', []))
+        self.df['lab_tests'] = self.df['comprehensive_analysis'].progress_apply(lambda x: x.get('lab_tests', []))
+        self.df['procedures'] = self.df['comprehensive_analysis'].progress_apply(lambda x: x.get('procedures', []))
+        self.df['abbreviations'] = self.df['comprehensive_analysis'].progress_apply(
+            lambda x: x.get('abbreviations', []))
+        self.df['anatomical_terms'] = self.df['comprehensive_analysis'].progress_apply(
+            lambda x: x.get('anatomical_terms', []))
+        self.df['body_systems'] = self.df['comprehensive_analysis'].progress_apply(
+            lambda x: x.get('body_systems_affected', []))
+        self.df['emergency_level'] = self.df['comprehensive_analysis'].progress_apply(
+            lambda x: x.get('emergency_level', 'non_urgent'))
+        self.df['diagnostic_criteria'] = self.df['comprehensive_analysis'].progress_apply(
+            lambda x: x.get('diagnostic_criteria_matches', []))
 
-        logger.info("🩺 Extracting body systems...")
-        tqdm.pandas(desc="Body Systems")
-        self.df['body_systems'] = self.df['symptoms'].progress_apply(lambda x: self._extract_body_systems(x))
-
-        logger.info("💊 Extracting medications...")
-        tqdm.pandas(desc="Medications")
-        self.df['medications'] = self.df['clean_doctor'].progress_apply(
-            lambda x: self.text_processor.extract_medications(x))
-
-        logger.info("✅ Entity extraction complete.\n")
-
-    def _extract_body_systems(self, symptoms):
-        """Extract affected body systems from symptoms"""
-        systems = set()
-        for symptom_info in symptoms:
-            if 'system' in symptom_info:
-                systems.add(symptom_info['system'])
-        return list(systems)
+        logger.info("✅ Comprehensive entity extraction complete.\n")
 
     def _calculate_symptom_severity(self):
         """Calculate overall symptom severity for each case"""
@@ -224,10 +231,15 @@ class EnhancedMedicalAssistantChatbot:
         logger.info("🔬 Extracting symptom patterns from dataset...")
         symptom_groups = {}
         severity_groups = {}
+        condition_associations = {}
+        medication_associations = {}
 
         # Use tqdm for progress tracking
         for idx, row in tqdm(self.df.iterrows(), total=len(self.df), desc="Symptom Patterns"):
             symptoms = row.get('symptoms', [])
+            conditions = row.get('conditions', [])
+            medications = row.get('medications', [])
+
             if symptoms:
                 symptom_names = [s['symptom'] for s in symptoms]
                 symptom_signature = tuple(sorted(symptom_names))
@@ -235,9 +247,26 @@ class EnhancedMedicalAssistantChatbot:
                 symptom_groups.setdefault(symptom_signature, []).append(idx)
                 severity_groups.setdefault(symptom_signature, []).append(row.get('overall_severity', 0))
 
+                # Track condition associations
+                if conditions:
+                    condition_associations.setdefault(symptom_signature, []).extend(
+                        [cond['condition'] for cond in conditions]
+                    )
+
+                # Track medication associations
+                if medications:
+                    medication_associations.setdefault(symptom_signature, []).extend(
+                        [med['medication'] for med in medications]
+                    )
+
         self.symptom_patterns = symptom_groups
         self.pattern_severities = severity_groups
-        logger.info(f"✅ Extracted {len(symptom_groups)} unique symptom patterns.\n")
+        self.condition_associations = condition_associations
+        self.medication_associations = medication_associations
+
+        logger.info(f"✅ Extracted {len(symptom_groups)} unique symptom patterns.")
+        logger.info(f"✅ Condition associations: {len(condition_associations)} patterns")
+        logger.info(f"✅ Medication associations: {len(medication_associations)} patterns\n")
 
     def assess_symptom_severity(self, symptoms):
         """Assess overall severity based on symptoms"""
@@ -250,7 +279,7 @@ class EnhancedMedicalAssistantChatbot:
         return overall
 
     def find_similar_cases(self, query, top_k=TOP_K_RESULTS):
-        """Enhanced similar case finding with multiple criteria"""
+        """Enhanced similar case finding with comprehensive medical criteria"""
         clean_query = self.text_processor.advanced_clean_text(query)
         query_vector = self.vectorizer.transform([clean_query])
 
@@ -268,35 +297,44 @@ class EnhancedMedicalAssistantChatbot:
                     'doctor_response': row['Doctor'],
                     'symptoms': row.get('symptoms', []),
                     'conditions': row.get('conditions', []),
+                    'medications': row.get('medications', []),
+                    'lab_tests': row.get('lab_tests', []),
+                    'procedures': row.get('procedures', []),
+                    'abbreviations': row.get('abbreviations', []),
+                    'anatomical_terms': row.get('anatomical_terms', []),
                     'body_systems': row.get('body_systems', []),
-                    'severity_score': row.get('overall_severity', 0),
-                    'medications': row.get('medications', [])
+                    'emergency_level': row.get('emergency_level', 'non_urgent'),
+                    'diagnostic_criteria': row.get('diagnostic_criteria', []),
+                    'severity_score': row.get('overall_severity', 0)
                 })
 
         return results
 
     def generate_diagnosis_prediction(self, query: str, image_data: Optional[str] = None) -> Dict[str, Any]:
-        """Enhanced diagnosis prediction with AI model integration"""
+        """Enhanced diagnosis prediction with comprehensive medical analysis"""
         logger.info(f"🧭 Processing query: {query[:100]}...")
 
+        # Perform comprehensive medical analysis
+        comprehensive_analysis = self.text_processor.comprehensive_medical_analysis(query)
+
         # Check for emergency first
-        is_emergency, emergency_type, emergency_level = self.emergency_detector.check_emergency(query)
-        if is_emergency:
-            logger.info("🚨 Emergency detected!")
-            return self.emergency_detector.generate_emergency_response(emergency_type, emergency_level)
+        emergency_level = comprehensive_analysis.get('emergency_level', 'non_urgent')
+        if emergency_level in ['critical_emergency', 'urgent_emergency']:
+            logger.info(f"🚨 Emergency detected: {emergency_level}")
+            return self._generate_emergency_response(comprehensive_analysis)
 
         # Handle image analysis if image data provided
         if image_data and self.medsiglip:
             image_analysis = self._analyze_medical_image(image_data, query)
             if image_analysis.get('success', False):
-                return self._combine_text_and_image_analysis(query, image_analysis)
+                return self._combine_text_and_image_analysis(comprehensive_analysis, image_analysis)
 
         # Use MedGemma for advanced text analysis if available
         if self.medgemma and self._should_use_medgemma(query):
-            return self._enhanced_ai_analysis(query)
+            return self._enhanced_ai_analysis(query, comprehensive_analysis)
 
-        # Fall back to traditional analysis
-        return self._traditional_analysis(query)
+        # Use comprehensive traditional analysis
+        return self._comprehensive_traditional_analysis(query, comprehensive_analysis)
 
     def _analyze_medical_image(self, image_data: str, context_query: str) -> Dict[str, Any]:
         """Analyze medical image using MedSigLIP"""
@@ -373,148 +411,187 @@ class EnhancedMedicalAssistantChatbot:
         query_lower = query.lower()
         return any(indicator in query_lower for indicator in complex_indicators)
 
-    def _enhanced_ai_analysis(self, query: str) -> Dict[str, Any]:
+    def _enhanced_ai_analysis(self, query: str, comprehensive_analysis: Dict[str, Any]) -> Dict[str, Any]:
         """Use MedGemma for advanced medical analysis"""
         try:
-            # Extract symptoms for context
-            query_symptoms = self.text_processor.extract_symptoms(query)
-            symptom_context = ", ".join([s['symptom'] for s in query_symptoms]) if query_symptoms else ""
-
-            # Use MedGemma for analysis
-            gemma_result = self.medgemma.analyze_symptoms(query, symptom_context)
+            # Use MedGemma for analysis with comprehensive context
+            gemma_result = self.medgemma.analyze_symptoms(
+                query,
+                comprehensive_analysis.get('symptoms', [])
+            )
 
             if gemma_result.get('success', False):
                 return {
-                    'query_symptoms': query_symptoms,
-                    'symptom_severity': self.assess_symptom_severity(query_symptoms),
+                    'comprehensive_analysis': comprehensive_analysis,
                     'ai_analysis': gemma_result['response'],
                     'model_used': 'med-gemma',
-                    'similar_cases_found': 0,  # Not using traditional similarity for AI analysis
+                    'similar_cases_found': 0,
                     'emergency': False,
                     'message': gemma_result['response']
                 }
             else:
                 # Fall back to traditional analysis if MedGemma fails
-                return self._traditional_analysis(query)
+                return self._comprehensive_traditional_analysis(query, comprehensive_analysis)
 
         except Exception as e:
             logger.error(f"❌ Error in AI analysis: {e}")
-            return self._traditional_analysis(query)
+            return self._comprehensive_traditional_analysis(query, comprehensive_analysis)
 
-    def _traditional_analysis(self, query: str) -> Dict[str, Any]:
-        """Traditional analysis using similarity matching"""
-        # Extract and analyze symptoms
-        query_symptoms = self.text_processor.extract_symptoms(query)
-        symptom_severity = self.assess_symptom_severity(query_symptoms)
-
+    def _comprehensive_traditional_analysis(self, query: str, comprehensive_analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """Comprehensive traditional analysis using similarity matching"""
         # Find similar cases
         similar_cases = self.find_similar_cases(query, top_k=8)
         if not similar_cases:
-            return self._generate_no_match_response(query_symptoms)
+            return self._generate_no_match_response(comprehensive_analysis)
 
-        # Perform full analysis
-        analysis = self._comprehensive_analysis(similar_cases, query_symptoms, symptom_severity)
+        # Perform comprehensive analysis
+        analysis = self._comprehensive_case_analysis(similar_cases, comprehensive_analysis)
         return analysis
 
-    def _combine_text_and_image_analysis(self, query: str, image_analysis: Dict[str, Any]) -> Dict[str, Any]:
-        """Combine text query analysis with image analysis"""
-        query_symptoms = self.text_processor.extract_symptoms(query)
+    def _generate_emergency_response(self, comprehensive_analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate emergency response"""
+        symptoms = comprehensive_analysis.get('symptoms', [])
+        emergency_level = comprehensive_analysis.get('emergency_level', 'non_urgent')
 
         return {
-            'query_symptoms': query_symptoms,
-            'symptom_severity': self.assess_symptom_severity(query_symptoms),
+            'comprehensive_analysis': comprehensive_analysis,
+            'similar_cases_found': 0,
+            'emergency': True,
+            'emergency_level': emergency_level,
+            'message': f"🚨 EMERGENCY ALERT: {emergency_level.replace('_', ' ').title()}\n\n"
+                       f"Based on your symptoms, this appears to be a medical emergency. "
+                       f"Please seek immediate medical attention or call emergency services.\n\n"
+                       f"Detected symptoms: {', '.join([s['symptom'] for s in symptoms]) if symptoms else 'Unknown'}"
+        }
+
+    def _combine_text_and_image_analysis(self, comprehensive_analysis: Dict[str, Any],
+                                         image_analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """Combine text query analysis with image analysis"""
+        return {
+            'comprehensive_analysis': comprehensive_analysis,
             'image_analysis': image_analysis['analysis'],
             'image_findings': image_analysis.get('findings', []),
             'analysis_type': image_analysis.get('analysis_type', 'general'),
             'similar_cases_found': 0,
             'emergency': False,
-            'message': f"Image Analysis: {image_analysis['analysis']}\n\nText Query Analysis: Based on your description, I've analyzed the image above. Please consult with a healthcare professional for comprehensive diagnosis."
+            'message': f"📸 Image Analysis: {image_analysis['analysis']}\n\n"
+                       f"📋 Text Analysis: {self._generate_analysis_message(comprehensive_analysis)}\n\n"
+                       f"💡 Combined Assessment: Please consult with a healthcare professional for comprehensive diagnosis."
         }
 
-    def _comprehensive_analysis(self, similar_cases, query_symptoms, symptom_severity):
-        """Perform comprehensive medical analysis"""
+    def _comprehensive_case_analysis(self, similar_cases, comprehensive_analysis):
+        """Perform comprehensive medical analysis using similar cases"""
         # Calculate statistics
         avg_severity = np.mean([case['severity_score'] for case in similar_cases])
+
+        # Collect all medical entities from similar cases
         all_conditions = []
         all_medications = []
+        all_lab_tests = []
+        all_procedures = []
+        all_body_systems = []
 
         for case in similar_cases:
             all_conditions.extend([cond['condition'] for cond in case.get('conditions', [])])
             all_medications.extend([med['medication'] for med in case.get('medications', [])])
+            all_lab_tests.extend([test['test'] for test in case.get('lab_tests', [])])
+            all_procedures.extend([proc['procedure'] for proc in case.get('procedures', [])])
+            all_body_systems.extend(case.get('body_systems', []))
 
-        # Find most common conditions
-        condition_counts = {}
-        for condition in all_conditions:
-            condition_counts[condition] = condition_counts.get(condition, 0) + 1
+        # Find most common entities
+        condition_counts = Counter(all_conditions)
+        medication_counts = Counter(all_medications)
+        lab_test_counts = Counter(all_lab_tests)
+        procedure_counts = Counter(all_procedures)
+        body_system_counts = Counter(all_body_systems)
 
-        most_common_conditions = sorted(condition_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+        most_common_conditions = condition_counts.most_common(3)
+        most_common_medications = medication_counts.most_common(3)
+        most_common_lab_tests = lab_test_counts.most_common(3)
+        most_common_procedures = procedure_counts.most_common(3)
+        most_common_body_systems = body_system_counts.most_common(3)
 
-        # Find most common medications
-        medication_counts = {}
-        for medication in all_medications:
-            medication_counts[medication] = medication_counts.get(medication, 0) + 1
-
-        most_common_medications = sorted(medication_counts.items(), key=lambda x: x[1], reverse=True)[:3]
-
-        # Build response
+        # Build comprehensive response
         analysis = {
-            'query_symptoms': query_symptoms,
-            'symptom_severity': symptom_severity,
+            'comprehensive_analysis': comprehensive_analysis,
             'similar_cases_found': len(similar_cases),
             'most_likely_conditions': [cond[0] for cond in most_common_conditions],
             'condition_probabilities': {cond[0]: f"{(cond[1] / len(similar_cases)) * 100:.1f}%" for cond in
                                         most_common_conditions},
             'recommended_medications': [med[0] for med in most_common_medications],
+            'suggested_lab_tests': [test[0] for test in most_common_lab_tests],
+            'common_procedures': [proc[0] for proc in most_common_procedures],
+            'affected_body_systems': [system[0] for system in most_common_body_systems],
             'average_case_severity': avg_severity,
             'emergency': False,
-            'message': self._generate_analysis_message(query_symptoms, most_common_conditions, symptom_severity)
+            'message': self._generate_comprehensive_analysis_message(comprehensive_analysis, most_common_conditions,
+                                                                     avg_severity)
         }
 
         return analysis
 
-    def _generate_analysis_message(self, symptoms, conditions, severity):
-        """Generate analysis message for response"""
+    def _generate_comprehensive_analysis_message(self, comprehensive_analysis, conditions, severity):
+        """Generate comprehensive analysis message"""
+        symptoms = comprehensive_analysis.get('symptoms', [])
+        lab_tests = comprehensive_analysis.get('lab_tests', [])
+        procedures = comprehensive_analysis.get('procedures', [])
+        anatomical_terms = comprehensive_analysis.get('anatomical_terms', [])
+
         if not symptoms:
             return "I couldn't identify specific symptoms in your query. Please describe your symptoms in more detail."
 
         symptom_list = ", ".join([s['symptom'] for s in symptoms])
         condition_list = ", ".join(conditions) if conditions else "unknown condition"
 
-        message = f"Based on your symptoms ({symptom_list}), "
+        message = f"## 📋 Comprehensive Medical Analysis\n\n"
+        message += f"**Symptoms Identified**: {symptom_list}\n\n"
 
         if conditions:
-            message += f"this may be related to {condition_list}. "
-        else:
-            message += "I couldn't identify a specific condition. "
+            message += f"**Possible Conditions**: {condition_list}\n\n"
 
+        if lab_tests:
+            message += f"**Relevant Lab Tests**: {', '.join([test['test'] for test in lab_tests[:3]])}\n\n"
+
+        if procedures:
+            message += f"**Related Procedures**: {', '.join([proc['procedure'] for proc in procedures[:3]])}\n\n"
+
+        if anatomical_terms:
+            message += f"**Anatomical Locations**: {', '.join([term['term'] for term in anatomical_terms[:3]])}\n\n"
+
+        # Severity guidance
         if severity > 7:
-            message += "Your symptoms appear to be severe and you should consult a healthcare provider soon."
+            message += "🚨 **Severity Assessment**: Your symptoms appear to be severe. Please consult a healthcare provider soon."
         elif severity > 5:
-            message += "Your symptoms are moderate in severity. Consider consulting a healthcare provider."
+            message += "⚠️ **Severity Assessment**: Your symptoms are moderate. Consider consulting a healthcare provider."
         else:
-            message += "Your symptoms appear to be mild. Monitor them and seek care if they worsen."
+            message += "✅ **Severity Assessment**: Your symptoms appear to be mild. Monitor them and seek care if they worsen."
 
         return message
 
-    def _generate_no_match_response(self, query_symptoms):
+    def _generate_no_match_response(self, comprehensive_analysis):
         """Generate response when no similar cases are found"""
         return {
-            'query_symptoms': query_symptoms,
-            'symptom_severity': self.assess_symptom_severity(query_symptoms),
+            'comprehensive_analysis': comprehensive_analysis,
             'similar_cases_found': 0,
             'most_likely_conditions': [],
             'condition_probabilities': {},
             'recommended_medications': [],
+            'suggested_lab_tests': [],
+            'common_procedures': [],
+            'affected_body_systems': [],
             'average_case_severity': 0,
             'emergency': False,
             'message': "I couldn't find similar cases in my database. Please consult a healthcare provider for personalized medical advice."
         }
 
-    def generate_follow_up_questions(self, query, detected_symptoms):
-        """Generate relevant follow-up questions"""
+    def generate_follow_up_questions(self, comprehensive_analysis):
+        """Generate relevant follow-up questions based on comprehensive analysis"""
         questions = []
+        symptoms = comprehensive_analysis.get('symptoms', [])
+        conditions = comprehensive_analysis.get('conditions', [])
+        lab_tests = comprehensive_analysis.get('lab_tests', [])
 
-        if not detected_symptoms:
+        if not symptoms:
             questions = [
                 "Can you describe your symptoms in more detail?",
                 "How long have you been experiencing these symptoms?",
@@ -523,16 +600,28 @@ class EnhancedMedicalAssistantChatbot:
             ]
         else:
             # Symptom-specific follow-up questions
-            for symptom in detected_symptoms[:3]:
+            for symptom in symptoms[:3]:
                 symptom_name = symptom['symptom']
                 questions.append(f"How severe is your {symptom_name} on a scale of 1-10?")
                 questions.append(f"How long have you been experiencing {symptom_name}?")
                 questions.append(f"Does anything make your {symptom_name} better or worse?")
 
-        return questions[:5]  # Return max 5 questions
+            # Condition-specific questions
+            if conditions:
+                for condition in conditions[:2]:
+                    condition_name = condition['condition']
+                    questions.append(f"Have you been diagnosed with {condition_name} before?")
+                    questions.append(f"Are you currently receiving treatment for {condition_name}?")
+
+            # Lab test questions
+            if lab_tests:
+                questions.append("Have you had any recent lab tests or blood work done?")
+                questions.append("Do you have access to any recent test results?")
+
+        return questions[:6]  # Return max 6 questions
 
     def chat(self, query, image_data=None):
-        """Enhanced chat interface with AI model support"""
+        """Enhanced chat interface with comprehensive medical analysis"""
         print(f"\n👤 Patient: {query}\n")
         result = self.generate_diagnosis_prediction(query, image_data)
 
@@ -540,8 +629,8 @@ class EnhancedMedicalAssistantChatbot:
         print(result['message'])
 
         if not result.get('emergency'):
-            detected_symptoms = result.get('query_symptoms', [])
-            questions = self.generate_follow_up_questions(query, detected_symptoms)
+            comprehensive_analysis = result.get('comprehensive_analysis', {})
+            questions = self.generate_follow_up_questions(comprehensive_analysis)
             if questions:
                 print("\n📝 Follow-up Questions:")
                 for i, q in enumerate(questions, 1):
