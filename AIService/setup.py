@@ -13,7 +13,6 @@ def install_requirements():
 def download_spacy_model():
     """Download spaCy model"""
     print("🔧 Downloading spaCy model...")
-
     try:
         subprocess.check_call([
             sys.executable, "-m", "pip", "install",
@@ -23,7 +22,6 @@ def download_spacy_model():
     except subprocess.CalledProcessError as e:
         print(f"❌ spaCy model download failed: {e}")
         sys.exit(1)
-
 
 
 def create_directories():
@@ -41,6 +39,34 @@ def create_directories():
         print(f"✅ Created {directory}")
 
 
+def download_dataset():
+    """Download the dialogues.parquet dataset from Google Drive"""
+    print("📥 Downloading dataset from Google Drive...")
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "gdown"])
+        import gdown
+
+        # Google Drive file ID from your shared link
+        file_id = "1gpSocknNMEYWkS7DVesbID7EjftfcOds"
+        output_path = "datasets/dialogues.parquet"
+
+        # Construct direct download URL
+        url = f"https://drive.google.com/uc?id={file_id}"
+
+        print(f"➡️  Downloading to: {output_path}")
+        gdown.download(url, output_path, quiet=False)
+
+        if os.path.exists(output_path):
+            print("✅ Dataset downloaded successfully!\n")
+        else:
+            print("❌ Dataset download failed: file not found after download.")
+            sys.exit(1)
+
+    except Exception as e:
+        print(f"❌ Dataset download failed: {e}")
+        sys.exit(1)
+
+
 def main():
     """Main setup function"""
     print("🚀 Setting up Medical Chatbot with AI Models...")
@@ -49,13 +75,13 @@ def main():
         install_requirements()
         download_spacy_model()
         create_directories()
+        download_dataset()
 
         print("\n✅ Setup completed successfully!")
         print("\n📋 Next steps:")
-        print("1. Place your dialogues.parquet file in the datasets/ directory")
-        print("2. Run: python main.py")
-        print("3. Access the API at http://localhost:8000")
-        print("4. Check API docs at http://localhost:8000/docs")
+        print("1. Run: python main.py")
+        print("2. Access the API at http://localhost:8000")
+        print("3. Check API docs at http://localhost:8000/docs")
 
     except Exception as e:
         print(f"❌ Setup failed: {e}")
