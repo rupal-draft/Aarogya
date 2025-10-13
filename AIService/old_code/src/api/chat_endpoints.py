@@ -1,13 +1,12 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional
 import pandas as pd
 import base64
-from io import BytesIO
 
 from configs.model_config import ModelConfig
 from configs.settings import DATA_PATH
-from src.models import EnhancedMedicalAssistantChatbot
+from old_code.src.models import EnhancedMedicalAssistantChatbot
 
 # Initialize router
 router = APIRouter()

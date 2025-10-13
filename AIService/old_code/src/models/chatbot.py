@@ -6,7 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import nltk
 from tqdm import tqdm
 import logging
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, Optional
 import pandas as pd
 import base64
 from io import BytesIO
@@ -14,10 +14,10 @@ from PIL import Image
 import time
 from configs.model_config import ModelConfig
 from configs.settings import TFIDF_MAX_FEATURES, TFIDF_NGRAM_RANGE, TOP_K_RESULTS, SIMILARITY_THRESHOLD
-from src.cache_manager import CacheManager
-from src.models import MedicalDatabases
-from src.models.medical_models import MedGemmaModel, MedSigLIPModel
-from src.utils import TextProcessor, EmergencyDetector
+from old_code.src.cache_manager import CacheManager
+from old_code.src.models.medical_databases import ComprehensiveMedicalDatabases
+from old_code.src.models.medical_models import MedGemmaModel, MedSigLIPModel
+from old_code.src.utils import TextProcessor, EmergencyDetector
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class EnhancedMedicalAssistantChatbot:
 
         self.df_path = df_path
         self.cache_manager = CacheManager()
-        self.medical_databases = MedicalDatabases()
+        self.medical_databases = ComprehensiveMedicalDatabases()
         self.text_processor = TextProcessor(self.medical_databases)
         self.emergency_detector = EmergencyDetector(self.medical_databases)
 

@@ -1,5 +1,5 @@
-from src.utils.medicine_extractor import MedicineListRequest, FoundMedicineListResponse, spacy_utils
-from fastapi import FastAPI, Request
+from old_code.src.utils.medicine_extractor import MedicineListRequest, FoundMedicineListResponse, spacy_utils
+from fastapi import FastAPI
 
 app = FastAPI(title="Medicine Extractor API", version="1.0.0")
 

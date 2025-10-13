@@ -2,16 +2,13 @@ import re
 import pandas as pd
 import nltk
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-from nltk import pos_tag
 import spacy
 import warnings
 from tqdm import tqdm
-from collections import Counter
-import numpy as np
 
-from src.models.medical_databases import ComprehensiveMedicalDatabases
+from old_code.src.models.medical_databases import ComprehensiveMedicalDatabases
 
 warnings.filterwarnings('ignore')
 

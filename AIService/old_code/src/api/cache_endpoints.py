@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
 from configs.settings import DATA_PATH
-from src.api.chat_endpoints import chatbot
-from src.cache_manager import CacheManager
+from old_code.src.api.chat_endpoints import chatbot
+from old_code.src.cache_manager import CacheManager
 
 cache_manager = CacheManager()
 
