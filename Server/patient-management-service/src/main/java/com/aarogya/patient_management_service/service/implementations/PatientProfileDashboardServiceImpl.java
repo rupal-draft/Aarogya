@@ -262,8 +262,15 @@ public class PatientProfileDashboardServiceImpl implements PatientProfileDashboa
 
     private SymptomStatsResponse buildSymptomStats(String patientId, List<SymptomTracker> symptoms) {
         List<SymptomTrackerRepository.SymptomSummary> summaries = symptomTrackerRepository.getSymptomSummary(patientId);
+        List<SymptomSummaryResponse> dtoList = summaries.stream()
+                .map(s -> SymptomSummaryResponse.builder()
+                        .symptomName(s.getSymptomName())
+                        .count(s.getCount())
+                        .avgSeverity(s.getAvgSeverity())
+                        .build())
+                .toList();
         return SymptomStatsResponse.builder()
-                .symptomSummaries(summaries) // Would be populated from repository
+                .symptomSummaries(dtoList) // Would be populated from repository
                 .recentSymptoms(mapToSymptomTrackerResponse(symptoms))
                 .totalSymptoms(symptoms.size())
                 .generatedAt(LocalDateTime.now())

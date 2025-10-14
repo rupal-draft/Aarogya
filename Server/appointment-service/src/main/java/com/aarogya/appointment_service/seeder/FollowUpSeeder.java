@@ -1,11 +1,14 @@
 package com.aarogya.appointment_service.seeder;
 
 import com.aarogya.appointment_service.enums.FollowUpStatus;
+import com.aarogya.appointment_service.models.Appointment;
 import com.aarogya.appointment_service.models.FollowUp;
+import com.aarogya.appointment_service.repository.AppointmentRepository;
 import com.aarogya.appointment_service.repository.FollowUpRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -16,22 +19,18 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Order(2)
 public class FollowUpSeeder implements CommandLineRunner {
 
     private final FollowUpRepository followUpRepository;
+    private final AppointmentRepository appointmentRepository;
 
-    private static final String DOCTOR_ID = "68a810b60474d478779e5c6d";
+    private static final String DOCTOR_ID = "68eea17f83aa7469053351d5";
     private static final List<String> PATIENT_IDS = List.of(
-            "68a80e1b0474d478779e5c6c",
-            "68be8b448278f71c91f3e685",
-            "68be8b448278f71c91f3e686",
-            "68be8b448278f71c91f3e687"
-    );
-
-    // Dummy appointment IDs (must exist in your DB, or adjust them)
-    private static final List<String> APPOINTMENT_IDS = List.of(
-            "68bee64cf03eb7a07ab61741", "68bee64cf03eb7a07ab61742", "68bee64cf03eb7a07ab61743", "68bee64cf03eb7a07ab61744",
-            "68bee64cf03eb7a07ab61745", "68bee64cf03eb7a07ab61746", "68bee64cf03eb7a07ab61747", "68bee64cf03eb7a07ab61748"
+            "68ee9fe183aa7469053351d1",
+            "68eea0c583aa7469053351d2",
+            "68eea0d183aa7469053351d3",
+            "68eea0d983aa7469053351d4"
     );
 
     @Override
@@ -39,7 +38,11 @@ public class FollowUpSeeder implements CommandLineRunner {
         if (followUpRepository.count() == 0) {
             List<FollowUp> followUps = new ArrayList<>();
             LocalDate today = LocalDate.now();
-
+            List<String> APPOINTMENT_IDS = appointmentRepository
+                    .findTop8ByOrderByIdAsc()
+                    .stream()
+                    .map(Appointment::getId)
+                    .toList();
             followUps.add(FollowUp.builder()
                     .originalAppointmentId(APPOINTMENT_IDS.get(0))
                     .doctorId(DOCTOR_ID)

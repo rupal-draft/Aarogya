@@ -1,5 +1,6 @@
 package com.aarogya.patient_management_service.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -50,6 +51,7 @@ public class PatientVitals {
     private String recordedByType = "SELF";
 
     @NotNull(message = "Recorded date is required")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime recordedAt;
 
     @CreatedDate

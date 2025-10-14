@@ -5,6 +5,7 @@ import com.aarogya.prescription_service.repository.MedicineRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
@@ -16,17 +17,18 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Order(2)
 public class PrescriptionTemplateSeeder implements CommandLineRunner {
 
     private final MongoTemplate mongoTemplate;
     private final MedicineRepository medicineRepository; // fetch medicines dynamically
 
-    private static final String DOCTOR_ID = "68a810b60474d478779e5c6d";
+    private static final String DOCTOR_ID = "68eea17f83aa7469053351d5";
     private static final List<String> PATIENT_IDS = List.of(
-            "68a80e1b0474d478779e5c6c",
-            "68be8b448278f71c91f3e685",
-            "68be8b448278f71c91f3e686",
-            "68be8b448278f71c91f3e687"
+            "68ee9fe183aa7469053351d1",
+            "68eea0c583aa7469053351d2",
+            "68eea0d183aa7469053351d3",
+            "68eea0d983aa7469053351d4"
     );
 
     @Override

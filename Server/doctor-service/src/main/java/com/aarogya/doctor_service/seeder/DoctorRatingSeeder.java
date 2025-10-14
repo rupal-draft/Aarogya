@@ -24,24 +24,24 @@ public class DoctorRatingSeeder implements CommandLineRunner {
     private final MongoTemplate mongoTemplate;
     private final Random random = new Random();
 
-    private static final String DOCTOR_ID = "68a810b60474d478779e5c6d";
-    private static final List<String> PATIENT_IDS = java.util.List.of(
-            "68a80e1b0474d478779e5c6c",
-            "68be8b448278f71c91f3e685",
-            "68be8b448278f71c91f3e686",
-            "68be8b448278f71c91f3e687"
+    private static final String DOCTOR_ID = "68eea17f83aa7469053351d5";
+    private static final List<String> PATIENT_IDS = List.of(
+            "68ee9fe183aa7469053351d1",
+            "68eea0c583aa7469053351d2",
+            "68eea0d183aa7469053351d3",
+            "68eea0d983aa7469053351d4"
     );
     private static final List<String> APPOINTMENT_IDS = java.util.List.of(
-            "68bee64cf03eb7a07ab61741", "68bee64cf03eb7a07ab61742", "68bee64cf03eb7a07ab61743", "68bee64cf03eb7a07ab61744",
-            "68bee64cf03eb7a07ab61745", "68bee64cf03eb7a07ab61746", "68bee64cf03eb7a07ab61747", "68bee64cf03eb7a07ab61748"
+            "68eea3692c9ff586d897599f", "68eea3692c9ff586d89759a0", "68eea3692c9ff586d89759a1", "68eea3692c9ff586d89759a2",
+            "68eea3692c9ff586d89759a3", "68eea3692c9ff586d89759a4", "68eea3692c9ff586d89759a5", "68eea3692c9ff586d89759a6"
     );
     private static final List<String> PRESCRIPTION_IDs = java.util.List.of(
-            "68bf03c8e08a362789fd697a",
-            "68bf03c8e08a362789fd697b",
-            "68bf03c8e08a362789fd697c",
-            "68bf03c8e08a362789fd697d",
-            "68bf03c8e08a362789fd697e",
-            "68bf03c8e08a362789fd697f"
+            "68eea5c94ace190f4ae9ab15",
+            "68eea5c94ace190f4ae9ab16",
+            "68eea5c94ace190f4ae9ab17",
+            "68eea5c94ace190f4ae9ab18",
+            "68eea5c94ace190f4ae9ab19",
+            "68eea5c94ace190f4ae9ab1a"
     );
 
     @Override

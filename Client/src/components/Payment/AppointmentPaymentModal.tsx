@@ -71,7 +71,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const paymentResponse = await paymentService.initiateAppointmentPayment(
         paymentRequest
       );
-      console.log(paymentResponse);
       const options = {
         key: paymentResponse.razorpayKey,
         amount: paymentResponse.amount,

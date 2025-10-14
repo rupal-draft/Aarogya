@@ -168,22 +168,22 @@ const Auth: React.FC<AuthPagesProps> = ({ initialPage = "signin" }) => {
               <div className="flex -space-x-2">
                 <img
                   className="w-10 h-10 rounded-full border-2 border-white"
-                  src="/placeholder.svg?height=40&width=40"
+                  src="https://images.pexels.com/photos/8942502/pexels-photo-8942502.jpeg"
                   alt="User"
                 />
                 <img
                   className="w-10 h-10 rounded-full border-2 border-white"
-                  src="/placeholder.svg?height=40&width=40"
+                  src="https://images.pexels.com/photos/8430302/pexels-photo-8430302.jpeg"
                   alt="User"
                 />
                 <img
                   className="w-10 h-10 rounded-full border-2 border-white"
-                  src="/placeholder.svg?height=40&width=40"
+                  src="https://images.pexels.com/photos/8430307/pexels-photo-8430307.jpeg"
                   alt="User"
                 />
                 <img
                   className="w-10 h-10 rounded-full border-2 border-white"
-                  src="/placeholder.svg?height=40&width=40"
+                  src="https://images.pexels.com/photos/7176126/pexels-photo-7176126.jpeg"
                   alt="User"
                 />
                 <div className="w-10 h-10 rounded-full border-2 border-white bg-blue-400 flex items-center justify-center text-white text-xs">

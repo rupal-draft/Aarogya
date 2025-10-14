@@ -85,4 +85,6 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
     List<AppointmentCountByDateDto> countAppointmentsByDoctorAndDateRange(
             String doctorId, LocalDate start, LocalDate end
     );
+
+    List<Appointment> findTop8ByOrderByIdAsc();
 }

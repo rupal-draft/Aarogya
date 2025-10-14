@@ -4,6 +4,7 @@ import com.aarogya.patient_management_service.annotations.EvictPatientCaches;
 import com.aarogya.patient_management_service.dto.request.CreateSymptomTrackerRequest;
 import com.aarogya.patient_management_service.dto.request.UpdateSymptomTrackerRequest;
 import com.aarogya.patient_management_service.dto.response.SymptomStatsResponse;
+import com.aarogya.patient_management_service.dto.response.SymptomSummaryResponse;
 import com.aarogya.patient_management_service.dto.response.SymptomTrackerResponse;
 import com.aarogya.patient_management_service.exceptions.ResourceNotFoundException;
 import com.aarogya.patient_management_service.exceptions.ServiceException;
@@ -310,10 +311,17 @@ public class SymptomTrackerServiceImpl implements SymptomTrackerService {
             log.info("Fetching symptom statistics for patient: {}", patientId);
 
             List<SymptomTrackerRepository.SymptomSummary> summaries = symptomTrackerRepository.getSymptomSummary(patientId);
+            List<SymptomSummaryResponse> dtoList = summaries.stream()
+                    .map(s -> SymptomSummaryResponse.builder()
+                            .symptomName(s.getSymptomName())
+                            .count(s.getCount())
+                            .avgSeverity(s.getAvgSeverity())
+                            .build())
+                    .toList();
             List<SymptomTracker> recentSymptoms = symptomTrackerRepository.findRecentSymptoms(patientId, PageRequest.of(0, 10));
 
             return SymptomStatsResponse.builder()
-                    .symptomSummaries(summaries)
+                    .symptomSummaries(dtoList)
                     .recentSymptoms(recentSymptoms.stream().map(this::mapToResponse).collect(Collectors.toList()))
                     .totalSymptoms(recentSymptoms.size())
                     .build();
