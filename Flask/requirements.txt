@@ -1,6 +1,6 @@
 flask
 flask-cors
-spacy
+spacy==3.7.2
 Flask-JWT-Extended
 pymongo
 bcrypt

@@ -2,14 +2,15 @@ from flask import jsonify
 import uuid
 from datetime import datetime
 
-from backup import trigger_disease_prediction
 from conversation_manager import EnhancedConversationManager
 from src.database.database import DatabaseManager
+from src.services.medical_service import MedicalService
 
 
 class ChatService:
     def __init__(self):
         self.db = DatabaseManager()
+        self.medical_service = MedicalService()
         self.conversation_manager = EnhancedConversationManager(self.db)
 
     def start_chat(self, request):
@@ -66,7 +67,7 @@ class ChatService:
 
             if response.get('action') == 'trigger_prediction':
                 symptoms = response['collected_data']['symptoms']
-                prediction_result = trigger_disease_prediction(user_id, session_id, symptoms)
+                prediction_result = self.medical_service.trigger_disease_prediction(user_id, session_id, symptoms)
 
                 response.update({
                     'prediction_triggered': True,

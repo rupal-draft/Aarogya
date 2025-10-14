@@ -3,6 +3,9 @@ import jwt
 from flask import request
 from typing import Optional
 
+from dotenv import load_dotenv
+load_dotenv()
+
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
 def extract_token_from_request(request_obj) -> Optional[str]:

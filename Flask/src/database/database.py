@@ -3,11 +3,14 @@ from datetime import datetime, timedelta
 import os
 from typing import Dict, List, Optional
 
+from dotenv import load_dotenv
+load_dotenv()
+
 
 class DatabaseManager:
     def __init__(self):
         # MongoDB connection
-        self.mongo_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
+        self.mongo_uri = os.getenv('MONGODB_URI')
         self.client = MongoClient(self.mongo_uri)
         self.db = self.client['medical_history']
         # Collections
