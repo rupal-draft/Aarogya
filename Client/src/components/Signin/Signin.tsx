@@ -80,6 +80,9 @@ const SignIn: React.FC<SignInProps> = ({
               userType.charAt(0).toUpperCase() + userType.slice(1)
             } signed in successfully!`
           );
+          const redirectPath =
+            userType === "doctor" ? "/dashboard" : "/profile";
+          navigate(redirectPath);
         } else if (loginUser.rejected.match(resultAction)) {
           console.error("Login error:", resultAction.error.message);
           toast.error(resultAction.error.message || "Login failed");
