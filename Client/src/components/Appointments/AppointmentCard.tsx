@@ -277,7 +277,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                   <span className="text-gray-600">Fee:</span>
                   <span className="font-bold text-green-600 flex items-center">
                     <IndianRupee className="w-3 h-3" />
-                    {appointment.doctor.consultationFee}
+                    {appointment.doctor.consultationFee / 100}
                   </span>
                 </div>
               </div>
@@ -342,7 +342,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                 <span className="text-sm text-gray-600">Consultation Fee:</span>
                 <span className="font-bold text-xl text-green-600 flex items-center">
                   <IndianRupee className="w-4 h-4" />
-                  {appointment.doctor.consultationFee}
+                  {appointment.doctor.consultationFee / 100}
                 </span>
               </div>
 
@@ -589,15 +589,17 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                         <span className="text-gray-600">Payment Date:</span>
                         <span className="font-medium">
                           {paymentDetails.paidAt
-                            ? new Date(
-                                paymentDetails.paidAt
-                              ).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
+                            ? new Date(paymentDetails.paidAt).toLocaleString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true, // optional, shows AM/PM
+                                }
+                              )
                             : "Just now"}
                         </span>
                       </div>

@@ -6,6 +6,7 @@ import com.aarogya.appointment_service.dto.grpc.AppointmentCountByDateDto;
 import com.aarogya.appointment_service.dto.grpc.AppointmentStatsDto;
 import com.aarogya.appointment_service.dto.grpc.PatientStatsDto;
 import com.aarogya.appointment_service.dto.response.AppointmentResponseDto;
+import com.aarogya.appointment_service.dto.response.PagedResponse;
 import com.aarogya.appointment_service.service.AppointmentConsumerService;
 import com.aarogya.appointment_service.service.AppointmentService;
 import com.google.protobuf.util.Timestamps;
@@ -201,32 +202,36 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                     .toLocalDate()
                     : null;
 
-            Page<AppointmentResponseDto> appointments = isPatient
+            PagedResponse<AppointmentResponseDto> pagedResponse = isPatient
                     ? appointmentService.getPatientAppointments(
                     request.getStatus(), localDate, request.getPage(), request.getSize())
                     : appointmentService.getDoctorAppointments(
                     request.getStatus(), localDate, request.getPage(), request.getSize());
 
-            List<Appointment.AppointmentResponseDto> grpcAppointments = appointments.getContent()
+            List<Appointment.AppointmentResponseDto> grpcAppointments = pagedResponse.getContent()
                     .stream()
                     .map(dto -> modelMapper.map(dto, Appointment.AppointmentResponseDto.class))
                     .collect(Collectors.toList());
 
             Appointment.AppointmentPageResponse response = Appointment.AppointmentPageResponse.newBuilder()
                     .addAllAppointments(grpcAppointments)
-                    .setCurrentPage(appointments.getNumber())
-                    .setTotalElements(appointments.getSize())
-                    .setTotalPages(appointments.getTotalPages())
+                    .setCurrentPage(pagedResponse.getPageNumber())
+                    .setTotalPages(pagedResponse.getTotalPages())
+                    .setTotalElements((int) pagedResponse.getTotalElements())
                     .build();
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 
-            log.info("Sent {} appointments", isPatient ? "patient" : "doctor");
+            log.info("Sent {} appointments (page {} of {})",
+                    isPatient ? "patient" : "doctor",
+                    pagedResponse.getPageNumber(),
+                    pagedResponse.getTotalPages());
         } catch (Exception e) {
             handleError(responseObserver, e, isPatient ? "getPatientAppointments" : "getDoctorAppointments");
         }
     }
+
 
     private void handleError(StreamObserver<?> responseObserver, Exception e, String methodName) {
         log.error("Error in {}: {}", methodName, e.getMessage(), e);

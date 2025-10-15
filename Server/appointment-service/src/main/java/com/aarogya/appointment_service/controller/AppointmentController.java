@@ -6,6 +6,7 @@ import com.aarogya.appointment_service.dto.request.AppointmentRequestDto;
 import com.aarogya.appointment_service.dto.request.EmergencyAppointmentDto;
 import com.aarogya.appointment_service.dto.request.UpdateAppointmentStatusDto;
 import com.aarogya.appointment_service.dto.response.AppointmentResponseDto;
+import com.aarogya.appointment_service.dto.response.PagedResponse;
 import com.aarogya.appointment_service.service.AppointmentService;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -112,30 +113,31 @@ public class AppointmentController {
     @GetMapping("/patient")
     @io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker(name = APPOINTMENT_SERVICE, fallbackMethod = "appointmentListFallback")
     @RateLimiter(name = APPOINTMENT_SERVICE, fallbackMethod = "rateLimitFallback")
-    public ResponseEntity<ApiResponse<Page<AppointmentResponseDto>>> getPatientAppointments(
+    public ResponseEntity<ApiResponse<PagedResponse<AppointmentResponseDto>>> getPatientAppointments(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         log.info("Fetching patient appointments with filters - status: {}, date: {}", status, date);
-        Page<AppointmentResponseDto> response = appointmentService.getPatientAppointments(
-                status,
-                date, page, size);
+        PagedResponse<AppointmentResponseDto> response = appointmentService.getPatientAppointments(status, date, page, size);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
 
     @GetMapping("/doctor")
     @io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker(name = APPOINTMENT_SERVICE, fallbackMethod = "appointmentListFallback")
     @RateLimiter(name = APPOINTMENT_SERVICE, fallbackMethod = "rateLimitFallback")
-    public ResponseEntity<ApiResponse<Page<AppointmentResponseDto>>> getDoctorAppointments(
+    public ResponseEntity<ApiResponse<PagedResponse<AppointmentResponseDto>>> getDoctorAppointments(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+
         log.info("Fetching doctor appointments with filters - status: {}, date: {}", status, date);
-        Page<AppointmentResponseDto> response = appointmentService.getDoctorAppointments(status, date, page, size);
+        PagedResponse<AppointmentResponseDto> response = appointmentService.getDoctorAppointments(status, date, page, size);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
 
     @GetMapping("/upcoming")
     @io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker(name = APPOINTMENT_SERVICE, fallbackMethod = "appointmentListFallback")

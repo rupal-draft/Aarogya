@@ -71,9 +71,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const paymentResponse = await paymentService.initiateAppointmentPayment(
         paymentRequest
       );
+      console.log(paymentResponse);
       const options = {
         key: paymentResponse.razorpayKey,
-        amount: paymentResponse.amount,
+        amount: paymentResponse.amount * 100,
         currency: paymentResponse.currency,
         name: "Aaorgya",
         description: `Consultation with Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName}`,
@@ -267,7 +268,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                         Consultation Fee:
                       </span>
                       <span className="text-2xl font-bold text-green-600">
-                        ₹{appointment.doctor.consultationFee}
+                        ₹{appointment.doctor.consultationFee / 100}
                       </span>
                     </div>
                   </div>
@@ -315,7 +316,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     <span>
                       {loading
                         ? "Processing..."
-                        : `Pay ₹${appointment.doctor.consultationFee}`}
+                        : `Pay ₹${appointment.doctor.consultationFee / 100}`}
                     </span>
                   </motion.button>
                 </motion.div>

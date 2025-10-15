@@ -6,6 +6,7 @@ import com.aarogya.appointment_service.dto.request.AppointmentRequestDto;
 import com.aarogya.appointment_service.dto.request.EmergencyAppointmentDto;
 import com.aarogya.appointment_service.dto.request.UpdateAppointmentStatusDto;
 import com.aarogya.appointment_service.dto.response.AppointmentResponseDto;
+import com.aarogya.appointment_service.dto.response.PagedResponse;
 import com.aarogya.appointment_service.enums.AppointmentStatus;
 import com.aarogya.appointment_service.enums.AppointmentType;
 import com.aarogya.appointment_service.exceptions.BadRequestException;
@@ -173,7 +174,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     )
     @Transactional(readOnly = true)
     @Override
-    public Page<AppointmentResponseDto> getPatientAppointments(String status, LocalDate date, int page, int size) {
+    public PagedResponse<AppointmentResponseDto> getPatientAppointments(String status, LocalDate date, int page, int size) {
         log.debug("Fetching patient appointments with status: {}, date: {}, page: {}, size: {}", status, date, page, size);
 
         try {
@@ -187,17 +188,27 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
 
             Page<Appointment> appointments = fetchPatientAppointments(patientId, appointmentStatus, date, pageable);
-            return appointments.map(this::mapToResponseDto);
+            Page<AppointmentResponseDto> dtoPage = appointments.map(this::mapToResponseDto);
+
+            return new PagedResponse<>(
+                    dtoPage.getContent(),
+                    dtoPage.getNumber(),
+                    dtoPage.getSize(),
+                    dtoPage.getTotalElements(),
+                    dtoPage.getTotalPages(),
+                    dtoPage.isLast()
+            );
         } catch (Exception e) {
             log.error("Error fetching patient appointments", e);
             throw new ServiceUnavailable(e.getLocalizedMessage());
         }
     }
 
-    @Cacheable(value = APPOINTMENT_CACHE, key = "{#status, #date, #page, #size, 'doctor'}")
+
+    @Cacheable(value = APPOINTMENT_CACHE, key = "T(String).valueOf(#status ?: 'ANY') + '_' + T(String).valueOf(#date ?: 'ANY') + '_' + #page + '_' + #size + '_doctor'")
     @Transactional(readOnly = true)
     @Override
-    public Page<AppointmentResponseDto> getDoctorAppointments(String status, LocalDate date, int page, int size) {
+    public PagedResponse<AppointmentResponseDto> getDoctorAppointments(String status, LocalDate date, int page, int size) {
         log.debug("Fetching doctor appointments with status: {}, date: {}, page: {}, size: {}", status, date, page, size);
 
         try {
@@ -219,12 +230,23 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
 
             Page<Appointment> appointments = fetchDoctorAppointments(doctorId, parsedStatus, date, pageable);
-            return appointments.map(this::mapToResponseDto);
+            Page<AppointmentResponseDto> dtoPage = appointments.map(this::mapToResponseDto);
+
+            return new PagedResponse<>(
+                    dtoPage.getContent(),
+                    dtoPage.getNumber(),
+                    dtoPage.getSize(),
+                    dtoPage.getTotalElements(),
+                    dtoPage.getTotalPages(),
+                    dtoPage.isLast()
+            );
+
         } catch (Exception e) {
             log.error("Error fetching doctor appointments", e);
             throw new ServiceUnavailable("Unable to fetch appointments at the moment");
         }
     }
+
 
     @Override
     @Cacheable(value = APPOINTMENT_CACHE, key = "#doctorId + #date")

@@ -78,8 +78,14 @@ const DoctorAvailability: React.FC<DoctorAvailabilityProps> = ({
     for (let i = 1; i <= 14; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
+
+      // ✅ Get YYYY-MM-DD manually (no UTC conversion)
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, "0");
+      const dd = String(date.getDate()).padStart(2, "0");
+
       dates.push({
-        value: date.toISOString().split("T")[0],
+        value: `${yyyy}-${mm}-${dd}`, // ✅ stays local, no shift
         label: date.toLocaleDateString("en-US", {
           weekday: "short",
           month: "short",
@@ -97,7 +103,9 @@ const DoctorAvailability: React.FC<DoctorAvailabilityProps> = ({
   };
 
   const formatTime = (timeString: string) => {
-    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
+    const [hours, minutes] = timeString.split(":").map(Number);
+    const date = new Date(2000, 0, 1, hours, minutes);
+    return date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,

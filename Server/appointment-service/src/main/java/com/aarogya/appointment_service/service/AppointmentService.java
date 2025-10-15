@@ -4,6 +4,7 @@ import com.aarogya.appointment_service.dto.request.AppointmentRequestDto;
 import com.aarogya.appointment_service.dto.request.EmergencyAppointmentDto;
 import com.aarogya.appointment_service.dto.request.UpdateAppointmentStatusDto;
 import com.aarogya.appointment_service.dto.response.AppointmentResponseDto;
+import com.aarogya.appointment_service.dto.response.PagedResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 
@@ -20,10 +21,10 @@ public interface AppointmentService {
 
     AppointmentResponseDto getAppointmentDetails(String appointmentId);
 
-    Page<AppointmentResponseDto> getPatientAppointments(String status, LocalDate date,
-                                                        int page, int size);
+    PagedResponse<AppointmentResponseDto> getPatientAppointments(String status, LocalDate date,
+                                                                 int page, int size);
 
-    Page<AppointmentResponseDto> getDoctorAppointments(String status, LocalDate date,
+    PagedResponse<AppointmentResponseDto> getDoctorAppointments(String status, LocalDate date,
                                                        int page, int size);
 
     List<AppointmentResponseDto> getDoctorAppointmentsByDate(String doctorId, LocalDate date);

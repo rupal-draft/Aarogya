@@ -5,12 +5,14 @@ import com.aarogya.appointment_service.exceptions.TimeSlotNotAvailableException;
 import com.aarogya.appointment_service.models.Appointment;
 import com.aarogya.appointment_service.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AppointmentValidator {
@@ -29,7 +31,6 @@ public class AppointmentValidator {
         if (startTime.isAfter(endTime)) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
-
         List<Appointment> conflictingAppointments = appointmentRepository.findConflictingAppointments(
                 doctorId, date, startTime, endTime, excludeAppointmentId);
         return conflictingAppointments.isEmpty();
