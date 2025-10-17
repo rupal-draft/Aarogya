@@ -91,6 +91,7 @@ export interface VoteResponse {
   threadId?: string;
   replyId?: string;
   voteType: string;
+  userVote: number;
   newUpvoteCount: number;
   createdAt: string;
 }

@@ -1,5 +1,6 @@
 package com.aarogya.doctor_service.controller;
 
+import com.aarogya.doctor_service.dto.common.PagedResponse;
 import com.aarogya.doctor_service.dto.forum.request.*;
 import com.aarogya.doctor_service.dto.forum.response.*;
 import com.aarogya.doctor_service.services.forum.ForumService;
@@ -44,7 +45,7 @@ public class ForumController {
     }
 
     @GetMapping("/threads")
-    public ResponseEntity<Page<ThreadSummaryResponse>> getThreads(
+    public ResponseEntity<PagedResponse<ThreadSummaryResponse>> getThreads(
             @ModelAttribute ThreadFilterRequest filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -52,13 +53,15 @@ public class ForumController {
             @RequestParam(defaultValue = "DESC") String sortOrder) {
 
         log.debug("Fetching threads with filter: {}", filter);
-        Sort sort = sortOrder.equalsIgnoreCase("ASC") ?
-                Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Sort sort = sortOrder.equalsIgnoreCase("ASC")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<ThreadSummaryResponse> response = forumService.getThreads(filter, pageable);
+        PagedResponse<ThreadSummaryResponse> response = forumService.getThreads(filter, pageable);
         return ResponseEntity.ok(response);
     }
+
 
     @PatchMapping("/threads/{threadId}")
     @CircuitBreaker(name = "forumController", fallbackMethod = "updateThreadFallback")
@@ -88,16 +91,17 @@ public class ForumController {
     }
 
     @GetMapping("/threads/{threadId}/replies")
-    public ResponseEntity<Page<ReplyResponse>> getReplies(
+    public ResponseEntity<PagedResponse<ReplyResponse>> getReplies(
             @PathVariable String threadId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
 
         log.debug("Fetching replies for thread: {}", threadId);
         Pageable pageable = PageRequest.of(page, size);
-        Page<ReplyResponse> response = forumService.getReplies(threadId, pageable);
+        PagedResponse<ReplyResponse> response = forumService.getReplies(threadId, pageable);
         return ResponseEntity.ok(response);
     }
+
 
     @PatchMapping("/replies/{replyId}")
     @CircuitBreaker(name = "forumController", fallbackMethod = "updateReplyFallback")
@@ -194,15 +198,16 @@ public class ForumController {
     }
 
     @GetMapping("/tags/subscribed/threads")
-    public ResponseEntity<Page<ThreadSummaryResponse>> getSubscribedTagsThreads(
+    public ResponseEntity<PagedResponse<ThreadSummaryResponse>> getSubscribedTagsThreads(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
         log.debug("Fetching threads from subscribed tags");
         Pageable pageable = PageRequest.of(page, size);
-        Page<ThreadSummaryResponse> response = forumService.getSubscribedTagsThreads(pageable);
+        PagedResponse<ThreadSummaryResponse> response = forumService.getSubscribedTagsThreads(pageable);
         return ResponseEntity.ok(response);
     }
+
 
     // Stats endpoint
     @GetMapping("/stats")

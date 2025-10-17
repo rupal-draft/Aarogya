@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useForumStats } from "../../hooks/Forum/useForumStats";
 import { useThreads } from "../../hooks/Forum/useThreads";
@@ -15,10 +14,6 @@ import type {
   UpdateThreadRequest,
 } from "../../types/forum";
 import { CreateThreadModal } from "../../components/Forum/CreateThreadModal";
-import { ReplyModal } from "../../components/Forum/ReplyModal";
-import { EditThreadModal } from "../../components/Forum/EditThreadModal";
-import { EditReplyModal } from "../../components/Forum/EditReplyModal";
-import { ConfirmationModal } from "../../components/Forum/ConfirmationModal";
 
 export const ForumDashboard: React.FC = () => {
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
@@ -50,6 +45,7 @@ export const ForumDashboard: React.FC = () => {
     data: stats,
     loading: statsLoading,
     error: statsError,
+    refetch: refreshThreadStats,
   } = useForumStats();
   const {
     data: threads,
@@ -57,6 +53,7 @@ export const ForumDashboard: React.FC = () => {
     error: threadsError,
     filter,
     updateFilter,
+    refetch: refreshThreadList,
   } = useThreads();
 
   const {
@@ -64,6 +61,7 @@ export const ForumDashboard: React.FC = () => {
     replies,
     loading: threadDetailLoading,
     error: threadDetailError,
+    refetch: refreshThreadDetails,
   } = useThreadDetail(selectedThreadId || "");
 
   const {
@@ -96,8 +94,9 @@ export const ForumDashboard: React.FC = () => {
   ) => {
     try {
       await voteThread(threadId, { voteType });
-      // Refresh data after voting
-      // You might want to implement optimistic updates here
+      await refreshThreadList();
+      await refreshThreadDetails();
+      await refreshThreadStats();
     } catch (error) {
       console.error("Failed to vote on thread:", error);
     }
@@ -109,7 +108,9 @@ export const ForumDashboard: React.FC = () => {
   ) => {
     try {
       await voteReply(replyId, { voteType });
-      // Refresh data after voting
+      await refreshThreadList();
+      await refreshThreadDetails();
+      await refreshThreadStats();
     } catch (error) {
       console.error("Failed to vote on reply:", error);
     }
@@ -124,7 +125,9 @@ export const ForumDashboard: React.FC = () => {
       } else {
         await bookmarkThread(threadId);
       }
-      // Refresh data after bookmarking
+      await refreshThreadList();
+      await refreshThreadDetails();
+      await refreshThreadStats();
     } catch (error) {
       console.error("Failed to bookmark thread:", error);
     }
@@ -133,7 +136,9 @@ export const ForumDashboard: React.FC = () => {
   const handleMarkSolution = async (replyId: string) => {
     try {
       await markAsSolution(replyId);
-      // Refresh data after marking solution
+      await refreshThreadList();
+      await refreshThreadDetails();
+      await refreshThreadStats();
     } catch (error) {
       console.error("Failed to mark as solution:", error);
     }
@@ -209,8 +214,9 @@ export const ForumDashboard: React.FC = () => {
   // Modal handlers
   const handleCreateThreadSubmit = async (data: CreateThreadRequest) => {
     await createThread(data);
-    // Refresh threads list
-    window.location.reload(); // Simple refresh - you might want to implement proper state management
+    await refreshThreadList();
+    await refreshThreadDetails();
+    await refreshThreadStats();
   };
 
   const handleReplySubmit = async (data: CreateReplyRequest) => {
@@ -219,22 +225,20 @@ export const ForumDashboard: React.FC = () => {
       ...data,
       parentReplyId: replyData.parentReplyId,
     });
-    // Refresh if we're viewing the thread detail
-    if (selectedThreadId === replyData.threadId) {
-      window.location.reload();
-    }
+    await refreshThreadDetails();
   };
 
   const handleEditThreadSubmit = async (data: UpdateThreadRequest) => {
     if (!selectedThreadId) return;
     await updateThread(selectedThreadId, data);
-    window.location.reload();
+    await refreshThreadDetails();
+    await refreshThreadStats();
   };
 
   const handleEditReplySubmit = async (data: CreateReplyRequest) => {
     if (!editingReplyId) return;
     await updateReply(editingReplyId, data);
-    window.location.reload();
+    await refreshThreadDetails();
   };
 
   const handleDeleteConfirm = async () => {
@@ -249,7 +253,9 @@ export const ForumDashboard: React.FC = () => {
       await deleteReply(deleteData.id);
     }
 
-    window.location.reload();
+    await refreshThreadList();
+    await refreshThreadDetails();
+    await refreshThreadStats();
   };
 
   // Loading state
@@ -260,24 +266,16 @@ export const ForumDashboard: React.FC = () => {
   ) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center">
-        <motion.div
-          className="flex flex-col items-center gap-4"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          >
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin">
             <Loader2 className="w-12 h-12 text-blue-500" />
-          </motion.div>
+          </div>
           <p className="text-lg text-gray-600">
             {selectedThreadId
               ? "Loading thread details..."
               : "Loading forum..."}
           </p>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -286,12 +284,7 @@ export const ForumDashboard: React.FC = () => {
   if (statsError || threadsError || (selectedThreadId && threadDetailError)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center">
-        <motion.div
-          className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">
             Unable to Load Forum
@@ -305,7 +298,7 @@ export const ForumDashboard: React.FC = () => {
           <p className="text-sm text-gray-500">
             Please ensure the API server is running on localhost:8080
           </p>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -356,12 +349,7 @@ export const ForumDashboard: React.FC = () => {
   // Show forum list view
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      <motion.div
-        className="container mx-auto px-4 py-8"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-      >
+      <div className="container mx-auto px-4 py-8">
         {/* Forum Stats */}
         {stats && <ForumStats stats={stats} />}
 
@@ -377,7 +365,7 @@ export const ForumDashboard: React.FC = () => {
             onCreateThread={handleCreateThread}
           />
         )}
-      </motion.div>
+      </div>
 
       {/* Modals */}
       <CreateThreadModal

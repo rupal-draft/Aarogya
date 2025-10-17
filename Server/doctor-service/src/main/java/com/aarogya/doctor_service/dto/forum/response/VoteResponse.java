@@ -16,6 +16,7 @@ public class VoteResponse {
     private String threadId;
     private String replyId;
     private String voteType;
+    private int userVote;
     private Integer newUpvoteCount;
     private LocalDateTime createdAt;
 }

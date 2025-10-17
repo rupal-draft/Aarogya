@@ -44,6 +44,7 @@ export const ThreadsList: React.FC<ThreadsListProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState(filter.searchQuery || "");
   const [showFilters, setShowFilters] = useState(false);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     onFilterChange({ searchQuery, page: 0 });
@@ -68,29 +69,29 @@ export const ThreadsList: React.FC<ThreadsListProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <motion.div
-        className="bg-white rounded-2xl shadow-lg p-6"
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.4 }}
       >
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-              <BookOpen className="w-7 h-7 text-blue-500" />
+            <h1 className="text-xl font-semibold text-gray-900 mb-2 flex items-center gap-3">
+              <BookOpen className="w-5 h-5 text-blue-500" />
               Medical Forum
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm text-gray-600">
               Connect, discuss, and share knowledge with fellow doctors
             </p>
           </div>
 
           <motion.button
             onClick={onCreateThread}
-            className="bg-blue-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center gap-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="bg-blue-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center gap-2 text-sm"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             New Thread
           </motion.button>
         </div>
@@ -99,20 +100,20 @@ export const ThreadsList: React.FC<ThreadsListProps> = ({
         <div className="space-y-4">
           <form onSubmit={handleSearch} className="flex gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search threads..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <motion.button
               type="submit"
-              className="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="bg-blue-500 text-white px-4 py-2.5 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               Search
             </motion.button>
@@ -121,7 +122,7 @@ export const ThreadsList: React.FC<ThreadsListProps> = ({
           <div className="flex flex-wrap items-center gap-3">
             <motion.button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
               whileHover={{ scale: 1.02 }}
             >
               <Filter className="w-4 h-4" />
@@ -198,7 +199,7 @@ export const ThreadsList: React.FC<ThreadsListProps> = ({
         </div>
 
         {/* Results Summary */}
-        <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+        <div className="mt-4 flex items-center justify-between text-xs text-gray-600">
           <span>
             Showing <AnimatedCounter value={threads.numberOfElements} /> of{" "}
             <AnimatedCounter value={threads.totalElements} /> threads
@@ -226,7 +227,7 @@ export const ThreadsList: React.FC<ThreadsListProps> = ({
       {/* Pagination */}
       {threads.totalPages > 1 && (
         <motion.div
-          className="bg-white rounded-xl shadow-sm p-4 flex items-center justify-center gap-2"
+          className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center justify-center gap-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
@@ -236,13 +237,13 @@ export const ThreadsList: React.FC<ThreadsListProps> = ({
               onFilterChange({ page: Math.max(0, threads.number - 1) })
             }
             disabled={threads.first}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            whileHover={{ scale: threads.first ? 1 : 1.05 }}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+            whileHover={{ scale: threads.first ? 1 : 1.02 }}
           >
             Previous
           </motion.button>
 
-          <span className="px-4 py-2 text-gray-600">
+          <span className="px-4 py-2 text-gray-600 text-sm">
             Page {threads.number + 1} of {threads.totalPages}
           </span>
 
@@ -253,8 +254,8 @@ export const ThreadsList: React.FC<ThreadsListProps> = ({
               })
             }
             disabled={threads.last}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            whileHover={{ scale: threads.last ? 1 : 1.05 }}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+            whileHover={{ scale: threads.last ? 1 : 1.02 }}
           >
             Next
           </motion.button>
@@ -263,25 +264,25 @@ export const ThreadsList: React.FC<ThreadsListProps> = ({
 
       {threads.content.length === 0 && (
         <motion.div
-          className="bg-white rounded-xl shadow-sm p-12 text-center"
-          initial={{ opacity: 0, scale: 0.9 }}
+          className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center"
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
             No threads found
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-sm text-gray-600 mb-6">
             {filter.searchQuery
               ? `No threads match your search for "${filter.searchQuery}"`
               : "Be the first to start a discussion!"}
           </p>
           <motion.button
             onClick={onCreateThread}
-            className="bg-blue-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-600 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="bg-blue-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             Create First Thread
           </motion.button>

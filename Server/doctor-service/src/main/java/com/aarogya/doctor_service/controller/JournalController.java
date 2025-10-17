@@ -1,5 +1,6 @@
 package com.aarogya.doctor_service.controller;
 
+import com.aarogya.doctor_service.dto.common.PagedResponse;
 import com.aarogya.doctor_service.dto.journal.request.*;
 import com.aarogya.doctor_service.dto.journal.response.*;
 import com.aarogya.doctor_service.services.journal.JournalService;
@@ -51,9 +52,17 @@ public class JournalController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/entries/{entryId}")
+    public ResponseEntity<JournalEntryResponse> getNonEncryptedEntry(
+            @PathVariable String entryId) {
+        log.debug("Fetching journal entry: {}", entryId);
+
+        JournalEntryResponse response = journalService.getEntry(entryId);
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/entries")
-    public ResponseEntity<Page<JournalEntrySummaryResponse>> getEntries(
+    public ResponseEntity<PagedResponse<JournalEntrySummaryResponse>> getEntries(
             @ModelAttribute JournalFilterRequest filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -61,13 +70,15 @@ public class JournalController {
             @RequestParam(defaultValue = "DESC") String sortOrder) {
 
         log.debug("Fetching journal entries with filter: {}", filter);
-        Sort sort = sortOrder.equalsIgnoreCase("ASC") ?
-                Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Sort sort = sortOrder.equalsIgnoreCase("ASC")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<JournalEntrySummaryResponse> response = journalService.getEntries(filter, pageable);
+        PagedResponse<JournalEntrySummaryResponse> response = journalService.getEntries(filter, pageable);
         return ResponseEntity.ok(response);
     }
+
 
     @PutMapping("/entries/{entryId}")
     @CircuitBreaker(name = "journalController", fallbackMethod = "updateEntryFallback")

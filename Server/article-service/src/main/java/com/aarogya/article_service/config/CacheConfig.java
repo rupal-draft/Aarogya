@@ -27,10 +27,8 @@ public class CacheConfig {
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
 
         ObjectMapper objectMapper = new ObjectMapper();
-
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         objectMapper.activateDefaultTyping(
@@ -39,15 +37,13 @@ public class CacheConfig {
                 JsonTypeInfo.As.PROPERTY
         );
 
-        // Create Redis JSON serializer
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
-        // Configure Redis cache
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration
                 .defaultCacheConfig()
-                .prefixCacheNameWith("redis-") // optional prefix
-                .entryTtl(Duration.ofMinutes(5)) // cache expiration
-                .disableCachingNullValues() // optional, avoids caching nulls
+                .prefixCacheNameWith("article-service:")
+                .entryTtl(Duration.ofMinutes(5))
+                .disableCachingNullValues()
                 .serializeKeysWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
                 )
@@ -58,7 +54,7 @@ public class CacheConfig {
         return RedisCacheManager
                 .builder(redisConnectionFactory)
                 .cacheDefaults(redisCacheConfiguration)
-                .transactionAware() // optional, if using transactions
+                .transactionAware()
                 .build();
     }
 }

@@ -47,15 +47,39 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
   const [error, setError] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [isDecrypted, setIsDecrypted] = useState(false);
+  const [isEncryptedEntry, setIsEncryptedEntry] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen && entryId) {
-      setEntry(null);
-      setEncryptionKey("");
-      setError("");
-      setIsDecrypted(false);
+      loadEntry();
     }
   }, [isOpen, entryId]);
+
+  const loadEntry = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      // First, get the entry summary to check if it's encrypted
+      const entryData = await journalService.getNonEncryptedEntry(entryId);
+      setEntry(entryData);
+
+      // Check the isEncrypted field to determine if we need decryption
+      if (entryData.isEncrypted) {
+        setIsEncryptedEntry(true);
+        setIsDecrypted(false);
+      } else {
+        setIsEncryptedEntry(false);
+        setIsDecrypted(true);
+      }
+    } catch (error: any) {
+      setError("Unable to load entry. Please try again.");
+      console.error("Error loading entry:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDecrypt = async () => {
     if (!encryptionKey.trim()) {
@@ -187,16 +211,22 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                   animate={{ rotate: 0, scale: 1 }}
                   className="p-2 bg-white/20 rounded-xl backdrop-blur-sm"
                 >
-                  <Lock className="w-6 h-6 text-white" />
+                  {isEncryptedEntry && !isDecrypted ? (
+                    <Lock className="w-6 h-6 text-white" />
+                  ) : (
+                    <FileText className="w-6 h-6 text-white" />
+                  )}
                 </motion.div>
                 <div>
                   <h2 className="text-2xl font-bold text-white">
-                    {isDecrypted ? "Journal Entry" : "Secure Entry"}
+                    {isEncryptedEntry && !isDecrypted
+                      ? "Secure Entry"
+                      : "Journal Entry"}
                   </h2>
                   <p className="text-blue-100">
-                    {isDecrypted
-                      ? "Viewing your encrypted journal entry"
-                      : "Enter encryption key to view this entry"}
+                    {isEncryptedEntry && !isDecrypted
+                      ? "Enter encryption key to view this entry"
+                      : "Viewing your journal entry"}
                   </p>
                 </div>
               </div>
@@ -215,8 +245,26 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
           {/* Content */}
           <div className="p-6 overflow-y-auto max-h-[calc(95vh-120px)]">
             <AnimatePresence mode="wait">
-              {!isDecrypted ? (
-                // Encryption Key Input
+              {isLoading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center justify-center py-12"
+                >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                    className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full"
+                  />
+                  <span className="ml-3 text-gray-600">Loading entry...</span>
+                </motion.div>
+              ) : isEncryptedEntry && !isDecrypted ? (
                 <motion.div
                   key="encryption-form"
                   initial={{ opacity: 0, x: -20 }}
@@ -319,8 +367,7 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                     </div>
                   </div>
                 </motion.div>
-              ) : (
-                // Entry Details
+              ) : entry ? (
                 <motion.div
                   key="entry-details"
                   initial={{ opacity: 0, y: 20 }}
@@ -338,7 +385,7 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.1 }}
                         >
-                          {entry?.title}
+                          {entry.title}
                         </motion.h1>
 
                         <div className="flex flex-wrap items-center gap-3 mb-4">
@@ -347,11 +394,11 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.2 }}
                             className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${getPriorityColor(
-                              entry?.priority || "MEDIUM"
+                              entry.priority || "MEDIUM"
                             )}`}
                           >
                             <div className="w-2 h-2 rounded-full bg-current opacity-70"></div>
-                            {entry?.priority}
+                            {entry.priority}
                           </motion.span>
 
                           <motion.span
@@ -360,14 +407,13 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                             transition={{ delay: 0.3 }}
                             className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-700 rounded-full border border-purple-200"
                           >
-                            {entry &&
-                              React.createElement(getTypeIcon(entry.type), {
-                                className: "w-3 h-3",
-                              })}
-                            {entry?.type.replace(/_/g, " ")}
+                            {React.createElement(getTypeIcon(entry.type), {
+                              className: "w-3 h-3",
+                            })}
+                            {entry.type.replace(/_/g, " ")}
                           </motion.span>
 
-                          {entry?.patientName && (
+                          {entry.patientName && (
                             <motion.span
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
@@ -387,14 +433,14 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                           whileTap={{ scale: 0.9 }}
                           onClick={handleBookmark}
                           className={`p-3 rounded-xl transition-all ${
-                            entry?.isBookmarked
+                            entry.isBookmarked
                               ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
                               : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                           }`}
                         >
                           <Bookmark
                             className="w-5 h-5"
-                            fill={entry?.isBookmarked ? "currentColor" : "none"}
+                            fill={entry.isBookmarked ? "currentColor" : "none"}
                           />
                         </motion.button>
 
@@ -403,21 +449,21 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                           whileTap={{ scale: 0.9 }}
                           onClick={handlePin}
                           className={`p-3 rounded-xl transition-all ${
-                            entry?.isPinned
+                            entry.isPinned
                               ? "bg-blue-100 text-blue-600 hover:bg-blue-200"
                               : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                           }`}
                         >
                           <Pin
                             className="w-5 h-5"
-                            fill={entry?.isPinned ? "currentColor" : "none"}
+                            fill={entry.isPinned ? "currentColor" : "none"}
                           />
                         </motion.button>
                       </div>
                     </div>
 
                     {/* Tags */}
-                    {entry?.tags && entry.tags.length > 0 && (
+                    {entry.tags && entry.tags.length > 0 && (
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -448,7 +494,7 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                     className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
                   >
                     <div className="prose prose-lg max-w-none">
-                      {entry?.content && formatContent(entry.content)}
+                      {entry.content && formatContent(entry.content)}
                     </div>
 
                     <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
@@ -457,21 +503,19 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                           <Calendar className="w-4 h-4" />
                           <span>
                             Created:{" "}
-                            {entry &&
-                              new Date(entry.createdAt).toLocaleDateString()}
+                            {new Date(entry.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <RefreshCw className="w-4 h-4" />
                           <span>
                             Updated:{" "}
-                            {entry &&
-                              new Date(entry.updatedAt).toLocaleDateString()}
+                            {new Date(entry.updatedAt).toLocaleDateString()}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4" />
-                          <span>{entry?.wordCount} words</span>
+                          <span>{entry.wordCount} words</span>
                         </div>
                       </div>
 
@@ -508,18 +552,44 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                     </div>
                   </motion.div>
 
-                  {/* Security Badge */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8 }}
-                    className="flex items-center justify-center gap-3 p-4 bg-green-50 border border-green-200 rounded-2xl"
+                  {/* Security Badge - Only show for encrypted entries */}
+                  {isEncryptedEntry && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.8 }}
+                      className="flex items-center justify-center gap-3 p-4 bg-green-50 border border-green-200 rounded-2xl"
+                    >
+                      <Shield className="w-5 h-5 text-green-600" />
+                      <span className="text-green-700 font-medium">
+                        🔐 This entry is securely encrypted and protected
+                      </span>
+                    </motion.div>
+                  )}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="text-center py-12"
+                >
+                  <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    Unable to load entry
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    There was an error loading this journal entry.
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onClose}
+                    className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                   >
-                    <Shield className="w-5 h-5 text-green-600" />
-                    <span className="text-green-700 font-medium">
-                      🔐 This entry is securely encrypted and protected
-                    </span>
-                  </motion.div>
+                    Close
+                  </motion.button>
                 </motion.div>
               )}
             </AnimatePresence>

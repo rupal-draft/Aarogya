@@ -44,6 +44,13 @@ export const journalService = {
     return response.data;
   },
 
+  getNonEncryptedEntry: async (
+    entryId: string
+  ): Promise<JournalEntryResponse> => {
+    const response = await api.get(`/entries/${entryId}`);
+    return response.data;
+  },
+
   getEntries: async (
     filter: JournalFilterRequest,
     page: number = 0,

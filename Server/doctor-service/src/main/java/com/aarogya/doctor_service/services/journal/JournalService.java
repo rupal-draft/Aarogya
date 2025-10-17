@@ -1,5 +1,6 @@
 package com.aarogya.doctor_service.services.journal;
 
+import com.aarogya.doctor_service.dto.common.PagedResponse;
 import com.aarogya.doctor_service.dto.journal.request.*;
 import com.aarogya.doctor_service.dto.journal.response.*;
 import org.springframework.data.domain.Page;
@@ -11,7 +12,8 @@ import java.util.Map;
 public interface JournalService {
     JournalEntryResponse createEntry(CreateJournalEntryRequest request);
     JournalEntryResponse getDecryptedEntry(DecryptRequest request);
-    Page<JournalEntrySummaryResponse> getEntries(JournalFilterRequest filter, Pageable pageable);
+    JournalEntryResponse getEntry(String entryId);
+    PagedResponse<JournalEntrySummaryResponse> getEntries(JournalFilterRequest filter, Pageable pageable);
     JournalEntryResponse updateEntry(String entryId, UpdateJournalEntryRequest request);
     void deleteEntry(String entryId);
     void restoreEntry(String entryId);

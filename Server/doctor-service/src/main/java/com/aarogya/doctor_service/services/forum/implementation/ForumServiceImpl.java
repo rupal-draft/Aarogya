@@ -2,6 +2,7 @@ package com.aarogya.doctor_service.services.forum.implementation;
 
 import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.clients.UserGrpcClient;
+import com.aarogya.doctor_service.dto.common.PagedResponse;
 import com.aarogya.doctor_service.dto.forum.request.*;
 import com.aarogya.doctor_service.dto.forum.response.*;
 import com.aarogya.doctor_service.dto.grpc.auth.DoctorResponseDTO;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -91,14 +93,22 @@ public class ForumServiceImpl implements ForumService {
 
     @Override
     @Cacheable(value = THREAD_CACHE, key = "#filter.toString() + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
-    public Page<ThreadSummaryResponse> getThreads(ThreadFilterRequest filter, Pageable pageable) {
+    public PagedResponse<ThreadSummaryResponse> getThreads(ThreadFilterRequest filter, Pageable pageable) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.debug("Fetching threads with filter: {}", filter);
 
         Page<ForumThread> threadsPage = applyThreadFilters(filter, pageable, doctorId);
 
-        return threadsPage.map(thread -> convertToThreadSummaryResponse(thread, doctorId));
+        Page<ThreadSummaryResponse> mappedPage = threadsPage.map(thread -> convertToThreadSummaryResponse(thread, doctorId));
+
+        return new PagedResponse<>(
+                mappedPage.getContent(),
+                mappedPage.getNumber(),
+                mappedPage.getSize(),
+                mappedPage.getTotalElements()
+        );
     }
+
 
     @Override
     @Transactional
@@ -160,7 +170,7 @@ public class ForumServiceImpl implements ForumService {
     @Override
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = REPLY_CACHE, key = "#threadId"),
+            @CacheEvict(value = REPLY_CACHE, allEntries = true),
             @CacheEvict(value = THREAD_CACHE, key = "#threadId")
     })
     public ReplyResponse createReply(String threadId, CreateReplyRequest request) {
@@ -197,7 +207,7 @@ public class ForumServiceImpl implements ForumService {
 
     @Override
     @Cacheable(value = REPLY_CACHE, key = "#threadId + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
-    public Page<ReplyResponse> getReplies(String threadId, Pageable pageable) {
+    public PagedResponse<ReplyResponse> getReplies(String threadId, Pageable pageable) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.debug("Fetching replies for thread: {}", threadId);
 
@@ -205,22 +215,31 @@ public class ForumServiceImpl implements ForumService {
             throw new ResourceNotFoundException("Thread not found with id: " + threadId);
         }
 
-        Page<ForumReply> repliesPage = replyRepository.findByThreadIdAndParentReplyIdIsNullAndIsActiveTrueOrderByCreatedAtAsc(threadId, pageable);
+        Page<ForumReply> repliesPage =
+                replyRepository.findByThreadIdAndParentReplyIdIsNullAndIsActiveTrueOrderByCreatedAtAsc(threadId, pageable);
 
-        return repliesPage.map(reply -> {
+        List<ReplyResponse> responses = repliesPage.stream().map(reply -> {
             ReplyResponse response = convertToReplyResponse(reply, doctorId);
             List<ForumReply> childReplies = replyRepository.findByParentReplyIdAndIsActiveTrue(reply.getId());
             response.setChildReplies(childReplies.stream()
                     .map(child -> convertToReplyResponse(child, doctorId))
                     .collect(Collectors.toList()));
             return response;
-        });
+        }).collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                repliesPage.getTotalElements()
+        );
     }
+
 
     @Override
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = REPLY_CACHE, key = "#result.threadId"),
+            @CacheEvict(value = REPLY_CACHE, allEntries = true),
             @CacheEvict(value = THREAD_CACHE, key = "#result.threadId")
     })
     public ReplyResponse updateReply(String replyId, CreateReplyRequest request) {
@@ -248,28 +267,29 @@ public class ForumServiceImpl implements ForumService {
     @Override
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = REPLY_CACHE, key = "#result?.threadId"),
-            @CacheEvict(value = THREAD_CACHE, key = "#result?.threadId")
+            @CacheEvict(value = REPLY_CACHE, allEntries = true, beforeInvocation = true),
+            @CacheEvict(value = THREAD_CACHE, allEntries = true, beforeInvocation = true)
     })
     public void deleteReply(String replyId) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
-        log.info("Deleting reply: {}", replyId);
+        log.info("Deleting reply permanently: {}", replyId);
 
         ForumReply reply = replyRepository.findById(replyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reply not found with id: " + replyId));
 
         validateReplyOwnership(reply, doctorId);
 
-        reply.setIsActive(false);
-        replyRepository.save(reply);
+        replyRepository.delete(reply);
 
         threadRepository.findById(reply.getThreadId()).ifPresent(thread -> {
             thread.setReplyCount(Math.max(0, thread.getReplyCount() - 1));
             threadRepository.save(thread);
         });
 
-        log.info("Reply deleted successfully: {}", replyId);
+        log.info("Reply permanently deleted: {}", replyId);
     }
+
+
 
     @Override
     @Transactional
@@ -361,13 +381,22 @@ public class ForumServiceImpl implements ForumService {
 
         int voteValue = convertVoteTypeToValue(request.getVoteType());
         int oldVoteValue = 0;
+        int voteDelta = voteValue;
 
         ForumVote vote;
         if (existingVote.isPresent()) {
             vote = existingVote.get();
             oldVoteValue = vote.getVoteValue();
-            vote.setVoteValue(voteValue);
-            vote.setUpdatedAt(LocalDateTime.now());
+
+            if (oldVoteValue == voteValue) {
+                voteDelta = -voteValue;
+                voteRepository.delete(vote);
+            } else {
+                voteDelta = voteValue - oldVoteValue;
+                vote.setVoteValue(voteValue);
+                vote.setUpdatedAt(LocalDateTime.now());
+                voteRepository.save(vote);
+            }
         } else {
             vote = ForumVote.builder()
                     .doctorId(doctorId)
@@ -376,20 +405,22 @@ public class ForumServiceImpl implements ForumService {
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
+            voteRepository.save(vote);
         }
-        voteRepository.save(vote);
 
-        int voteDelta = voteValue - oldVoteValue;
-        thread.setUpvoteCount(thread.getUpvoteCount() + voteDelta);
+        int newUpvoteCount = thread.getUpvoteCount() + voteDelta;
+        thread.setUpvoteCount(Math.max(0, newUpvoteCount));
         threadRepository.save(thread);
 
         return VoteResponse.builder()
                 .threadId(threadId)
                 .voteType(request.getVoteType())
                 .newUpvoteCount(thread.getUpvoteCount())
+                .userVote(existingVote.isPresent() && oldVoteValue == voteValue ? 0 : voteValue)
                 .createdAt(LocalDateTime.now())
                 .build();
     }
+
 
     @Override
     @Transactional
@@ -561,7 +592,8 @@ public class ForumServiceImpl implements ForumService {
     }
 
     @Override
-    public Page<ThreadSummaryResponse> getSubscribedTagsThreads(Pageable pageable) {
+    @Cacheable(value = THREAD_CACHE, key = "'subscribed_' + #pageable.pageNumber + '_' + #pageable.pageSize")
+    public PagedResponse<ThreadSummaryResponse> getSubscribedTagsThreads(Pageable pageable) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.debug("Fetching threads from subscribed tags for doctor: {}", doctorId);
 
@@ -571,7 +603,7 @@ public class ForumServiceImpl implements ForumService {
                 .collect(Collectors.toList());
 
         if (tagIds.isEmpty()) {
-            return Page.empty();
+            return new PagedResponse<>(Collections.emptyList(), pageable.getPageNumber(), pageable.getPageSize(), 0);
         }
 
         List<ForumTag> tags = tagRepository.findAllById(tagIds);
@@ -581,8 +613,18 @@ public class ForumServiceImpl implements ForumService {
 
         Page<ForumThread> threadsPage = threadRepository.findByTagsInAndIsActiveTrue(tagNames, pageable);
 
-        return threadsPage.map(thread -> convertToThreadSummaryResponse(thread, doctorId));
+        List<ThreadSummaryResponse> responses = threadsPage
+                .map(thread -> convertToThreadSummaryResponse(thread, doctorId))
+                .getContent();
+
+        return new PagedResponse<>(
+                responses,
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                threadsPage.getTotalElements()
+        );
     }
+
 
     @Override
     @Transactional

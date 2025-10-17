@@ -7,28 +7,27 @@ export const useForumStats = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        "http://localhost:8080/api/v1/doctors/forum/stats",
+        {
+          withCredentials: true,
+        }
+      );
+      setData(response.data);
+      setError(null);
+    } catch (err) {
+      setError("Failed to fetch forum statistics");
+      console.error("Error fetching forum stats:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(
-          "http://localhost:8080/api/v1/doctors/forum/stats",
-          {
-            withCredentials: true,
-          }
-        );
-        setData(response.data);
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch forum statistics");
-        console.error("Error fetching forum stats:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStats();
   }, []);
 
-  return { data, loading, error };
+  return { data, loading, error, refetch: fetchStats };
 };

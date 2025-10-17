@@ -18,7 +18,6 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableCaching
@@ -35,7 +34,7 @@ public class CacheConfig {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         objectMapper.activateDefaultTyping(
-                LaissezFaireSubTypeValidator.instance,
+                objectMapper.getPolymorphicTypeValidator(),
                 ObjectMapper.DefaultTyping.NON_FINAL,
                 JsonTypeInfo.As.PROPERTY
         );
@@ -46,7 +45,7 @@ public class CacheConfig {
         // Configure Redis cache
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration
                 .defaultCacheConfig()
-                .prefixCacheNameWith("redis-") // optional prefix
+                .prefixCacheNameWith("appointment-service:") // optional prefix
                 .entryTtl(Duration.ofMinutes(5)) // cache expiration
                 .disableCachingNullValues() // optional, avoids caching nulls
                 .serializeKeysWith(

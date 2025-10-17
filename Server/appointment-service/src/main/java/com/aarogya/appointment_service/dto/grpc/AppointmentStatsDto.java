@@ -3,10 +3,11 @@ package com.aarogya.appointment_service.dto.grpc;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@NotBlank
+@NoArgsConstructor
 public class AppointmentStatsDto {
     int todayAppointments;
     int upcomingAppointments; // next 7 days

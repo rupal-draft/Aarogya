@@ -1,5 +1,6 @@
 package com.aarogya.doctor_service.services.forum;
 
+import com.aarogya.doctor_service.dto.common.PagedResponse;
 import com.aarogya.doctor_service.dto.forum.request.*;
 import com.aarogya.doctor_service.dto.forum.response.*;
 import org.springframework.data.domain.Page;
@@ -10,11 +11,11 @@ import java.util.List;
 public interface ForumService {
     ThreadResponse createThread(CreateThreadRequest request);
     ThreadResponse getThread(String threadId);
-    Page<ThreadSummaryResponse> getThreads(ThreadFilterRequest filter, Pageable pageable);
+    PagedResponse<ThreadSummaryResponse> getThreads(ThreadFilterRequest filter, Pageable pageable);
     ThreadResponse updateThread(String threadId, UpdateThreadRequest request);
     void deleteThread(String threadId);
     ReplyResponse createReply(String threadId, CreateReplyRequest request);
-    Page<ReplyResponse> getReplies(String threadId, Pageable pageable);
+    PagedResponse<ReplyResponse> getReplies(String threadId, Pageable pageable);
     ReplyResponse updateReply(String replyId, CreateReplyRequest request);
     void deleteReply(String replyId);
     BookmarkResponse bookmarkThread(String threadId);
@@ -27,6 +28,6 @@ public interface ForumService {
     List<TagResponse> getPopularTags();
     TagResponse subscribeToTag(String tagName);
     void unsubscribeFromTag(String tagName);
-    Page<ThreadSummaryResponse> getSubscribedTagsThreads(Pageable pageable);
+    PagedResponse<ThreadSummaryResponse> getSubscribedTagsThreads(Pageable pageable);
     void recordThreadView(String threadId);
 }

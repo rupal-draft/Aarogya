@@ -171,14 +171,26 @@ public class ForumStatsServiceImpl implements ForumStatsService {
         Query query = new Query(Criteria.where("authorId").is(doctorId));
         query.with(Sort.by(Sort.Direction.DESC, "upvoteCount"));
         query.limit(1);
+
         ForumThread forumThread = mongoTemplate.findOne(query, ForumThread.class);
-        return MostUpvotedThreadResponse
-                .builder()
-                .title(Objects.requireNonNull(forumThread).getTitle())
+
+        if (forumThread == null) {
+            return MostUpvotedThreadResponse.builder()
+                    .title("No threads found")
+                    .tags(Collections.emptyList())
+                    .content("This doctor hasn’t posted any threads yet.")
+                    .upvoteCount(0)
+                    .isActive(false)
+                    .build();
+        }
+
+        return MostUpvotedThreadResponse.builder()
+                .title(forumThread.getTitle())
                 .tags(forumThread.getTags())
                 .content(forumThread.getContent())
                 .upvoteCount(forumThread.getUpvoteCount())
                 .isActive(forumThread.getIsActive())
                 .build();
     }
+
 }

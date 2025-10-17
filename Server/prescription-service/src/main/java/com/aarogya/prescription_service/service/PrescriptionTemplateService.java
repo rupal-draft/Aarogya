@@ -10,7 +10,7 @@ import java.util.List;
 public interface PrescriptionTemplateService {
     TemplateResponse createTemplate(CreateTemplateRequest request);
     TemplateResponse getTemplate(String templateId);
-    Page<TemplateResponse> getTemplates(TemplateFilterRequest filter, Pageable pageable);
+    PagedResponse<TemplateResponse> getTemplates(TemplateFilterRequest filter, Pageable pageable);
     TemplateResponse updateTemplate(String templateId, UpdateTemplateRequest request);
     void deleteTemplate(String templateId);
     PrescriptionResponse applyTemplate(ApplyTemplateRequest request);

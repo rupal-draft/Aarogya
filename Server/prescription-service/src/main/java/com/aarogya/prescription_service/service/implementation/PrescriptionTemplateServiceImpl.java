@@ -91,15 +91,26 @@ public class PrescriptionTemplateServiceImpl implements PrescriptionTemplateServ
     }
 
     @Override
-    @Cacheable(value = "prescriptionTemplates", key = "#filter.toString() + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
-    public Page<TemplateResponse> getTemplates(TemplateFilterRequest filter, Pageable pageable) {
+    @Cacheable(
+            value = "prescriptionTemplates",
+            key = "#filter.toString() + '_' + #pageable.pageNumber + '_' + #pageable.pageSize"
+    )
+    public PagedResponse<TemplateResponse> getTemplates(TemplateFilterRequest filter, Pageable pageable) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.debug("Fetching prescription templates with filter: {}", filter);
 
         Page<PrescriptionTemplate> templatesPage = applyTemplateFilters(doctorId, filter, pageable);
 
-        return templatesPage.map(this::convertToTemplateSummaryResponse);
+        Page<TemplateResponse> mappedPage = templatesPage.map(this::convertToTemplateSummaryResponse);
+
+        return new PagedResponse<>(
+                mappedPage.getContent(),
+                mappedPage.getNumber(),
+                mappedPage.getSize(),
+                mappedPage.getTotalElements()
+        );
     }
+
 
     @Override
     @Transactional

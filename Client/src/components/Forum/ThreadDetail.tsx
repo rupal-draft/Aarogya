@@ -24,7 +24,6 @@ import type {
   PageResponse,
   CreateReplyRequest,
   UpdateThreadRequest,
-  CreateThreadRequest,
 } from "../../types/forum";
 import { ReplyCard } from "./ReplyCard";
 import { AnimatedCounter } from "../../common/Counter/AnimatedCounter2";
@@ -150,10 +149,14 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
   };
 
   const handleVoteThread = (voteType: "UPVOTE" | "DOWNVOTE") => {
-    const newVoteType =
-      thread.userVote === (voteType === "UPVOTE" ? 1 : -1)
-        ? "NEUTRAL"
-        : voteType;
+    let newVoteType: "UPVOTE" | "DOWNVOTE" | "NEUTRAL";
+
+    if (voteType === "UPVOTE") {
+      newVoteType = thread.userVote === 1 ? "NEUTRAL" : "UPVOTE";
+    } else {
+      newVoteType = thread.userVote === -1 ? "NEUTRAL" : "DOWNVOTE";
+    }
+
     onVoteThread(thread.id, newVoteType);
   };
 

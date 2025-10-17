@@ -62,25 +62,52 @@ export const ThreadCard: React.FC<ThreadCardProps> = ({
     }
   };
 
-  const handleVote = (voteType: "UPVOTE" | "DOWNVOTE") => {
-    const newVoteType =
-      thread.userVote === (voteType === "UPVOTE" ? 1 : -1)
+  const handleVote = async (voteType: "UPVOTE" | "DOWNVOTE") => {
+    const currentVote = thread.userVote || 0;
+    let newVote: number;
+    let voteDelta = 0;
+
+    if (voteType === "UPVOTE") {
+      if (currentVote === 1) {
+        newVote = 0;
+        voteDelta = -1;
+      } else {
+        newVote = 1;
+        voteDelta = currentVote === -1 ? 2 : 1;
+      }
+    } else {
+      if (currentVote === -1) {
+        newVote = 0;
+        voteDelta = 1;
+      } else {
+        newVote = -1;
+        voteDelta = currentVote === 1 ? -2 : -1;
+      }
+    }
+
+    onVote(
+      thread.id,
+      voteType === "UPVOTE"
+        ? currentVote === 1
+          ? "NEUTRAL"
+          : "UPVOTE"
+        : currentVote === -1
         ? "NEUTRAL"
-        : voteType;
-    onVote(thread.id, newVoteType);
+        : "DOWNVOTE"
+    );
   };
 
   return (
     <motion.div
-      className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 overflow-hidden"
-      initial={{ opacity: 0, y: 20 }}
+      className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 overflow-hidden"
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
       whileHover={{ y: -2 }}
     >
       <div className="flex">
         {/* Vote Section */}
-        <div className="flex flex-col items-center p-4 bg-gray-50 border-r border-gray-200">
+        <div className="flex flex-col items-center p-4 bg-gray-50 border-r border-gray-200 min-w-[80px]">
           <motion.button
             className={`p-2 rounded-full transition-colors ${
               thread.userVote === 1
@@ -91,16 +118,16 @@ export const ThreadCard: React.FC<ThreadCardProps> = ({
               e.stopPropagation();
               handleVote("UPVOTE");
             }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <ArrowUp className="w-4 h-4" />
           </motion.button>
 
           <motion.div
-            className="text-lg font-bold text-gray-900 my-2"
+            className="text-base font-bold text-gray-900 my-2"
             key={thread.upvoteCount}
-            initial={{ scale: 1.2 }}
+            initial={{ scale: 1.1 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.2 }}
           >
@@ -117,8 +144,8 @@ export const ThreadCard: React.FC<ThreadCardProps> = ({
               e.stopPropagation();
               handleVote("DOWNVOTE");
             }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <ArrowDown className="w-4 h-4" />
           </motion.button>
@@ -153,17 +180,17 @@ export const ThreadCard: React.FC<ThreadCardProps> = ({
 
             <motion.button
               className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.05 }}
             >
               <MoreHorizontal className="w-4 h-4" />
             </motion.button>
           </div>
 
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors line-clamp-2">
+          <h3 className="text-base font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors line-clamp-2">
             {thread.title}
           </h3>
 
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
             {thread.contentPreview}
           </p>
 
@@ -172,18 +199,18 @@ export const ThreadCard: React.FC<ThreadCardProps> = ({
             {thread.tags.slice(0, 4).map((tag, tagIndex) => (
               <motion.span
                 key={tagIndex}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-xs"
-                initial={{ opacity: 0, scale: 0.8 }}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium border border-blue-200"
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 + tagIndex * 0.02 }}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.03 }}
               >
                 <Tag className="w-3 h-3" />
                 {tag}
               </motion.span>
             ))}
             {thread.tags.length > 4 && (
-              <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs">
+              <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs font-medium">
                 +{thread.tags.length - 4} more
               </span>
             )}
@@ -191,9 +218,9 @@ export const ThreadCard: React.FC<ThreadCardProps> = ({
 
           {/* Author and Stats */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-sm text-gray-600">
+            <div className="flex items-center gap-3 text-xs text-gray-600">
               <div className="flex items-center gap-1">
-                <User className="w-4 h-4" />
+                <User className="w-3 h-3" />
                 <span className="font-medium">
                   {thread.isAnonymous ? "Anonymous" : thread.authorName}
                 </span>
@@ -204,18 +231,18 @@ export const ThreadCard: React.FC<ThreadCardProps> = ({
                 )}
               </div>
               <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
+                <Clock className="w-3 h-3" />
                 <span>{new Date(thread.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1 text-gray-500 text-sm">
-                <Eye className="w-4 h-4" />
+              <div className="flex items-center gap-1 text-gray-500 text-xs">
+                <Eye className="w-3 h-3" />
                 <AnimatedCounter value={thread.viewCount} duration={0.5} />
               </div>
-              <div className="flex items-center gap-1 text-gray-500 text-sm">
-                <MessageSquare className="w-4 h-4" />
+              <div className="flex items-center gap-1 text-gray-500 text-xs">
+                <MessageSquare className="w-3 h-3" />
                 <AnimatedCounter value={thread.replyCount} duration={0.5} />
               </div>
               <motion.button
@@ -228,8 +255,8 @@ export const ThreadCard: React.FC<ThreadCardProps> = ({
                   e.stopPropagation();
                   onBookmark(thread.id);
                 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 {thread.isBookmarked ? (
                   <BookmarkCheck className="w-4 h-4" />

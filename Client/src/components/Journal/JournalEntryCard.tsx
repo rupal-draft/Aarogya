@@ -13,7 +13,10 @@ import {
   FileText,
   Lock,
 } from "lucide-react";
-import type { JournalEntrySummaryResponse } from "../../types/journal";
+import type {
+  JournalEntryResponse,
+  JournalEntrySummaryResponse,
+} from "../../types/journal";
 import { journalService } from "../../Services/journalService";
 
 interface JournalEntryCardProps {
@@ -21,6 +24,8 @@ interface JournalEntryCardProps {
   viewMode: "grid" | "list";
   onUpdate: () => void;
   onViewEntry: (entryId: string) => void;
+  onUpdateEntry: (entry: JournalEntryResponse) => void;
+  onDecryptAndUpdate: (entryId: string) => void;
 }
 
 const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
@@ -28,6 +33,8 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
   viewMode,
   onUpdate,
   onViewEntry,
+  onUpdateEntry,
+  onDecryptAndUpdate,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isBookmarking, setIsBookmarking] = useState(false);
@@ -80,6 +87,20 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
   const handleViewEntry = (e: React.MouseEvent) => {
     e.stopPropagation();
     onViewEntry(entry.id);
+  };
+
+  const handleEdit = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (entry.isEncrypted) {
+      onDecryptAndUpdate(entry.id);
+    } else {
+      try {
+        const entryData = await journalService.getNonEncryptedEntry(entry.id);
+        onUpdateEntry(entryData);
+      } catch (error) {
+        console.error("Error fetching entry for editing:", error);
+      }
+    }
   };
 
   const getPriorityColor = (priority: string) => {
@@ -289,7 +310,10 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
                       <Eye className="w-4 h-4" />
                       View Details
                     </button>
-                    <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors">
+                    <button
+                      onClick={handleEdit}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    >
                       <Edit className="w-4 h-4" />
                       Edit
                     </button>
@@ -447,7 +471,10 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
                       <Eye className="w-4 h-4" />
                       View Details
                     </button>
-                    <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors">
+                    <button
+                      onClick={handleEdit}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    >
                       <Edit className="w-4 h-4" />
                       Edit
                     </button>

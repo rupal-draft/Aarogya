@@ -43,7 +43,7 @@ public class PrescriptionTemplateController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<TemplateResponse>> getTemplates(
+    public ResponseEntity<PagedResponse<TemplateResponse>> getTemplates(
             @ModelAttribute TemplateFilterRequest filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -51,13 +51,15 @@ public class PrescriptionTemplateController {
             @RequestParam(defaultValue = "ASC") String sortOrder) {
 
         log.debug("Fetching prescription templates with filter: {}", filter);
-        Sort sort = sortOrder.equalsIgnoreCase("ASC") ?
-                Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Sort sort = sortOrder.equalsIgnoreCase("ASC")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<TemplateResponse> response = prescriptionTemplateService.getTemplates(filter, pageable);
+        PagedResponse<TemplateResponse> response = prescriptionTemplateService.getTemplates(filter, pageable);
         return ResponseEntity.ok(response);
     }
+
 
     @PutMapping("/{templateId}")
     @CircuitBreaker(name = "prescriptionController", fallbackMethod = "updateTemplateFallback")

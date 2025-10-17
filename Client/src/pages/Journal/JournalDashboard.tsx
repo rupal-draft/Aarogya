@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -17,6 +17,7 @@ import type {
   JournalEntrySummaryResponse,
   JournalStatsResponse,
   JournalFilterRequest,
+  JournalEntryResponse,
 } from "../../types/journal";
 import { journalService } from "../../Services/journalService";
 import StatsOverview from "../../components/Journal/StatsOverview";
@@ -26,6 +27,8 @@ import ReminderPanel from "../../components/Journal/ReminderPanel";
 import TemplateModal from "../../components/Journal/TemplateModal";
 import CreateEntryModal from "../../components/Journal/CreateEntryModal";
 import JournalEntryModal from "../../components/Journal/JournalEntryModal";
+import UpdateEntryModal from "../../components/Journal/UpdateEntryModal";
+import DecryptionModal from "../../components/Journal/DecryptionModal";
 
 const JournalDashboard: React.FC = () => {
   const [entries, setEntries] = useState<JournalEntrySummaryResponse[]>([]);
@@ -44,13 +47,15 @@ const JournalDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [filters, setFilters] = useState<JournalFilterRequest>({});
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [selectedEntryForUpdate, setSelectedEntryForUpdate] =
+    useState<JournalEntryResponse | null>(null);
+  const [showDecryptionModal, setShowDecryptionModal] = useState(false);
+  const [entryToDecrypt, setEntryToDecrypt] = useState<string | null>(null);
+  const [decryptedEntry, setDecryptedEntry] =
+    useState<JournalEntryResponse | null>(null);
 
-  useEffect(() => {
-    fetchEntries();
-    fetchStats();
-  }, [filters, sortBy, sortOrder, currentPage]);
-
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     try {
       setLoading(true);
       const response = await journalService.getEntries(
@@ -67,7 +72,7 @@ const JournalDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, searchQuery, currentPage, sortBy, sortOrder]);
 
   const fetchStats = async () => {
     try {
@@ -78,10 +83,14 @@ const JournalDashboard: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    fetchEntries();
+    fetchStats();
+  }, [fetchEntries]);
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(0);
-    fetchEntries();
   };
 
   const handleFilterChange = (newFilters: JournalFilterRequest) => {
@@ -97,6 +106,30 @@ const JournalDashboard: React.FC = () => {
   const handleViewEntry = (entryId: string) => {
     setSelectedEntryId(entryId);
     setShowEntryModal(true);
+  };
+
+  const handleDecryptAndUpdate = (entryId: string) => {
+    setEntryToDecrypt(entryId);
+    setShowDecryptionModal(true);
+  };
+
+  const handleDecryptionSuccess = (entry: JournalEntryResponse) => {
+    setDecryptedEntry(entry);
+    setShowDecryptionModal(false);
+    setEntryToDecrypt(null);
+    setSelectedEntryForUpdate(entry);
+    setShowUpdateModal(true);
+  };
+
+  const handleDecryptionClose = () => {
+    setShowDecryptionModal(false);
+    setEntryToDecrypt(null);
+    setDecryptedEntry(null);
+  };
+
+  const handleUpdateEntry = (entry: JournalEntryResponse) => {
+    setSelectedEntryForUpdate(entry);
+    setShowUpdateModal(true);
   };
 
   const handleEntryModalClose = () => {
@@ -376,7 +409,9 @@ const JournalDashboard: React.FC = () => {
                     entry={entry}
                     viewMode={viewMode}
                     onUpdate={handleEntryUpdate}
+                    onUpdateEntry={handleUpdateEntry}
                     onViewEntry={handleViewEntry}
+                    onDecryptAndUpdate={handleDecryptAndUpdate}
                   />
                 </motion.div>
               ))}
@@ -484,6 +519,27 @@ const JournalDashboard: React.FC = () => {
             onClose={handleEntryModalClose}
             entryId={selectedEntryId}
             onEntryUpdate={handleEntryUpdate}
+          />
+        )}
+
+        {showUpdateModal && selectedEntryForUpdate && (
+          <UpdateEntryModal
+            isOpen={showUpdateModal}
+            onClose={() => {
+              setShowUpdateModal(false);
+              setSelectedEntryForUpdate(null);
+            }}
+            entry={selectedEntryForUpdate}
+            onSuccess={handleEntryUpdate}
+          />
+        )}
+        {showDecryptionModal && entryToDecrypt && (
+          <DecryptionModal
+            isOpen={showDecryptionModal}
+            onClose={handleDecryptionClose}
+            entryId={entryToDecrypt}
+            onDecryptionSuccess={handleDecryptionSuccess}
+            purpose="editing" // Indicate this is for editing
           />
         )}
       </AnimatePresence>

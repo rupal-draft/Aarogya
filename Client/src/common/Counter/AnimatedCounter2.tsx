@@ -50,7 +50,7 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {count.toFixed(decimals)}
+      {count?.toFixed(decimals)}
       {suffix}
     </motion.span>
   );

@@ -2,6 +2,7 @@ package com.aarogya.doctor_service.services.journal.implementation;
 
 import com.aarogya.doctor_service.auth.UserContextHolder;
 import com.aarogya.doctor_service.clients.UserGrpcClient;
+import com.aarogya.doctor_service.dto.common.PagedResponse;
 import com.aarogya.doctor_service.dto.grpc.auth.PatientResponseDTO;
 import com.aarogya.doctor_service.dto.journal.request.*;
 import com.aarogya.doctor_service.dto.journal.response.*;
@@ -121,15 +122,37 @@ public class JournalServiceImpl implements JournalService {
     }
 
     @Override
+    @Cacheable(
+            value = JOURNAL_CACHE,
+            key = "#entryId"
+    )
+    public JournalEntryResponse getEntry(String entryId) {
+        String doctorId = UserContextHolder.getUserDetails().getUserId();
+        log.debug("Fetching journal entry: {}", entryId);
+
+        JournalEntry entry = entryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Journal entry not found with id: " + entryId));
+        return convertToEntryResponse(entry, doctorId);
+    }
+
+    @Override
     @Cacheable(value = JOURNAL_CACHE, key = "#filter.toString() + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
-    public Page<JournalEntrySummaryResponse> getEntries(JournalFilterRequest filter, Pageable pageable) {
+    public PagedResponse<JournalEntrySummaryResponse> getEntries(JournalFilterRequest filter, Pageable pageable) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.debug("Fetching journal entries with filter: {}", filter);
 
         Page<JournalEntry> entriesPage = applyJournalFilters(doctorId, filter, pageable);
 
-        return entriesPage.map(entry -> convertToEntrySummaryResponse(entry, doctorId));
+        Page<JournalEntrySummaryResponse> mappedPage = entriesPage.map(entry -> convertToEntrySummaryResponse(entry, doctorId));
+
+        return new PagedResponse<>(
+                mappedPage.getContent(),
+                mappedPage.getNumber(),
+                mappedPage.getSize(),
+                mappedPage.getTotalElements()
+        );
     }
+
 
     @Override
     @Transactional
@@ -420,6 +443,10 @@ public class JournalServiceImpl implements JournalService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = JOURNAL_CACHE, allEntries = true),
+            @CacheEvict(value = STATS_CACHE, allEntries = true)
+    })
     public JournalEntryResponse createFromTemplate(String templateId, Map<String, String> variables) {
         String doctorId = UserContextHolder.getUserDetails().getUserId();
         log.info("Creating entry from template: {}", templateId);
