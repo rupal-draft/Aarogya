@@ -1,91 +1,106 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useMemo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import type { FilterOptions, MedicineResponseDTO } from "../../../types/medicine"
-import { getAllMedicines } from "../../../Services/medicineService"
-import SearchBar from "../../../components/Pharmacy/Medicines/SearchBar"
-import CategoryTabs from "../../../components/Pharmacy/Medicines/CategoryTabs"
-import LoadingSpinner from "../../../common/Spinners/LoadingSpinner"
-import ErrorDisplay from "../../../common/Error/ErrorDisplay"
-import PrescriptionUpload from "../../../components/Pharmacy/Medicines/PrescriptionUpload"
-import MedicineCard from "../../../components/Pharmacy/Medicines/MedicineCard"
-import FilterSidebar from "../../../components/Pharmacy/FilterSidebar"
-
+import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import type {
+  FilterOptions,
+  MedicineResponseDTO,
+} from "../../../types/medicine";
+import { getAllMedicines } from "../../../Services/medicineService";
+import SearchBar from "../../../components/Pharmacy/Medicines/SearchBar";
+import CategoryTabs from "../../../components/Pharmacy/Medicines/CategoryTabs";
+import LoadingSpinner from "../../../common/Spinners/LoadingSpinner";
+import ErrorDisplay from "../../../common/Error/ErrorDisplay";
+import PrescriptionUpload from "../../../components/Pharmacy/Medicines/PrescriptionUpload";
+import MedicineCard from "../../../components/Pharmacy/Medicines/MedicineCard";
+import FilterSidebar from "../../../components/Pharmacy/FilterSidebar";
 
 const MedicineListPage = () => {
   // State for medicines and loading
-  const [medicines, setMedicines] = useState<MedicineResponseDTO[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isPrescriptionMode, setIsPrescriptionMode] = useState(false)
+  const [medicines, setMedicines] = useState<MedicineResponseDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isPrescriptionMode, setIsPrescriptionMode] = useState(false);
 
   // State for filters
-  const [filters, setFilters] = useState<FilterOptions>({})
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [showFilters, setShowFilters] = useState(false)
-  const [showPrescriptionUpload, setShowPrescriptionUpload] = useState(false)
+  const [filters, setFilters] = useState<FilterOptions>({});
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showPrescriptionUpload, setShowPrescriptionUpload] = useState(false);
 
   // Fetch medicines on component mount
   useEffect(() => {
     const fetchMedicines = async () => {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       try {
-        const data = await getAllMedicines()
-        setMedicines(data)
+        const data = await getAllMedicines();
+        setMedicines(data);
       } catch (err) {
-        setError("Failed to load medicines. Please try again.")
-        console.error("Error fetching medicines:", err)
+        setError("Failed to load medicines. Please try again.");
+        console.error("Error fetching medicines:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchMedicines()
-  }, [])
+    fetchMedicines();
+  }, []);
 
   // Extract unique categories and manufacturers for filters
   const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(medicines.map((medicine) => medicine.category))]
-    return uniqueCategories.sort()
-  }, [medicines])
+    const uniqueCategories = [
+      ...new Set(medicines.map((medicine) => medicine.category)),
+    ];
+    return uniqueCategories.sort();
+  }, [medicines]);
 
   const manufacturers = useMemo(() => {
-    const uniqueManufacturers = [...new Set(medicines.map((medicine) => medicine.manufacturer))]
-    return uniqueManufacturers.sort()
-  }, [medicines])
+    const uniqueManufacturers = [
+      ...new Set(medicines.map((medicine) => medicine.manufacturer)),
+    ];
+    return uniqueManufacturers.sort();
+  }, [medicines]);
 
   // Get price range for filters
   const priceRange = useMemo(() => {
-    if (medicines.length === 0) return { min: 0, max: 1000 }
+    if (medicines.length === 0) return { min: 0, max: 1000 };
 
-    const prices = medicines.map((medicine) => Number(medicine.price))
+    const prices = medicines.map((medicine) => Number(medicine.price));
     return {
       min: Math.floor(Math.min(...prices)),
       max: Math.ceil(Math.max(...prices)),
-    }
-  }, [medicines])
+    };
+  }, [medicines]);
 
   // Apply filters to medicines (client-side filtering)
   const filteredMedicines = useMemo(() => {
     return medicines.filter((medicine) => {
       // Category filter
       if (filters.category && medicine.category !== filters.category) {
-        return false
+        return false;
       }
 
       // Manufacturer filter
-      if (filters.manufacturer && medicine.manufacturer !== filters.manufacturer) {
-        return false
+      if (
+        filters.manufacturer &&
+        medicine.manufacturer !== filters.manufacturer
+      ) {
+        return false;
       }
 
       // Price range filter
-      if (filters.minPrice !== undefined && Number(medicine.price) < filters.minPrice) {
-        return false
+      if (
+        filters.minPrice !== undefined &&
+        Number(medicine.price) < filters.minPrice
+      ) {
+        return false;
       }
-      if (filters.maxPrice !== undefined && Number(medicine.price) > filters.maxPrice) {
-        return false
+      if (
+        filters.maxPrice !== undefined &&
+        Number(medicine.price) > filters.maxPrice
+      ) {
+        return false;
       }
 
       // Prescription required filter
@@ -93,225 +108,334 @@ const MedicineListPage = () => {
         filters.prescriptionRequired !== undefined &&
         medicine.prescriptionRequired !== filters.prescriptionRequired
       ) {
-        return false
+        return false;
       }
 
       // In stock filter
       if (filters.inStock && medicine.stockQuantity <= 0) {
-        return false
+        return false;
       }
 
       // Search filter
       if (filters.search) {
-        const searchLower = filters.search.toLowerCase()
+        const searchLower = filters.search.toLowerCase();
         return (
           medicine.name.toLowerCase().includes(searchLower) ||
           medicine.description.toLowerCase().includes(searchLower) ||
           medicine.manufacturer.toLowerCase().includes(searchLower) ||
           medicine.category.toLowerCase().includes(searchLower)
-        )
+        );
       }
 
-      return true
-    })
-  }, [medicines, filters])
+      return true;
+    });
+  }, [medicines, filters]);
 
   // Sort filtered medicines
   const sortedMedicines = useMemo(() => {
-    if (!filters.sortBy) return filteredMedicines
+    if (!filters.sortBy) return filteredMedicines;
 
     return [...filteredMedicines].sort((a, b) => {
       switch (filters.sortBy) {
         case "price-asc":
-          return Number(a.price) - Number(b.price)
+          return Number(a.price) - Number(b.price);
         case "price-desc":
-          return Number(b.price) - Number(a.price)
+          return Number(b.price) - Number(a.price);
         case "name-asc":
-          return a.name.localeCompare(b.name)
+          return a.name.localeCompare(b.name);
         case "name-desc":
-          return b.name.localeCompare(a.name)
+          return b.name.localeCompare(a.name);
         case "newest":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         default:
-          return 0
+          return 0;
       }
-    })
-  }, [filteredMedicines, filters.sortBy])
+    });
+  }, [filteredMedicines, filters.sortBy]);
 
   // Handle filter changes
   const handleFilterChange = (newFilters: FilterOptions) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }))
-  }
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+  };
 
   // Handle search
   const handleSearch = (query: string) => {
-    setFilters((prev) => ({ ...prev, search: query }))
-  }
+    setFilters((prev) => ({ ...prev, search: query }));
+  };
 
   // Handle category selection
   const handleCategorySelect = (category: string | null) => {
-    setActiveCategory(category)
-    setFilters((prev) => ({ ...prev, category: category || undefined }))
-  }
+    setActiveCategory(category);
+    setFilters((prev) => ({ ...prev, category: category || undefined }));
+  };
 
   // Toggle filters visibility on mobile
   const toggleFilters = () => {
-    setShowFilters(!showFilters)
-    if (!showFilters) setShowPrescriptionUpload(false)
-  }
+    setShowFilters(!showFilters);
+    if (!showFilters) setShowPrescriptionUpload(false);
+  };
 
   // Toggle prescription upload visibility on mobile
   const togglePrescriptionUpload = () => {
-    setShowPrescriptionUpload(!showPrescriptionUpload)
-    if (!showPrescriptionUpload) setShowFilters(false)
-  }
+    setShowPrescriptionUpload(!showPrescriptionUpload);
+    if (!showPrescriptionUpload) setShowFilters(false);
+  };
 
   // Handle prescription upload
   const handlePrescriptionUploadStart = () => {
-    setLoading(true)
-    setError(null)
-    setIsPrescriptionMode(true)
-  }
+    setLoading(true);
+    setError(null);
+    setIsPrescriptionMode(true);
+  };
 
-  const handlePrescriptionUploadSuccess = (prescriptionMedicines: MedicineResponseDTO[]) => {
-    setMedicines(prescriptionMedicines)
-    setLoading(false)
-    setIsPrescriptionMode(true)
+  const handlePrescriptionUploadSuccess = (
+    prescriptionMedicines: MedicineResponseDTO[]
+  ) => {
+    setMedicines(prescriptionMedicines);
+    setLoading(false);
+    setIsPrescriptionMode(true);
 
     // Reset filters when showing prescription results
-    setFilters({})
-    setActiveCategory(null)
+    setFilters({});
+    setActiveCategory(null);
 
     // Close mobile prescription upload panel
-    setShowPrescriptionUpload(false)
-  }
+    setShowPrescriptionUpload(false);
+  };
 
   const handlePrescriptionUploadError = (errorMessage: string) => {
-    setError(errorMessage)
-    setLoading(false)
-  }
+    setError(errorMessage);
+    setLoading(false);
+  };
 
   const handleResetPrescriptionMode = () => {
-    setIsPrescriptionMode(false)
+    setIsPrescriptionMode(false);
     // Reload all medicines
-    setLoading(true)
+    setLoading(true);
     getAllMedicines()
       .then((data) => {
-        setMedicines(data)
-        setLoading(false)
+        setMedicines(data);
+        setLoading(false);
       })
       .catch((err) => {
-        setError("Failed to load medicines. Please try again.")
-        setLoading(false)
-      })
-  }
+        setError("Failed to load medicines. Please try again.");
+        setLoading(false);
+      });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white overflow-hidden">
+      <section className="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 text-white overflow-hidden min-h-screen flex items-center">
+        {/* Animated background with particles */}
         <div className="absolute inset-0 overflow-hidden">
-          {/* Animated background elements */}
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzR2LTRoLTJ2NGgtNHYyaDR2NGgydi00aDR2LTJoLTR6bTAtMzBWMGgtMnY0aC00djJoNHY0aDJWNmg0VjRoLTR6TTYgMzR2LTRINHY0SDB2Mmg0djRoMnYtNGg0di0ySDZ6TTYgNFYwSDR2NEgwdjJoNHY0aDJWNmg0VjRINnoiLz48L2c+PC9nPjwvc3ZnPg==')]"></div>
+          {/* Animated gradient orbs */}
+          <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-r from-indigo-500/20 to-pink-500/20 rounded-full blur-3xl animate-pulse-slow animation-delay-2000"></div>
 
-          {/* Animated pills and medical symbols */}
-          {[...Array(15)].map((_, i) => (
+          {/* Floating medical icons */}
+          {[...Array(12)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute rounded-full bg-white/10"
+              className="absolute text-white/10"
               style={{
-                width: Math.random() * 30 + 10,
-                height: Math.random() * 30 + 10,
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
               }}
               animate={{
                 y: [0, -30, 0],
-                x: [0, Math.random() * 30 - 15, 0],
-                rotate: [0, 360],
-                opacity: [0.3, 0.7, 0.3],
+                x: [0, Math.random() * 20 - 10, 0],
+                rotate: [0, 180, 360],
+                scale: [0.8, 1.2, 0.8],
               }}
               transition={{
-                duration: Math.random() * 5 + 5,
+                duration: Math.random() * 10 + 10,
                 repeat: Number.POSITIVE_INFINITY,
                 ease: "easeInOut",
               }}
-            />
+            >
+              <svg
+                width="60"
+                height="60"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+              </svg>
+            </motion.div>
           ))}
 
-          {/* Animated medical icons */}
-          <motion.div
-            className="absolute top-1/4 left-1/4 text-white/20"
-            animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, 10, 0],
-              opacity: [0.2, 0.3, 0.2],
-            }}
-            transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY }}
+          {/* Animated connecting lines */}
+          <svg
+            className="absolute inset-0 w-full h-full"
+            style={{ opacity: 0.1 }}
           >
-            <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
-            </svg>
-          </motion.div>
-
-          <motion.div
-            className="absolute bottom-1/4 right-1/4 text-white/20"
-            animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, -10, 0],
-              opacity: [0.2, 0.3, 0.2],
-            }}
-            transition={{ duration: 7, repeat: Number.POSITIVE_INFINITY, delay: 2 }}
-          >
-            <svg width="100" height="100" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10.5 15H8v-3h2.5V9.5h3V12H16v3h-2.5v2.5h-3V15zM19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
-            </svg>
-          </motion.div>
+            <motion.path
+              d="M0,100 Q200,50 400,150 T800,100"
+              stroke="white"
+              strokeWidth="2"
+              fill="none"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{
+                duration: 8,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+              }}
+            />
+            <motion.path
+              d="M100,300 Q300,250 500,350 T900,300"
+              stroke="white"
+              strokeWidth="2"
+              fill="none"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{
+                duration: 10,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+                delay: 1,
+              }}
+            />
+          </svg>
         </div>
 
+        {/* Main content */}
         <div className="container mx-auto px-4 py-16 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl mx-auto text-center"
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto text-center"
           >
-            <motion.h1
-              className="text-4xl md:text-5xl font-bold mb-4"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-            >
-              Your Health, Our Priority
-            </motion.h1>
+            {/* Animated title with staggered letters */}
+            <div className="mb-6">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-4 tracking-tight">
+                {"Your Health, Our Priority".split("").map((char, index) => (
+                  <motion.span
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.05 }}
+                    className="inline-block"
+                  >
+                    {char === " " ? "\u00A0" : char}
+                  </motion.span>
+                ))}
+              </h1>
+            </div>
+
+            {/* Animated subtitle */}
             <motion.p
-              className="text-xl text-blue-100 mb-8"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
+              className="text-xl md:text-2xl text-blue-100 mb-10 max-w-2xl mx-auto leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 1 }}
             >
-              Discover our wide range of medicines and healthcare products
+              Discover our comprehensive range of medicines and healthcare
+              products for your wellness journey
             </motion.p>
+
+            {/* Enhanced search bar with animation */}
             <motion.div
-              className="max-w-xl mx-auto"
+              className="max-w-2xl mx-auto relative"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
+              transition={{ duration: 0.5, delay: 1.2 }}
             >
-              <SearchBar onSearch={handleSearch} />
+              <div className="relative">
+                <motion.div
+                  className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur opacity-30"
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                ></motion.div>
+                <SearchBar
+                  onSearch={handleSearch}
+                  className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-lg py-4 px-6 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
+                />
+              </div>
+
+              {/* Floating pills animation */}
+              <div className="absolute -top-10 left-0 right-0 flex justify-center">
+                {[...Array(5)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="w-4 h-8 rounded-full bg-white/30 mx-1"
+                    animate={{
+                      y: [0, -15, 0],
+                      rotate: [0, 10, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Number.POSITIVE_INFINITY,
+                      delay: i * 0.2,
+                    }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Animated stats */}
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-3xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.5 }}
+            >
+              {[
+                { value: "10K+", label: "Medicines Available" },
+                { value: "24/7", label: "Expert Support" },
+                { value: "100%", label: "Quality Assured" },
+              ].map((stat, index) => (
+                <motion.div
+                  key={index}
+                  className="text-center p-6 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10"
+                  whileHover={{
+                    scale: 1.05,
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    transition: { duration: 0.3 },
+                  }}
+                >
+                  <motion.div
+                    className="text-3xl font-bold text-blue-300 mb-2"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 200,
+                      delay: 1.8 + index * 0.2,
+                    }}
+                  >
+                    {stat.value}
+                  </motion.div>
+                  <div className="text-blue-100">{stat.label}</div>
+                </motion.div>
+              ))}
             </motion.div>
           </motion.div>
         </div>
 
-        {/* Wave divider */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="w-full">
-            <path
+        {/* Enhanced wave divider with animation */}
+        <div className="absolute bottom-0 left-0 right-0 overflow-hidden">
+          <motion.svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1440 320"
+            className="w-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 2 }}
+          >
+            <motion.path
               fill="#ffffff"
               fillOpacity="1"
-              d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,117.3C672,107,768,117,864,144C960,171,1056,213,1152,213.3C1248,213,1344,171,1392,149.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-            ></path>
-          </svg>
+              d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,192C672,181,768,139,864,138.7C960,139,1056,181,1152,181.3C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 3, delay: 2.5 }}
+            />
+          </motion.svg>
         </div>
       </section>
 
@@ -346,8 +470,12 @@ const MedicineListPage = () => {
                   </svg>
                 </motion.div>
                 <div>
-                  <span className="text-indigo-800 font-medium block">Prescription Medicines</span>
-                  <span className="text-indigo-600 text-sm">Showing medicines from your prescription</span>
+                  <span className="text-indigo-800 font-medium block">
+                    Prescription Medicines
+                  </span>
+                  <span className="text-indigo-600 text-sm">
+                    Showing medicines from your prescription
+                  </span>
                 </div>
               </div>
               <motion.button
@@ -411,7 +539,9 @@ const MedicineListPage = () => {
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            {showPrescriptionUpload ? "Hide Prescription" : "Upload Prescription"}
+            {showPrescriptionUpload
+              ? "Hide Prescription"
+              : "Upload Prescription"}
           </motion.button>
         </div>
 
@@ -427,7 +557,9 @@ const MedicineListPage = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left sidebar with filters - hidden on mobile unless toggled */}
           <motion.div
-            className={`lg:w-72 order-1 ${showFilters ? "block" : "hidden lg:block"}`}
+            className={`lg:w-72 order-1 ${
+              showFilters ? "block" : "hidden lg:block"
+            }`}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
@@ -452,18 +584,27 @@ const MedicineListPage = () => {
             {/* Results info */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-gray-800">
-                {loading ? "Loading medicines..." : `${sortedMedicines.length} Medicines Found`}
+                {loading
+                  ? "Loading medicines..."
+                  : `${sortedMedicines.length} Medicines Found`}
               </h2>
 
               {/* Sort dropdown */}
               <div className="flex items-center">
-                <label htmlFor="sort" className="text-sm text-gray-600 mr-2 hidden sm:inline">
+                <label
+                  htmlFor="sort"
+                  className="text-sm text-gray-600 mr-2 hidden sm:inline"
+                >
                   Sort by:
                 </label>
                 <select
                   id="sort"
                   value={filters.sortBy || ""}
-                  onChange={(e) => handleFilterChange({ sortBy: e.target.value as FilterOptions["sortBy"] })}
+                  onChange={(e) =>
+                    handleFilterChange({
+                      sortBy: e.target.value as FilterOptions["sortBy"],
+                    })
+                  }
                   className="border border-gray-300 rounded-md text-sm p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="">Relevance</option>
@@ -489,8 +630,16 @@ const MedicineListPage = () => {
                   <LoadingSpinner />
                 </motion.div>
               ) : error ? (
-                <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <ErrorDisplay message={error} onRetry={() => window.location.reload()} />
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <ErrorDisplay
+                    message={error}
+                    onRetry={() => window.location.reload()}
+                  />
                 </motion.div>
               ) : sortedMedicines.length === 0 ? (
                 <motion.div
@@ -506,7 +655,10 @@ const MedicineListPage = () => {
                       scale: [1, 1.05, 1],
                       rotate: [0, 5, 0, -5, 0],
                     }}
-                    transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY }}
+                    transition={{
+                      duration: 5,
+                      repeat: Number.POSITIVE_INFINITY,
+                    }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -523,17 +675,23 @@ const MedicineListPage = () => {
                       />
                     </svg>
                   </motion.div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">No Medicines Found</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    No Medicines Found
+                  </h3>
                   <p className="text-gray-600 mb-4">
-                    Try adjusting your search or filter to find what you're looking for.
+                    Try adjusting your search or filter to find what you're
+                    looking for.
                   </p>
                   <motion.button
                     onClick={() => {
-                      setFilters({})
-                      setActiveCategory(null)
+                      setFilters({});
+                      setActiveCategory(null);
                     }}
                     className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-md hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md"
-                    whileHover={{ scale: 1.05, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+                    whileHover={{
+                      scale: 1.05,
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    }}
                     whileTap={{ scale: 0.95 }}
                   >
                     Clear All Filters
@@ -560,7 +718,9 @@ const MedicineListPage = () => {
 
           {/* Right sidebar with prescription upload - hidden on mobile unless toggled */}
           <motion.div
-            className={`lg:w-80 order-2 lg:order-3 ${showPrescriptionUpload ? "block" : "hidden lg:block"}`}
+            className={`lg:w-80 order-2 lg:order-3 ${
+              showPrescriptionUpload ? "block" : "hidden lg:block"
+            }`}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
@@ -574,7 +734,7 @@ const MedicineListPage = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MedicineListPage
+export default MedicineListPage;

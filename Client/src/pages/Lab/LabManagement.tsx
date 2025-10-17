@@ -10,7 +10,7 @@ import PatientLabOrders from "../../components/Lab/PatientLabOrders";
 type LabStep = "search" | "booking" | "dashboard";
 
 const LabManagement: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState<LabStep>("search");
+  const [currentStep, setCurrentStep] = useState<LabStep>("dashboard");
   const [selectedTests, setSelectedTests] = useState<LabTestResponse[]>([]);
 
   const handleTestToggle = (test: LabTestResponse) => {

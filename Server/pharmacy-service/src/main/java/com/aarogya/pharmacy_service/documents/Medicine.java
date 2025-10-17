@@ -17,7 +17,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "medicines")
+@Document(collection = "pharmacy_medicines")
 public class Medicine {
 
     @Id

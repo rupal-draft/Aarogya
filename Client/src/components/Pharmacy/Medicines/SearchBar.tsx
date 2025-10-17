@@ -1,78 +1,80 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import type { MedicineResponseDTO } from "../../../types/medicine"
-import { searchMedicines } from "../../../Services/medicineService"
-
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import type { MedicineResponseDTO } from "../../../types/medicine";
+import { searchMedicines } from "../../../Services/medicineService";
 
 interface SearchBarProps {
-  onSearch: (query: string) => void
+  onSearch: (query: string) => void;
 }
 
 const SearchBar = ({ onSearch }: SearchBarProps) => {
-  const [query, setQuery] = useState("")
-  const [isSearching, setIsSearching] = useState(false)
-  const [suggestions, setSuggestions] = useState<MedicineResponseDTO[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const searchRef = useRef<HTMLDivElement>(null)
+  const [query, setQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [suggestions, setSuggestions] = useState<MedicineResponseDTO[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // Handle click outside to close suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false)
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Fetch suggestions as user types
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (query.length < 2) {
-        setSuggestions([])
-        return
+        setSuggestions([]);
+        return;
       }
 
-      setIsSearching(true)
+      setIsSearching(true);
       try {
-        const data = await searchMedicines(query)
-        setSuggestions(data)
-        setShowSuggestions(true)
+        const data = await searchMedicines(query);
+        setSuggestions(data);
+        setShowSuggestions(true);
       } catch (error) {
-        console.error("Error fetching suggestions:", error)
+        console.error("Error fetching suggestions:", error);
       } finally {
-        setIsSearching(false)
+        setIsSearching(false);
       }
-    }
+    };
 
     const debounce = setTimeout(() => {
-      fetchSuggestions()
-    }, 300)
+      fetchSuggestions();
+    }, 300);
 
-    return () => clearTimeout(debounce)
-  }, [query])
+    return () => clearTimeout(debounce);
+  }, [query]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (query.trim()) {
-      onSearch(query.trim())
-      setShowSuggestions(false)
+      onSearch(query.trim());
+      setShowSuggestions(false);
     }
-  }
+  };
 
   const handleSuggestionClick = (suggestion: MedicineResponseDTO) => {
-    setQuery(suggestion.name)
-    onSearch(suggestion.name)
-    setShowSuggestions(false)
-  }
+    setQuery(suggestion.name);
+    onSearch(suggestion.name);
+    setShowSuggestions(false);
+  };
 
   return (
     <div className="relative w-full" ref={searchRef}>
@@ -83,11 +85,15 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length >= 2 && setShowSuggestions(true)}
           placeholder="Search medicines..."
-          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent shadow-sm"
+          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 
+             focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent 
+             shadow-sm bg-white text-gray-900 placeholder-gray-400"
         />
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg
-            className={`w-5 h-5 ${isSearching ? "text-teal-500 animate-pulse" : "text-gray-400"}`}
+            className={`w-5 h-5 ${
+              isSearching ? "text-teal-500 animate-pulse" : "text-gray-400"
+            }`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -114,7 +120,12 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         )}
@@ -163,11 +174,17 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{suggestion.name}</p>
-                    <p className="text-xs text-gray-500">{suggestion.manufacturer}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {suggestion.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {suggestion.manufacturer}
+                    </p>
                   </div>
                   <div className="ml-2">
-                    <p className="text-sm font-semibold text-teal-600">${Number(suggestion.price).toFixed(2)}</p>
+                    <p className="text-sm font-semibold text-teal-600">
+                      ${Number(suggestion.price).toFixed(2)}
+                    </p>
                   </div>
                 </motion.li>
               ))}
@@ -176,7 +193,7 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
         )}
       </AnimatePresence>
     </div>
-  )
-}
+  );
+};
 
-export default SearchBar
+export default SearchBar;

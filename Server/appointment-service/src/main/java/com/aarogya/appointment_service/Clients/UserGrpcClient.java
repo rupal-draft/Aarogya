@@ -107,7 +107,7 @@ public class UserGrpcClient {
         }
     }
 
-    @Cacheable(value = "doctor", key = "#doctorId")
+    @Cacheable(value = "doctor_v2", key = "#doctorId")
     public DoctorResponseDTO getDoctor(String doctorId) {
         checkServiceHealth();
         log.info("Getting doctor with id: {}", doctorId);

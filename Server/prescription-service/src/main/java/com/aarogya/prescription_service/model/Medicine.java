@@ -19,7 +19,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "medicines")
+@Document(collection = "prescription_medicines")
 @CompoundIndex(def = "{'name': 'text', 'chemicalClass': 'text', 'therapeuticClass': 'text'}")
 public class Medicine {
     @Id
