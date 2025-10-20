@@ -13,7 +13,7 @@ public enum Specialization {
     ENDOCRINOLOGY,
     GASTROENTEROLOGY,
     OPHTHALMOLOGY,
-    ENT, // Ear, Nose, and Throat
+    ENT,
     ANESTHESIOLOGY,
     UROLOGY,
     PULMONOLOGY,
