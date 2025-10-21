@@ -29,6 +29,11 @@ public class DoctorResponseDTO {
     private String imageUrl;
     private LocalDateTime createdAt;
 
-    private Double consultationFee;   // e.g. 500.00
+    private Double consultationFee;   
     private String currency;
+
+    private Double recommendationScore;
+    private Double experienceScore;
+    private Double feeScore;
+    private Integer recommendationRank;
 }
